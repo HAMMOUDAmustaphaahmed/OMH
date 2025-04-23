@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
+            <li><a href="{{ url_for('trips.index') }}">Retour à la liste</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Détails du voyage</h2>
+        <div class="card">
+            <div class="card-body">
+                <div class="trip-details-header">
+                    <h3>{{ trip.type }}</h3>
+                    <span class="status-tag {{ trip.etat_trip|lower }}">{{ trip.etat_trip }}</span>
+                </div>
+                <div class="trip-info-row">
+                    <div class="trip-info">
+                        <h4>Informations de base</h4>
+                        <div class="info-group">
+                            <span class="info-label">Date de départ :</span>
+                            <span class="info-value">{{ trip.date_depart|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Heure de départ :</span>
+                            <span class="info-value">{{ trip.heure_depart }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Point de départ :</span>
+                            <span class="info-value">{{ trip.point_depart }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Point d'arrivée :</span>
+                            <span class="info-value">{{ trip.point_arrivee }}</span>
+                        </div>
+                    </div>
+                    <div class="trip-info">
+                        <h4>Véhicule</h4>
+                        <div class="info-group">
+                            <span class="info-label">Modèle :</span>
+                            <span class="info-value">{{ trip.vehicule.modele }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Matricule :</span>
+                            <span class="info-value">{{ trip.vehicule.matricule }}</span>
+                        </div>
+                    </div>
+                    <div class="trip-info">
+                        <h4>Chauffeur</h4>
+                        <div class="info-group">
+                            <span class="info-label">Nom :</span>
+                            <span class="info-value">{{ trip.chauffeur.prenom }} {{ trip.chauffeur.nom }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="trip-actions">
+                    <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" class="btn-secondary">Modifier</a>
+                    <a href="{{ url_for('trips.delete', trip_id=trip.id_trip) }}" class="btn-danger">Supprimer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

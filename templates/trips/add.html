@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>Ajouter un nouveau voyage</h2>
+            <p>Remplissez les informations suivantes</p>
+        </div>
+        <form method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="type">Type de voyage</label>
+                    <select id="type" name="type" required>
+                        <option value="">Sélectionnez un type</option>
+                        <option value="Transfert">Transfert</option>
+                        <option value="Excursion">Excursion</option>
+                        <option value="Location">Location</option>
+                        <option value="Événement">Événement</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="vehicule">Véhicule</label>
+                    <select id="vehicule" name="id_vehicule" required>
+                        <option value="">Sélectionnez un véhicule</option>
+                        {% for vehicule in vehicules %}
+                        <option value="{{ vehicule.id_vehicule }}">{{ vehicule.marque }} {{ vehicule.modele }} - {{ vehicule.matricule }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="chauffeur">Chauffeur</label>
+                    <select id="chauffeur" name="id_chauffeur" required>
+                        <option value="">Sélectionnez un chauffeur</option>
+                        {% for chauffeur in chauffeurs %}
+                        <option value="{{ chauffeur.id_chauffeur }}">{{ chauffeur.nom }} {{ chauffeur.prenom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date_depart">Date de départ</label>
+                    <input type="date" id="date_depart" name="date_depart" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="heure_depart">Heure de départ</label>
+                    <input type="time" id="heure_depart" name="heure_depart" required>
+                </div>
+                <div class="form-group">
+                    <label for="point_depart">Point de départ</label>
+                    <input type="text" id="point_depart" name="point_depart" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="point_arrivee">Point d'arrivée</label>
+                    <input type="text" id="point_arrivee" name="point_arrivee" required>
+                </div>
+                <div class="form-group">
+                    <label for="prix">Prix</label>
+                    <input type="number" id="prix" name="prix" step="0.01" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

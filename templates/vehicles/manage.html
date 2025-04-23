@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
+            <li><a href="{{ url_for('vehicles.add') }}">Ajouter un véhicule</a></li>
+            <li><a href="{{ url_for('vehicles.index') }}">Voir tous les véhicules</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Gestion des véhicules</h2>
+        <div class="card">
+            <div class="card-header">
+                <h3>Liste des véhicules</h3>
+                <a href="{{ url_for('vehicles.add') }}" class="btn-primary">Ajouter un véhicule</a>
+            </div>
+            <div class="card-body">
+                <div class="filter-bar">
+                    <input type="text" placeholder="Rechercher un véhicule..." class="search-input">
+                    <select id="status-filter">
+                        <option value="">Tous les statuts</option>
+                        <option value="En marche">En marche</option>
+                        <option value="En panne">En panne</option>
+                        <option value="En entretien">En entretien</option>
+                        <option value="Non disponible">Non disponible</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Marque</th>
+                                <th>Modèle</th>
+                                <th>Matricule</th>
+                                <th>Kilométrage</th>
+                                <th>Carburant</th>
+                                <th>État</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle in vehicles %}
+                            <tr>
+                                <td>{{ vehicle.usine }}</td>
+                                <td>{{ vehicle.modele }}</td>
+                                <td>{{ vehicle.matricule }}</td>
+                                <td>{{ vehicle.kilometrage_vehicule }}</td>
+                                <td>{{ vehicle.carburant }}</td>
+                                <td><span class="status-tag {{ vehicle.etat|lower }}">{{ vehicle.etat }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('vehicles.details', vehicle_id=vehicle.id_vehicule) }}" class="btn-icon"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ url_for('vehicles.edit', vehicle_id=vehicle.id_vehicule) }}" class="btn-icon"><i class="fas fa-edit"></i></a>
+                                    <a href="{{ url_for('vehicles.delete', vehicle_id=vehicle.id_vehicule) }}" class="btn-icon btn-danger"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

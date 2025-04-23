@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>Ajouter un nouveau véhicule</h2>
+            <p>Remplissez les informations suivantes</p>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="matricule">Matricule</label>
+                    <input type="text" id="matricule" name="matricule" required>
+                </div>
+                <div class="form-group">
+                    <label for="modele">Modèle</label>
+                    <input type="text" id="modele" name="modele" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="marque">Marque</label>
+                    <input type="text" id="marque" name="usine" required>
+                </div>
+                <div class="form-group">
+                    <label for="carburant">Carburant</label>
+                    <select id="carburant" name="carburant" required>
+                        <option value="">Sélectionnez un carburant</option>
+                        <option value="Essence">Essence</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Hybride">Hybride</option>
+                        <option value="Électrique">Électrique</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nombre_place">Nombre de places</label>
+                    <input type="number" id="nombre_place" name="nombre_place" required>
+                </div>
+                <div class="form-group">
+                    <label for="image">Image</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="kilometrage">Kilométrage initial</label>
+                    <input type="number" id="kilometrage" name="kilometrage_vehicule" required>
+                </div>
+                <div class="form-group">
+                    <label for="etat">État</label>
+                    <select id="etat" name="etat" required>
+                        <option value="">Sélectionnez un état</option>
+                        <option value="En marche">En marche</option>
+                        <option value="En panne">En panne</option>
+                        <option value="En entretien">En entretien</option>
+                        <option value="Non disponible">Non disponible</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

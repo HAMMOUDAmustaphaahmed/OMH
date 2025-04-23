@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
+            <li><a href="{{ url_for('trips.add') }}">Ajouter un voyage</a></li>
+            <li><a href="{{ url_for('trips.index') }}">Voir tous les voyages</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Gestion des voyages</h2>
+        <div class="card">
+            <div class="card-header">
+                <h3>Liste des voyages</h3>
+                <a href="{{ url_for('trips.add') }}" class="btn-primary">Ajouter un voyage</a>
+            </div>
+            <div class="card-body">
+                <div class="filter-bar">
+                    <input type="text" placeholder="Rechercher un voyage..." class="search-input">
+                    <select id="status-filter">
+                        <option value="">Tous les statuts</option>
+                        <option value="Planifié">Planifié</option>
+                        <option value="En cours">En cours</option>
+                        <option value="Terminé">Terminé</option>
+                        <option value="Annulé">Annulé</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Heure</th>
+                                <th>Type</th>
+                                <th>Point de départ</th>
+                                <th>Point d'arrivée</th>
+                                <th>Véhicule</th>
+                                <th>Chauffeur</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trip in trips %}
+                            <tr>
+                                <td>{{ trip.date_depart|date('d/m/Y') }}</td>
+                                <td>{{ trip.heure_depart }}</td>
+                                <td>{{ trip.type }}</td>
+                                <td>{{ trip.point_depart }}</td>
+                                <td>{{ trip.point_arrivee }}</td>
+                                <td>{{ trip.vehicule.modele }}</td>
+                                <td>{{ trip.chauffeur.prenom }} {{ trip.chauffeur.nom }}</td>
+                                <td><span class="status-tag {{ trip.etat_trip|lower }}">{{ trip.etat_trip }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('trips.details', trip_id=trip.id_trip) }}" class="btn-icon"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" class="btn-icon"><i class="fas fa-edit"></i></a>
+                                    <a href="{{ url_for('trips.delete', trip_id=trip.id_trip) }}" class="btn-icon btn-danger"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

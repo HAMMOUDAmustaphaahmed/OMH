@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>Ajouter un nouveau chauffeur</h2>
+            <p>Remplissez les informations suivantes</p>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <input type="text" id="nom" name="nom" required>
+                </div>
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <input type="text" id="prenom" name="prenom" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="numero_cin">Numéro CIN</label>
+                    <input type="text" id="numero_cin" name="numero_cin" required>
+                </div>
+                <div class="form-group">
+                    <label for="sexe">Sexe</label>
+                    <select id="sexe" name="sexe" required>
+                        <option value="">Sélectionnez un sexe</option>
+                        <option value="M">Masculin</option>
+                        <option value="F">Féminin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date_naissance">Date de naissance</label>
+                    <input type="date" id="date_naissance" name="date_naissance" required>
+                </div>
+                <div class="form-group">
+                    <label for="telephone">Téléphone</label>
+                    <input type="tel" id="telephone" name="telephone" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="photo">Photo</label>
+                    <input type="file" id="photo" name="photo" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="adresse">Adresse</label>
+                    <textarea id="adresse" name="adresse" rows="3" required></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

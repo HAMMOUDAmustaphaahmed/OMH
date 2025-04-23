@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion financière</h3>
+        <ul>
+            <li><a href="{{ url_for('finances.index') }}">Tableau de bord</a></li>
+            <li><a href="{{ url_for('finances.depenses') }}">Dépenses</a></li>
+            <li><a href="{{ url_for('finances.paiements') }}">Paiements</a></li>
+            <li><a href="{{ url_for('finances.rapports') }}">Rapports</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Tableau de bord financier</h2>
+        <div class="card-row">
+            <div class="card">
+                <div class="card-icon blue">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">Revenus totaux</span>
+                    <span class="card-value">{{ total_revenus|currency }}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon red">
+                    <i class="fas fa-minus-circle"></i>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">Dépenses totales</span>
+                    <span class="card-value">{{ total_depenses|currency }}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon green">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">Bénéfice net</span>
+                    <span class="card-value">{{ (total_revenus - total_depenses)|currency }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-widgets">
+            <div class="widget">
+                <h3>Revenus du mois</h3>
+                <div class="chart-container">
+                    <canvas id="monthlyRevenueChart"></canvas>
+                </div>
+            </div>
+            <div class="widget">
+                <h3>Dépenses du mois</h3>
+                <div class="chart-container">
+                    <canvas id="monthlyExpensesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-widgets">
+            <div class="widget">
+                <h3>Derniers paiements</h3>
+                <div class="recent-payments">
+                    {% for payment in derniers_paiements %}
+                    <div class="payment-item">
+                        <div class="payment-details">
+                            <span class="payment-date">{{ payment.date_paiement|date('d/m/Y') }}</span>
+                            <span class="payment-amount">{{ payment.montant_paye|currency }}</span>
+                        </div>
+                        <span class="payment-mode">{{ payment.mode_paiement }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="widget">
+                <h3>Dernières dépenses</h3>
+                <div class="recent-expenses">
+                    {% for expense in dernieres_depenses %}
+                    <div class="expense-item">
+                        <div class="expense-details">
+                            <span class="expense-date">{{ expense.date_depense|date('d/m/Y') }}</span>
+                            <span class="expense-category">{{ expense.categorie }}</span>
+                        </div>
+                        <span class="expense-amount">{{ expense.montant|currency }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart for monthly revenue
+        const revenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: {% for month in months %}'{{ month }}',{% endfor %}],
+                datasets: [{
+                    label: 'Revenus (€)',
+                    data: {% for revenue in monthly_revenue %}{{ revenue }},{% endfor %}],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Chart for monthly expenses
+        const expensesCtx = document.getElementById('monthlyExpensesChart').getContext('2d');
+        new Chart(expensesCtx, {
+            type: 'bar',
+            data: {
+                labels: {% for month in months %}'{{ month }}',{% endfor %}],
+                datasets: [{
+                    label: 'Dépenses (€)',
+                    data: {% for expense in monthly_expenses %}{{ expense }},{% endfor %}],
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

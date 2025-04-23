@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
+            <li><a href="{{ url_for('vehicles.index') }}">Retour à la liste</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Détails du véhicule</h2>
+        <div class="card">
+            <div class="card-body">
+                <div class="vehicle-details-header">
+                    <h3>{{ vehicle.marque }} {{ vehicle.modele }}</h3>
+                    <span class="status-tag {{ vehicle.etat|lower }}">{{ vehicle.etat }}</span>
+                </div>
+                <div class="vehicle-info-row">
+                    <div class="vehicle-info">
+                        <h4>Informations de base</h4>
+                        <div class="info-group">
+                            <span class="info-label">Marque :</span>
+                            <span class="info-value">{{ vehicle.usine }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Modèle :</span>
+                            <span class="info-value">{{ vehicle.modele }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Matricule :</span>
+                            <span class="info-value">{{ vehicle.matricule }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Carburant :</span>
+                            <span class="info-value">{{ vehicle.carburant }}</span>
+                        </div>
+                    </div>
+                    <div class="vehicle-info">
+                        <h4>Statistics</h4>
+                        <div class="info-group">
+                            <span class="info-label">Kilométrage :</span>
+                            <span class="info-value">{{ vehicle.kilometrage_vehicule }} km</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">État :</span>
+                            <span class="info-value">{{ vehicle.etat }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="vehicle-actions">
+                    <a href="{{ url_for('vehicles.edit', vehicle_id=vehicle.id_vehicule) }}" class="btn-secondary">Modifier</a>
+                    <a href="{{ url_for('vehicles.delete', vehicle_id=vehicle.id_vehicule) }}" class="btn-danger">Supprimer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

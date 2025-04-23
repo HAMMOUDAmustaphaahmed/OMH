@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
+            <li><a href="{{ url_for('drivers.index') }}">Retour à la liste</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Détails du chauffeur</h2>
+        <div class="card">
+            <div class="card-body">
+                <div class="driver-details-header">
+                    <h3>{{ driver.prenom }} {{ driver.nom }}</h3>
+                    <span class="status-tag {{ driver.statut|lower }}">{{ driver.statut }}</span>
+                </div>
+                <div class="driver-info-row">
+                    <div class="driver-info">
+                        <h4>Informations personnelles</h4>
+                        <div class="info-group">
+                            <span class="info-label">Numéro CIN :</span>
+                            <span class="info-value">{{ driver.numero_cin }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Date de naissance :</span>
+                            <span class="info-value">{{ driver.date_naissance|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Téléphone :</span>
+                            <span class="info-value">{{ driver.telephone }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Adresse :</span>
+                            <span class="info-value">{{ driver.adresse }}</span>
+                        </div>
+                    </div>
+                    <div class="driver-info">
+                        <h4>Informations professionnelles</h4>
+                        <div class="info-group">
+                            <span class="info-label">Permis :</span>
+                            <span class="info-value">{{ driver.permis }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Date d'embauche :</span>
+                            <span class="info-value">{{ driver.date_embauche|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="info-group">
+                            <span class="info-label">Statut :</span>
+                            <span class="info-value">{{ driver.statut }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="driver-actions">
+                    <a href="{{ url_for('drivers.edit', driver_id=driver.id_chauffeur) }}" class="btn-secondary">Modifier</a>
+                    <a href="{{ url_for('drivers.delete', driver_id=driver.id_chauffeur) }}" class="btn-danger">Supprimer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

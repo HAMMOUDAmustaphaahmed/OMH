@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
+            <li><a href="{{ url_for('drivers.add') }}">Ajouter un chauffeur</a></li>
+            <li><a href="{{ url_for('drivers.index') }}">Voir tous les chauffeurs</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Gestion des chauffeurs</h2>
+        <div class="card">
+            <div class="card-header">
+                <h3>Liste des chauffeurs</h3>
+                <a href="{{ url_for('drivers.add') }}" class="btn-primary">Ajouter un chauffeur</a>
+            </div>
+            <div class="card-body">
+                <div class="filter-bar">
+                    <input type="text" placeholder="Rechercher un chauffeur..." class="search-input">
+                    <select id="status-filter">
+                        <option value="">Tous les statuts</option>
+                        <option value="Actif">Actif</option>
+                        <option value="En congé">En congé</option>
+                        <option value="Inactif">Inactif</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>CIN</th>
+                                <th>Téléphone</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for driver in drivers %}
+                            <tr>
+                                <td>{{ driver.nom }}</td>
+                                <td>{{ driver.prenom }}</td>
+                                <td>{{ driver.numero_cin }}</td>
+                                <td>{{ driver.telephone }}</td>
+                                <td><span class="status-tag {{ driver.statut|lower }}">{{ driver.statut }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('drivers.details', driver_id=driver.id_chauffeur) }}" class="btn-icon"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ url_for('drivers.edit', driver_id=driver.id_chauffeur) }}" class="btn-icon"><i class="fas fa-edit"></i></a>
+                                    <a href="{{ url_for('drivers.delete', driver_id=driver.id_chauffeur) }}" class="btn-icon btn-danger"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+<nav class="sidebar bg-dark text-white">
+    <div class="sidebar-header p-4">
+        <h3 class="mb-0">OMH Travel Service</h3>
+        <small class="text-muted">Gestion intégrée</small>
+    </div>
+    
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <i class="fas fa-users-cog"></i> Utilisateurs
+            </a>
+            <ul class="dropdown-menu bg-dark">
+                <li><a class="dropdown-item text-white" href="{{ url_for('users.add') }}">Ajouter</a></li>
+                <li><a class="dropdown-item text-white" href="{{ url_for('users.manage') }}">Gérer</a></li>
+            </ul>
+        </li>
+        <!-- Répéter le même pattern pour les autres sections -->
+    </ul>
+</nav>
