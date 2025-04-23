@@ -42,7 +42,7 @@
                 <div class="card-icon orange"><i class="fas fa-wallet"></i></div>
                 <div class="card-info">
                     <span class="card-title">Revenus</span>
-                    <span class="card-value">{{ total_revenue|currency }}</span>
+                    <span class="card-value">{{ total_revenue }}</span>
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
                     <div class="trip-item">
                         <div class="trip-info">
                             <span class="trip-type">{{ trip.type }}</span>
-                            <span class="trip-date">{{ trip.date_depart|date('d/m/Y') }}</span>
+                            <span class="trip-date">{{ trip.date_depart }}</span>
                         </div>
                         <div class="trip-details">
                             <span class="trip-depart">{{ trip.point_depart }}</span>

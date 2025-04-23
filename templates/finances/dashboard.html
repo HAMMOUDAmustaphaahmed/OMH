@@ -21,7 +21,7 @@
                 </div>
                 <div class="card-info">
                     <span class="card-title">Revenus totaux</span>
-                    <span class="card-value">{{ total_revenus|currency }}</span>
+                    <span class="card-value">{{ total_revenus }}</span>
                 </div>
             </div>
             <div class="card">
@@ -30,7 +30,7 @@
                 </div>
                 <div class="card-info">
                     <span class="card-title">Dépenses totales</span>
-                    <span class="card-value">{{ total_depenses|currency }}</span>
+                    <span class="card-value">{{ total_depenses }}</span>
                 </div>
             </div>
             <div class="card">
@@ -39,7 +39,7 @@
                 </div>
                 <div class="card-info">
                     <span class="card-title">Bénéfice net</span>
-                    <span class="card-value">{{ (total_revenus - total_depenses)|currency }}</span>
+                    <span class="card-value">{{ (total_revenus - total_depenses) }}</span>
                 </div>
             </div>
         </div>
@@ -66,8 +66,8 @@
                     {% for payment in derniers_paiements %}
                     <div class="payment-item">
                         <div class="payment-details">
-                            <span class="payment-date">{{ payment.date_paiement|date('d/m/Y') }}</span>
-                            <span class="payment-amount">{{ payment.montant_paye|currency }}</span>
+                            <span class="payment-date">{{ payment.date_paiement }}</span>
+                            <span class="payment-amount">{{ payment.montant_paye }}</span>
                         </div>
                         <span class="payment-mode">{{ payment.mode_paiement }}</span>
                     </div>
@@ -80,10 +80,10 @@
                     {% for expense in dernieres_depenses %}
                     <div class="expense-item">
                         <div class="expense-details">
-                            <span class="expense-date">{{ expense.date_depense|date('d/m/Y') }}</span>
+                            <span class="expense-date">{{ expense.date_depense }}</span>
                             <span class="expense-category">{{ expense.categorie }}</span>
                         </div>
-                        <span class="expense-amount">{{ expense.montant|currency }}</span>
+                        <span class="expense-amount">{{ expense.montant }}</span>
                     </div>
                     {% endfor %}
                 </div>
