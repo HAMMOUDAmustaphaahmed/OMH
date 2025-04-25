@@ -8,7 +8,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard.index'))  # Correction ici
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -17,7 +17,7 @@ def login():
         
         user = User.query.filter_by(username=username).first()
         
-        if user and user.password==password:
+        if user and user.check_password(password):  # Utilisation de check_password
             if not user.actif:
                 flash('Ce compte a été désactivé.', 'danger')
                 return redirect(url_for('auth.login'))
@@ -35,7 +35,7 @@ def login():
         else:
             flash('Nom d\'utilisateur ou mot de passe incorrect.', 'danger')
     
-    return render_template('login.html')
+    return render_template('auth/login.html')  # Correction du chemin du template
 
 @auth_bp.route('/logout')
 @login_required
@@ -63,4 +63,4 @@ def profile():
         else:
             flash('Mot de passe actuel incorrect.', 'danger')
     
-    return render_template('dashboard.html')
+    return render_template('auth/profile.html')  # Correction du template
