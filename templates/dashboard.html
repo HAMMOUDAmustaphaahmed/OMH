@@ -2,6 +2,93 @@
 
 {% block content %}
 <div class="dashboard-container">
+    <!-- Le message flash sera affiché ici -->
+    <div id="welcome-flash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'welcome' %}
+                        <div class="flash-message flash-welcome">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    {% block styles %}
+<style>
+.flash-welcome {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    text-align: center;
+    min-width: 300px;
+}
+
+.flash-welcome::before {
+    content: '👋 ';
+    margin-right: 8px;
+}
+
+@keyframes flashFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes flashFadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+}
+
+/* Animation pour le texte */
+.flash-welcome span {
+    display: inline-block;
+    animation: textWave 1s ease-in-out;
+}
+
+
+
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sélectionner tous les messages flash de bienvenue
+    const welcomeFlashes = document.querySelectorAll('.flash-welcome');
+    
+    // Pour chaque message flash
+    welcomeFlashes.forEach(flash => {
+        // Supprimer le message après 2 secondes
+        setTimeout(() => {
+            flash.style.display = 'none';
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}
     <div class="sidebar">
         <h3>Gestion</h3>
         <ul>
@@ -12,6 +99,8 @@
             <li><a href="{{ url_for('users.index') }}"><i class="fas fa-users"></i> Utilisateurs</a></li>
         </ul>
     </div>
+    {% if current_user.has_any_role(['admin', 'manager']) %}
+    
 
     <div class="dashboard-content">
         <h2>Bienvenue sur le tableau de bord</h2>
@@ -78,6 +167,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

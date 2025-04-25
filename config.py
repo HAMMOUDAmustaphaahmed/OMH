@@ -12,3 +12,10 @@ class Config:
     # Assurez-vous que le dossier d'upload existe
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
+
+    
+    # Configuration de la session
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+    
+    # Configuration des fichiers autorisés
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}

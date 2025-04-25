@@ -17,7 +17,7 @@ def login():
         
         user = User.query.filter_by(username=username).first()
         
-        if user and user.check_password(password):  # Utilisation de check_password
+        if user and user.check_password(password):  # Utilisez check_password au lieu de ==
             if not user.actif:
                 flash('Ce compte a été désactivé.', 'danger')
                 return redirect(url_for('auth.login'))
@@ -26,8 +26,10 @@ def login():
             user.derniere_connexion = datetime.utcnow()
             db.session.commit()
             
+            # Récupération et validation du paramètre next
             next_page = request.args.get('next')
-            if not next_page or not next_page.startswith('/'):
+            # Vérification que next_page est une URL relative et existe
+            if not next_page or not next_page.startswith('/') or url_parse(next_page).netloc != '':
                 next_page = url_for('dashboard.index')
             
             flash(f'Bienvenue, {user.prenom} {user.nom}!', 'success')
@@ -35,7 +37,7 @@ def login():
         else:
             flash('Nom d\'utilisateur ou mot de passe incorrect.', 'danger')
     
-    return render_template('auth/login.html')  # Correction du chemin du template
+    return render_template('auth/login.html')
 
 @auth_bp.route('/logout')
 @login_required

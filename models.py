@@ -29,12 +29,40 @@ class User(db.Model, UserMixin):
     
     def get_id(self):
         return str(self.id_user)
-        
+
     def set_password(self, password):
         self.password = generate_password_hash(password)
-        
+
     def check_password(self, password):
         return check_password_hash(self.password, password)
+
+    # Ajout des méthodes de gestion des rôles
+    def get_roles(self):
+        """Retourne la liste des rôles de l'utilisateur"""
+        return [role.strip() for role in self.role.split(',') if role.strip()]
+    
+    def has_role(self, role):
+        """Vérifie si l'utilisateur a un rôle spécifique"""
+        return role in self.get_roles()
+    
+    def has_any_role(self, roles):
+        """Vérifie si l'utilisateur a au moins un des rôles spécifiés"""
+        user_roles = self.get_roles()
+        return any(role in user_roles for role in roles)
+    
+    def add_role(self, new_role):
+        """Ajoute un nouveau rôle à l'utilisateur"""
+        current_roles = self.get_roles()
+        if new_role not in current_roles:
+            current_roles.append(new_role)
+            self.role = ','.join(current_roles)
+    
+    def remove_role(self, role_to_remove):
+        """Supprime un rôle de l'utilisateur"""
+        current_roles = self.get_roles()
+        if role_to_remove in current_roles:
+            current_roles.remove(role_to_remove)
+            self.role = ','.join(current_roles)
     
     @classmethod
     def create_user(cls, nom, prenom, role, password=None):
