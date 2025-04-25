@@ -97,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <li><a href="{{ url_for('trips.index') }}"><i class="fas fa-route"></i> Voyages</a></li>
             <li><a href="{{ url_for('finances.index') }}"><i class="fas fa-wallet"></i> Finances</a></li>
             <li><a href="{{ url_for('users.index') }}"><i class="fas fa-users"></i> Utilisateurs</a></li>
+            <li><a href="{{ url_for('users.index') }}"><i class="fas fa-car"></i> Entretiens</a></li>
+            <li><a href="{{ url_for('users.index') }}"><i class="fas fa-calendar"></i> Calendrier</a></li>
         </ul>
     </div>
     {% if current_user.has_any_role(['admin', 'manager']) %}
