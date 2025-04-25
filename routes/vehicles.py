@@ -19,6 +19,13 @@ def index():
     vehicles = Vehicule.query.all()
     return render_template('vehicles/manage.html', vehicles=vehicles)
 
+@vehicles_bp.route('/<int:vehicle_id>')
+@login_required
+def details(vehicle_id):
+    vehicle = Vehicule.query.get_or_404(vehicle_id)
+    return render_template('vehicles/details.html', vehicle=vehicle)
+
+
 @vehicles_bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
