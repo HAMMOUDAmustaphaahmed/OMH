@@ -2,71 +2,603 @@
 
 {% block content %}
 <div class="dashboard-container">
+    <!-- Sidebar -->
     <div class="sidebar">
-        <h3>Gestion</h3>
-        <ul>
-            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
-            <li><a href="{{ url_for('trips.add') }}">Ajouter un voyage</a></li>
-            <li><a href="{{ url_for('trips.index') }}">Voir tous les voyages</a></li>
+        <div class="sidebar-header">
+            <i class="fas fa-route"></i>
+            <h3>Gestion Voyages</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('dashboard.index') }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('trips.add') }}" class="active">
+                    <i class="fas fa-plus"></i>
+                    <span>Nouveau voyage</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('trips.index') }}">
+                    <i class="fas fa-list"></i>
+                    <span>Liste des voyages</span>
+                </a>
+            </li>
         </ul>
     </div>
 
+    <!-- Main Content -->
     <div class="content">
-        <h2>Gestion des voyages</h2>
-        <div class="card">
-            <div class="card-header">
-                <h3>Liste des voyages</h3>
-                <a href="{{ url_for('trips.add') }}" class="btn-primary">Ajouter un voyage</a>
+        <!-- Header -->
+        <div class="content-header">
+            <div class="header-title">
+                <h2>
+                    <i class="fas fa-route"></i>
+                    Gestion des voyages
+                </h2>
+                <p>Gérez tous vos voyages</p>
             </div>
-            <div class="card-body">
-                <div class="filter-bar">
-                    <input type="text" placeholder="Rechercher un voyage..." class="search-input">
-                    <select id="status-filter">
-                        <option value="">Tous les statuts</option>
-                        <option value="Planifié">Planifié</option>
-                        <option value="En cours">En cours</option>
-                        <option value="Terminé">Terminé</option>
-                        <option value="Annulé">Annulé</option>
-                    </select>
-                </div>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Heure</th>
-                                <th>Type</th>
-                                <th>Point de départ</th>
-                                <th>Point d'arrivée</th>
-                                <th>Véhicule</th>
-                                <th>Chauffeur</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for trip in trips %}
-                            <tr>
-                                <td>{{ trip.date_depart}}</td>
-                                <td>{{ trip.heure_depart }}</td>
-                                <td>{{ trip.type }}</td>
-                                <td>{{ trip.point_depart }}</td>
-                                <td>{{ trip.point_arrivee }}</td>
-                                <td>{{ trip.vehicule.modele }}</td>
-                                <td>{{ trip.chauffeur.prenom }} {{ trip.chauffeur.nom }}</td>
-                                <td><span class="status-tag {{ trip.etat_trip|lower }}">{{ trip.etat_trip }}</span></td>
-                                <td>
-                                    <a href="{{ url_for('trips.details', trip_id=trip.id_trip) }}" class="btn-icon"><i class="fas fa-eye"></i></a>
-                                    <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" class="btn-icon"><i class="fas fa-edit"></i></a>
-                                    <a href="{{ url_for('trips.delete', trip_id=trip.id_trip) }}" class="btn-icon btn-danger"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="header-actions">
+                <a href="{{ url_for('trips.add') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    <span>Nouveau voyage</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-card">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Rechercher un voyage...">
+            </div>
+            <div class="filter-options">
+                <select id="status-filter" class="filter-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="Planifié">Planifié</option>
+                    <option value="En cours">En cours</option>
+                    <option value="Terminé">Terminé</option>
+                    <option value="Annulé">Annulé</option>
+                </select>
+                <select id="type-filter" class="filter-select">
+                    <option value="">Tous les types</option>
+                    <option value="Régulier">Régulier</option>
+                    <option value="Spécial">Spécial</option>
+                </select>
+                <button id="resetFilters" class="btn btn-secondary">
+                    <i class="fas fa-undo"></i>
+                    <span>Réinitialiser</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Trips Table -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="trips-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <i class="fas fa-calendar"></i>
+                                Date & Heure
+                            </th>
+                            <th>
+                                <i class="fas fa-tag"></i>
+                                Type
+                            </th>
+                            <th>
+                                <i class="fas fa-map-marker-alt"></i>
+                                Itinéraire
+                            </th>
+                            <th>
+                                <i class="fas fa-car"></i>
+                                Véhicule
+                            </th>
+                            <th>
+                                <i class="fas fa-user"></i>
+                                Chauffeur
+                            </th>
+                            <th>
+                                <i class="fas fa-info-circle"></i>
+                                Statut
+                            </th>
+                            <th>
+                                <i class="fas fa-cogs"></i>
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trip in trips %}
+                        <tr class="trip-row">
+                            <td>
+                                <div class="date-time">
+                                    <span class="date">{{ trip.date_depart.strftime('%d/%m/%Y') }}</span>
+                                    <span class="time">{{ trip.heure_depart.strftime('%H:%M') }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="trip-type {{ trip.type|lower }}">{{ trip.type }}</span>
+                            </td>
+                            <td>
+                                <div class="route-info">
+                                    <div class="route-point">
+                                        <i class="fas fa-circle start"></i>
+                                        <span>{{ trip.point_depart }}</span>
+                                    </div>
+                                    <div class="route-point">
+                                        <i class="fas fa-circle end"></i>
+                                        <span>{{ trip.point_arrivee }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="vehicle-info">
+                                    <i class="fas fa-car"></i>
+                                    <span>{{ trip.vehicule.modele }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="driver-info">
+                                    {% if trip.chauffeur.photo_url %}
+                                    <img src="{{ trip.chauffeur.photo_url }}" alt="Photo chauffeur" class="driver-avatar">
+                                    {% else %}
+                                    <div class="driver-initials">
+                                        {{ trip.chauffeur.prenom[0] }}{{ trip.chauffeur.nom[0] }}
+                                    </div>
+                                    {% endif %}
+                                    <span>{{ trip.chauffeur.prenom }} {{ trip.chauffeur.nom }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge {{ trip.etat_trip|lower }}">
+                                    <i class="fas fa-circle"></i>
+                                    {{ trip.etat_trip }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('trips.details', trip_id=trip.id_trip) }}" 
+                                       class="action-btn view-btn" title="Voir les détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" 
+                                       class="action-btn edit-btn" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button onclick="confirmDelete({{ trip.id_trip }})" 
+                                            class="action-btn delete-btn" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <h3>
+            <i class="fas fa-exclamation-triangle"></i>
+            Confirmer la suppression
+        </h3>
+        <p>Êtes-vous sûr de vouloir supprimer ce voyage ?</p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+                Annuler
+            </button>
+            <button class="btn btn-danger" onclick="executeDelete()">
+                <i class="fas fa-trash"></i>
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+    --info-color: #3498db;
+    --background-light: #f5f6fa;
+    --text-dark: #2c3e50;
+    --text-light: #ffffff;
+    --border-color: #dfe6e9;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+/* Layout */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+    background: var(--background-light);
+}
+
+/* Sidebar */
+.sidebar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem 0;
+    color: var(--text-light);
+}
+
+.sidebar-header {
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+/* Content */
+.content {
+    padding: 2rem;
+}
+
+/* Filters Card */
+.filters-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-box {
+    flex: 1;
+    position: relative;
+}
+
+.search-box i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.filter-options {
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+/* Table Card */
+.table-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.trips-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.trips-table th {
+    background: var(--background-light);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+}
+
+.trips-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Trip Info Styles */
+.date-time {
+    display: flex;
+    flex-direction: column;
+}
+
+.date {
+    font-weight: 500;
+}
+
+.time {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.trip-type {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+}
+
+.trip-type.regulier {
+    background: var(--info-color);
+    color: white;
+}
+
+.trip-type.special {
+    background: var(--warning-color);
+    color: var(--text-dark);
+}
+
+.route-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.route-point {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.route-point i.start { color: var(--success-color); }
+.route-point i.end { color: var(--danger-color); }
+
+.vehicle-info,
+.driver-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.driver-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.driver-initials {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+}
+
+.status-badge i {
+    font-size: 0.6rem;
+}
+
+.status-badge.planifié {
+    background: var(--info-color);
+    color: white;
+}
+
+.status-badge.en-cours {
+    background: var(--warning-color);
+    color: var(--text-dark);
+}
+
+.status-badge.terminé {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.annulé {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.view-btn { background: var(--accent-color); }
+.edit-btn { background: var(--warning-color); }
+.delete-btn { background: var(--danger-color); }
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding: 1rem;
+    }
+    
+    .filters-card {
+        flex-direction: column;
+    }
+    
+    .filter-options {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .filter-select {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .trips-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('status-filter');
+    const typeFilter = document.getElementById('type-filter');
+    const resetButton = document.getElementById('resetFilters');
+    const rows = document.querySelectorAll('.trip-row');
+
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusTerm = statusFilter.value.toLowerCase();
+        const typeTerm = typeFilter.value.toLowerCase();
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const status = row.querySelector('.status-badge').textContent.toLowerCase();
+            const type = row.querySelector('.trip-type').textContent.toLowerCase();
+            
+            const matchesSearch = text.includes(searchTerm);
+            const matchesStatus = !statusTerm || status.includes(statusTerm);
+            const matchesType = !typeTerm || type.includes(typeTerm);
+            
+            row.style.display = matchesSearch && matchesStatus && matchesType ? '' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+    typeFilter.addEventListener('change', filterTable);
+    resetButton.addEventListener('click', () => {
+        searchInput.value = '';
+        statusFilter.value = '';
+        typeFilter.value = '';
+        filterTable();
+    });
+});
+
+let tripIdToDelete = null;
+
+function confirmDelete(tripId) {
+    tripIdToDelete = tripId;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function executeDelete() {
+    if (tripIdToDelete) {
+        window.location.href = `{{ url_for('trips.delete', trip_id=0) }}`.replace('0', tripIdToDelete);
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+</script>
 {% endblock %}

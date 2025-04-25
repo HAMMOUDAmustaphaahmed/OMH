@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-edit"></i>
+            <h3>Modifier Voyage</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('trips.index') }}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Liste des voyages</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('trips.details', trip_id=trip.id_trip) }}">
+                    <i class="fas fa-eye"></i>
+                    <span>Voir les détails</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Header -->
+        <div class="content-header">
+            <div class="header-title">
+                <h2>
+                    <i class="fas fa-edit"></i>
+                    Modifier le voyage
+                </h2>
+                <p>Modification des détails du voyage</p>
+            </div>
+            <div class="header-actions">
+                <span class="status-badge {{ trip.etat_trip|lower }}">
+                    <i class="fas fa-circle"></i>
+                    {{ trip.etat_trip }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Edit Form -->
+        <form method="POST" id="editForm" class="edit-form">
+            <!-- Trip Type Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-tag"></i>
+                    <h3>Type de voyage</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="type">Type de voyage</label>
+                        <select id="type" name="type" required>
+                            <option value="Transfert" {% if trip.type == 'Transfert' %}selected{% endif %}>Transfert</option>
+                            <option value="Excursion" {% if trip.type == 'Excursion' %}selected{% endif %}>Excursion</option>
+                            <option value="Location" {% if trip.type == 'Location' %}selected{% endif %}>Location</option>
+                            <option value="Événement" {% if trip.type == 'Événement' %}selected{% endif %}>Événement</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="etat_trip">État du voyage</label>
+                        <select id="etat_trip" name="etat_trip">
+                            <option value="Planifié" {% if trip.etat_trip == 'Planifié' %}selected{% endif %}>Planifié</option>
+                            <option value="En cours" {% if trip.etat_trip == 'En cours' %}selected{% endif %}>En cours</option>
+                            <option value="Terminé" {% if trip.etat_trip == 'Terminé' %}selected{% endif %}>Terminé</option>
+                            <option value="Annulé" {% if trip.etat_trip == 'Annulé' %}selected{% endif %}>Annulé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-clock"></i>
+                    <h3>Horaires</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="date_depart">Date de départ</label>
+                        <input type="date" id="date_depart" name="date_depart" 
+                               value="{{ trip.date_depart.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="heure_depart">Heure de départ</label>
+                        <input type="time" id="heure_depart" name="heure_depart" 
+                               value="{{ trip.heure_depart.strftime('%H:%M') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date_arrivee">Date d'arrivée (optionnel)</label>
+                        <input type="date" id="date_arrivee" name="date_arrivee" 
+                               value="{{ trip.date_arrivee.strftime('%Y-%m-%d') if trip.date_arrivee else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="heure_arrivee">Heure d'arrivée (optionnel)</label>
+                        <input type="time" id="heure_arrivee" name="heure_arrivee" 
+                               value="{{ trip.heure_arrivee.strftime('%H:%M') if trip.heure_arrivee else '' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Route Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3>Itinéraire</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="point_depart">Point de départ</label>
+                        <input type="text" id="point_depart" name="point_depart" 
+                               value="{{ trip.point_depart }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="point_arrivee">Point d'arrivée</label>
+                        <input type="text" id="point_arrivee" name="point_arrivee" 
+                               value="{{ trip.point_arrivee }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="distance">Distance (km, optionnel)</label>
+                        <input type="number" id="distance" name="distance" step="0.1" 
+                               value="{{ trip.distance }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignment Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-users"></i>
+                    <h3>Affectation</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_vehicule">Véhicule</label>
+                        <select id="id_vehicule" name="id_vehicule" required>
+                            {% for vehicule in vehicules %}
+                            <option value="{{ vehicule.id_vehicule }}" 
+                                    {% if vehicule.id_vehicule == trip.id_vehicule %}selected{% endif %}>
+                                {{ vehicule.marque }} {{ vehicule.modele }} - {{ vehicule.matricule }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_chauffeur">Chauffeur</label>
+                        <select id="id_chauffeur" name="id_chauffeur" required>
+                            {% for chauffeur in chauffeurs %}
+                            <option value="{{ chauffeur.id_chauffeur }}"
+                                    {% if chauffeur.id_chauffeur == trip.id_chauffeur %}selected{% endif %}>
+                                {{ chauffeur.prenom }} {{ chauffeur.nom }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-user"></i>
+                    <h3>Informations client</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="client_nom">Nom du client</label>
+                        <input type="text" id="client_nom" name="client_nom" 
+                               value="{{ trip.client_nom }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="client_telephone">Téléphone client</label>
+                        <input type="tel" id="client_telephone" name="client_telephone" 
+                               value="{{ trip.client_telephone }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="client_email">Email client</label>
+                        <input type="email" id="client_email" name="client_email" 
+                               value="{{ trip.client_email }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="nombre_passagers">Nombre de passagers</label>
+                        <input type="number" id="nombre_passagers" name="nombre_passagers" 
+                               value="{{ trip.nombre_passagers }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h3>Paiement</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="prix">Prix</label>
+                        <div class="price-input-wrapper">
+                            <input type="number" id="prix" name="prix" step="0.01" 
+                                   value="{{ trip.prix }}" required>
+                            <span class="currency">DH</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="etat_paiement">État du paiement</label>
+                        <select id="etat_paiement" name="etat_paiement">
+                            <option value="Non payé" {% if trip.etat_paiement == 'Non payé' %}selected{% endif %}>Non payé</option>
+                            <option value="Partiel" {% if trip.etat_paiement == 'Partiel' %}selected{% endif %}>Partiel</option>
+                            <option value="Payé" {% if trip.etat_paiement == 'Payé' %}selected{% endif %}>Payé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-comment"></i>
+                    <h3>Commentaires</h3>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <textarea id="commentaires" name="commentaires" rows="4" 
+                                  placeholder="Ajoutez des commentaires...">{{ trip.commentaires }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="history.back()">
+                    <i class="fas fa-times"></i>
+                    <span>Annuler</span>
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span>Enregistrer les modifications</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --success-color: #2ecc71;
+        --warning-color: #f1c40f;
+        --danger-color: #e74c3c;
+        --background-light: #f5f6fa;
+        --text-dark: #2c3e50;
+        --text-light: #ffffff;
+        --border-color: #dfe6e9;
+        --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+    
+    /* Layout */
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 100vh;
+        background: var(--background-light);
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        padding: 2rem 0;
+        color: var(--text-light);
+    }
+    
+    .sidebar-header {
+        padding: 0 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 2rem;
+        color: var(--text-light);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+    
+    .sidebar-menu a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+    }
+    
+    /* Content */
+    .content {
+        padding: 2rem;
+    }
+    
+    .content-header {
+        margin-bottom: 2rem;
+    }
+    
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+    }
+    
+    /* Form Sections */
+    .form-section {
+        padding: 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-header i {
+        color: var(--accent-color);
+    }
+    
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    /* Form Inputs */
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        outline: none;
+    }
+    
+    /* Price Input */
+    .price-input-wrapper {
+        position: relative;
+    }
+    
+    .price-input-wrapper input {
+        padding-right: 3rem;
+    }
+    
+    .currency {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+    }
+    
+    /* Form Actions */
+    .form-actions {
+        padding: 1.5rem 2rem;
+        background: var(--background-light);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .btn-primary {
+        background: var(--accent-color);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Animations */
+    .animated-form {
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .dashboard-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .sidebar {
+            display: none;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .content {
+            padding: 1rem;
+        }
+        
+        .form-section {
+            padding: 1rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    </style>
+    
+<style>
+/* Utilisez le même style que les autres pages, en ajoutant ces styles spécifiques */
+.price-input-wrapper {
+    position: relative;
+}
+
+.price-input-wrapper input {
+    padding-right: 3rem;
+}
+
+.currency {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+/* Ajoutez les styles de base si nécessaire */
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editForm');
+
+    // Set minimum date for departure
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date_depart').min = today;
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                isValid = false;
+                field.classList.add('invalid');
+                field.parentElement.querySelector('label').classList.add('invalid-label');
+            } else {
+                field.classList.remove('invalid');
+                field.parentElement.querySelector('label').classList.remove('invalid-label');
+            }
+        });
+
+        // Validate dates
+        const departDate = new Date(document.getElementById('date_depart').value);
+        const arriveeDate = document.getElementById('date_arrivee').value 
+            ? new Date(document.getElementById('date_arrivee').value) 
+            : null;
+
+        if (arriveeDate && arriveeDate < departDate) {
+            isValid = false;
+            alert('La date d\'arrivée ne peut pas être antérieure à la date de départ');
+            document.getElementById('date_arrivee').classList.add('invalid');
+        }
+
+        if (isValid) {
+            form.submit();
+        } else {
+            alert('Veuillez remplir tous les champs obligatoires correctement.');
+        }
+    });
+});
+</script>
+{% endblock %}

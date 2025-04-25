@@ -11,74 +11,65 @@ def index():
     trips = Trip.query.order_by(Trip.date_depart.desc()).all()
     return render_template('trips/manage.html', trips=trips)
 
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_required, current_user
+from models import Trip, Vehicule, Chauffeur, db
+from datetime import datetime
+
+trips_bp = Blueprint('trips', __name__, url_prefix='/trips')
+
+@trips_bp.route('/')
+@login_required
+def index():
+    trips = Trip.query.all()
+    return render_template('trips/manage.html', trips=trips)
+
 @trips_bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
     if request.method == 'POST':
-        # Récupérer les données du formulaire
-        new_trip = Trip(
-            type=request.form.get('type'),
-            id_vehicule=request.form.get('id_vehicule'),
-            id_chauffeur=request.form.get('id_chauffeur'),
-            point_depart=request.form.get('point_depart'),
-            point_arrivee=request.form.get('point_arrivee'),
-            prix=request.form.get('prix'),
-            heure_depart=datetime.strptime(request.form.get('heure_depart'), '%H:%M').time(),
-            date_depart=datetime.strptime(request.form.get('date_depart'), '%Y-%m-%d').date(),
-            client_nom=request.form.get('client_nom'),
-            client_telephone=request.form.get('client_telephone'),
-            client_email=request.form.get('client_email'),
-            nombre_passagers=request.form.get('nombre_passagers'),
-            commentaires=request.form.get('commentaires'),
-            created_by=current_user.id_user
-        )
-        
-        # Champs optionnels
-        if request.form.get('distance'):
-            new_trip.distance = request.form.get('distance')
-        
-        if request.form.get('heure_arrivee'):
-            new_trip.heure_arrivee = datetime.strptime(request.form.get('heure_arrivee'), '%H:%M').time()
-        
-        if request.form.get('date_arrivee'):
-            new_trip.date_arrivee = datetime.strptime(request.form.get('date_arrivee'), '%Y-%m-%d').date()
-        
-        if request.form.get('etat_paiement'):
-            new_trip.etat_paiement = request.form.get('etat_paiement')
-        
-        if request.form.get('etat_trip'):
-            new_trip.etat_trip = request.form.get('etat_trip')
-        
-        db.session.add(new_trip)
-        db.session.commit()
-        
-        # Créer un paiement initial si un acompte est spécifié
-        if request.form.get('acompte') and float(request.form.get('acompte')) > 0:
-            paiement = Paiement(
-                id_trip=new_trip.id_trip,
-                montant_total=new_trip.prix,
-                montant_paye=request.form.get('acompte'),
-                mode_paiement=request.form.get('mode_paiement') or 'Espèces',
-                reference_paiement=request.form.get('reference_paiement'),
-                recu_par=current_user.id_user,
-                notes="Acompte initial"
+        try:
+            new_trip = Trip(
+                type=request.form.get('type'),
+                id_vehicule=request.form.get('id_vehicule'),
+                id_chauffeur=request.form.get('id_chauffeur'),
+                point_depart=request.form.get('point_depart'),
+                point_arrivee=request.form.get('point_arrivee'),
+                prix=request.form.get('prix'),
+                heure_depart=datetime.strptime(request.form.get('heure_depart'), '%H:%M').time(),
+                date_depart=datetime.strptime(request.form.get('date_depart'), '%Y-%m-%d').date(),
+                client_nom=request.form.get('client_nom'),
+                client_telephone=request.form.get('client_telephone'),
+                client_email=request.form.get('client_email'),
+                nombre_passagers=request.form.get('nombre_passagers'),
+                commentaires=request.form.get('commentaires'),
+                created_by=current_user.id_user,
+                etat_trip=request.form.get('etat_trip', 'Planifié'),
+                etat_paiement=request.form.get('etat_paiement', 'Non payé')
             )
+
+            # Champs optionnels
+            if request.form.get('distance'):
+                new_trip.distance = float(request.form.get('distance'))
             
-            db.session.add(paiement)
+            if request.form.get('heure_arrivee'):
+                new_trip.heure_arrivee = datetime.strptime(request.form.get('heure_arrivee'), '%H:%M').time()
             
-            # Mise à jour de l'état de paiement du voyage
-            if float(request.form.get('acompte')) >= float(new_trip.prix):
-                new_trip.etat_paiement = 'Payé'
-            else:
-                new_trip.etat_paiement = 'Acompte'
-            
+            if request.form.get('date_arrivee'):
+                new_trip.date_arrivee = datetime.strptime(request.form.get('date_arrivee'), '%Y-%m-%d').date()
+
+            db.session.add(new_trip)
             db.session.commit()
-        
-        flash('Le voyage a été ajouté avec succès.', 'success')
-        return redirect(url_for('trips.index'))
-    
-    # Pour le formulaire GET, récupérer les véhicules et chauffeurs disponibles
-    vehicules = Vehicule.query.filter_by(etat='En marche').all()
+            
+            flash('Le voyage a été ajouté avec succès.', 'success')
+            return redirect(url_for('trips.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Une erreur est survenue : {str(e)}', 'danger')
+            return redirect(url_for('trips.add'))
+
+    vehicules = Vehicule.query.filter_by(etat='Disponible').all()
     chauffeurs = Chauffeur.query.filter_by(statut='Actif').all()
     
     return render_template('trips/add.html', vehicules=vehicules, chauffeurs=chauffeurs)
@@ -89,60 +80,70 @@ def edit(trip_id):
     trip = Trip.query.get_or_404(trip_id)
     
     if request.method == 'POST':
-        trip.type = request.form.get('type')
-        trip.id_vehicule = request.form.get('id_vehicule')
-        trip.id_chauffeur = request.form.get('id_chauffeur')
-        trip.point_depart = request.form.get('point_depart')
-        trip.point_arrivee = request.form.get('point_arrivee')
-        trip.prix = request.form.get('prix')
-        trip.heure_depart = datetime.strptime(request.form.get('heure_depart'), '%H:%M').time()
-        trip.date_depart = datetime.strptime(request.form.get('date_depart'), '%Y-%m-%d').date()
-        trip.client_nom = request.form.get('client_nom')
-        trip.client_telephone = request.form.get('client_telephone')
-        trip.client_email = request.form.get('client_email')
-        trip.nombre_passagers = request.form.get('nombre_passagers')
-        trip.commentaires = request.form.get('commentaires')
-        
-        # Champs optionnels
-        if request.form.get('distance'):
-            trip.distance = request.form.get('distance')
-        
-        if request.form.get('heure_arrivee'):
-            trip.heure_arrivee = datetime.strptime(request.form.get('heure_arrivee'), '%H:%M').time()
-        
-        if request.form.get('date_arrivee'):
-            trip.date_arrivee = datetime.strptime(request.form.get('date_arrivee'), '%Y-%m-%d').date()
-        
-        if request.form.get('etat_paiement'):
-            trip.etat_paiement = request.form.get('etat_paiement')
-        
-        if request.form.get('etat_trip'):
+        try:
+            trip.type = request.form.get('type')
+            trip.id_vehicule = request.form.get('id_vehicule')
+            trip.id_chauffeur = request.form.get('id_chauffeur')
+            trip.point_depart = request.form.get('point_depart')
+            trip.point_arrivee = request.form.get('point_arrivee')
+            trip.prix = request.form.get('prix')
+            trip.heure_depart = datetime.strptime(request.form.get('heure_depart'), '%H:%M').time()
+            trip.date_depart = datetime.strptime(request.form.get('date_depart'), '%Y-%m-%d').date()
+            trip.client_nom = request.form.get('client_nom')
+            trip.client_telephone = request.form.get('client_telephone')
+            trip.client_email = request.form.get('client_email')
+            trip.nombre_passagers = request.form.get('nombre_passagers')
+            trip.commentaires = request.form.get('commentaires')
             trip.etat_trip = request.form.get('etat_trip')
-        
-        db.session.commit()
-        flash('Le voyage a été mis à jour avec succès.', 'success')
-        return redirect(url_for('trips.index'))
-    
+            trip.etat_paiement = request.form.get('etat_paiement')
+
+            # Champs optionnels
+            if request.form.get('distance'):
+                trip.distance = float(request.form.get('distance'))
+            
+            if request.form.get('heure_arrivee'):
+                trip.heure_arrivee = datetime.strptime(request.form.get('heure_arrivee'), '%H:%M').time()
+            
+            if request.form.get('date_arrivee'):
+                trip.date_arrivee = datetime.strptime(request.form.get('date_arrivee'), '%Y-%m-%d').date()
+
+            db.session.commit()
+            flash('Le voyage a été mis à jour avec succès.', 'success')
+            return redirect(url_for('trips.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Une erreur est survenue : {str(e)}', 'danger')
+            return redirect(url_for('trips.edit', trip_id=trip_id))
+
     vehicules = Vehicule.query.all()
     chauffeurs = Chauffeur.query.all()
     
     return render_template('trips/edit.html', trip=trip, vehicules=vehicules, chauffeurs=chauffeurs)
+
+@trips_bp.route('/details/<int:trip_id>')
+@login_required
+def details(trip_id):
+    trip = Trip.query.get_or_404(trip_id)
+    return render_template('trips/details.html', trip=trip)
 
 @trips_bp.route('/delete/<int:trip_id>', methods=['POST'])
 @login_required
 def delete(trip_id):
     trip = Trip.query.get_or_404(trip_id)
     
-    # Vérifier si le voyage a des paiements
-    if trip.paiements:
-        flash('Ce voyage ne peut pas être supprimé car il a des paiements associés.', 'danger')
-        return redirect(url_for('trips.index'))
+    try:
+        db.session.delete(trip)
+        db.session.commit()
+        flash('Le voyage a été supprimé avec succès.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Une erreur est survenue : {str(e)}', 'danger')
     
-    db.session.delete(trip)
-    db.session.commit()
-    
-    flash('Le voyage a été supprimé avec succès.', 'success')
     return redirect(url_for('trips.index'))
+
+
+
 
 @trips_bp.route('/complete/<int:trip_id>', methods=['POST'])
 @login_required
@@ -173,11 +174,6 @@ def cancel(trip_id):
     flash('Le voyage a été annulé.', 'success')
     return redirect(url_for('trips.index'))
 
-@trips_bp.route('/details/<int:trip_id>')
-@login_required
-def details(trip_id):
-    trip = Trip.query.get_or_404(trip_id)
-    return render_template('trips/details.html', trip=trip)
 
 @trips_bp.route('/payment/<int:trip_id>', methods=['GET', 'POST'])
 @login_required

@@ -2,64 +2,529 @@
 
 {% block content %}
 <div class="dashboard-container">
+    <!-- Sidebar -->
     <div class="sidebar">
-        <h3>Gestion</h3>
-        <ul>
-            <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
-            <li><a href="{{ url_for('drivers.index') }}">Retour à la liste</a></li>
+        <div class="sidebar-header">
+            <i class="fas fa-user-tie"></i>
+            <h3>Détails Chauffeur</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('drivers.index') }}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Liste des chauffeurs</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('dashboard.index') }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+            </li>
         </ul>
     </div>
 
+    <!-- Main Content -->
     <div class="content">
-        <h2>Détails du chauffeur</h2>
-        <div class="card">
-            <div class="card-body">
-                <div class="driver-details-header">
-                    <h3>{{ driver.prenom }} {{ driver.nom }}</h3>
-                    <span class="status-tag {{ driver.statut|lower }}">{{ driver.statut }}</span>
+        <!-- Header -->
+        <div class="content-header">
+            <div class="header-title">
+                <h2>
+                    <i class="fas fa-id-card"></i>
+                    Fiche du chauffeur
+                </h2>
+                <p>Détails complets du profil</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('drivers.edit', driver_id=driver.id_chauffeur) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    <span>Modifier</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="profile-grid">
+            <!-- Main Info Card -->
+            <div class="profile-card main-info">
+                <div class="profile-header">
+                    <div class="profile-image">
+                        {% if driver.photo_url %}
+                            <img src="{{ driver.photo_url }}" alt="Photo de {{ driver.prenom }}">
+                        {% else %}
+                            <div class="profile-initials">
+                                {{ driver.prenom[0] }}{{ driver.nom[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="profile-title">
+                        <h3>{{ driver.prenom }} {{ driver.nom }}</h3>
+                        <span class="status-badge {{ driver.statut|lower }}">
+                            <i class="fas fa-circle"></i>
+                            {{ driver.statut }}
+                        </span>
+                    </div>
                 </div>
-                <div class="driver-info-row">
-                    <div class="driver-info">
-                        <h4>Informations personnelles</h4>
-                        <div class="info-group">
-                            <span class="info-label">Numéro CIN :</span>
+                <div class="quick-info">
+                    <div class="quick-info-item">
+                        <i class="fas fa-id-card"></i>
+                        <div class="info-content">
+                            <span class="info-label">CIN</span>
                             <span class="info-value">{{ driver.numero_cin }}</span>
                         </div>
-                        <div class="info-group">
-                            <span class="info-label">Date de naissance :</span>
-                            <span class="info-value">{{ driver.date_naissance|date('d/m/Y') }}</span>
+                    </div>
+                    <div class="quick-info-item">
+                        <i class="fas fa-phone"></i>
+                        <div class="info-content">
+                            <span class="info-label">Téléphone</span>
+                            <a href="tel:{{ driver.telephone }}" class="info-value">{{ driver.telephone }}</a>
                         </div>
-                        <div class="info-group">
-                            <span class="info-label">Téléphone :</span>
-                            <span class="info-value">{{ driver.telephone }}</span>
+                    </div>
+                    <div class="quick-info-item">
+                        <i class="fas fa-envelope"></i>
+                        <div class="info-content">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ driver.email or 'Non renseigné' }}</span>
                         </div>
-                        <div class="info-group">
-                            <span class="info-label">Adresse :</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Info Card -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <i class="fas fa-user"></i>
+                    <h4>Informations personnelles</h4>
+                </div>
+                <div class="card-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-birthday-cake"></i>
+                                Date de naissance
+                            </span>
+                            <span class="info-value">{{ driver.date_naissance.strftime('%d/%m/%Y') }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-phone-alt"></i>
+                                Téléphone urgence
+                            </span>
+                            <span class="info-value">{{ driver.telephone_urgence or 'Non renseigné' }}</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Adresse
+                            </span>
                             <span class="info-value">{{ driver.adresse }}</span>
                         </div>
                     </div>
-                    <div class="driver-info">
-                        <h4>Informations professionnelles</h4>
-                        <div class="info-group">
-                            <span class="info-label">Permis :</span>
+                </div>
+            </div>
+
+            <!-- Professional Info Card -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <i class="fas fa-briefcase"></i>
+                    <h4>Informations professionnelles</h4>
+                </div>
+                <div class="card-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-id-card-alt"></i>
+                                Numéro de permis
+                            </span>
                             <span class="info-value">{{ driver.permis }}</span>
                         </div>
-                        <div class="info-group">
-                            <span class="info-label">Date d'embauche :</span>
-                            <span class="info-value">{{ driver.date_embauche|date('d/m/Y') }}</span>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-calendar-check"></i>
+                                Date d'embauche
+                            </span>
+                            <span class="info-value">{{ driver.date_embauche.strftime('%d/%m/%Y') }}</span>
                         </div>
-                        <div class="info-group">
-                            <span class="info-label">Statut :</span>
-                            <span class="info-value">{{ driver.statut }}</span>
+                        <div class="info-item">
+                            <span class="info-label">
+                                <i class="fas fa-clock"></i>
+                                Date d'expiration permis
+                            </span>
+                            <span class="info-value">{{ driver.date_expiration_permis.strftime('%d/%m/%Y') }}</span>
                         </div>
                     </div>
                 </div>
-                <div class="driver-actions">
-                    <a href="{{ url_for('drivers.edit', driver_id=driver.id_chauffeur) }}" class="btn-secondary">Modifier</a>
-                    <a href="{{ url_for('drivers.delete', driver_id=driver.id_chauffeur) }}" class="btn-danger">Supprimer</a>
+            </div>
+
+            {% if driver.notes %}
+            <!-- Notes Card -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <i class="fas fa-sticky-note"></i>
+                    <h4>Notes</h4>
+                </div>
+                <div class="card-content">
+                    <p class="notes-content">{{ driver.notes }}</p>
                 </div>
             </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="profile-actions">
+            <button type="button" class="btn btn-danger" onclick="confirmDelete({{ driver.id_chauffeur }})">
+                <i class="fas fa-trash"></i>
+                <span>Supprimer le chauffeur</span>
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <h3>
+            <i class="fas fa-exclamation-triangle"></i>
+            Confirmer la suppression
+        </h3>
+        <p>Êtes-vous sûr de vouloir supprimer ce chauffeur ? Cette action est irréversible.</p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+                Annuler
+            </button>
+            <button class="btn btn-danger" onclick="executeDelete()">
+                <i class="fas fa-trash"></i>
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+    --background-light: #f5f6fa;
+    --text-dark: #2c3e50;
+    --text-light: #ffffff;
+    --border-color: #dfe6e9;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+/* Layout */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+    background: var(--background-light);
+}
+
+/* Sidebar */
+.sidebar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem 0;
+    color: var(--text-light);
+}
+
+.sidebar-header {
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+/* Content */
+.content {
+    padding: 2rem;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+/* Profile Grid */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Profile Cards */
+.profile-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.profile-card.main-info {
+    grid-column: 1 / -1;
+}
+
+.profile-header {
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-light);
+}
+
+.profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-color);
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+.profile-title h3 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+/* Quick Info */
+.quick-info {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    background: var(--background-light);
+}
+
+.quick-info-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quick-info-item i {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 10px;
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+/* Card Styles */
+.card-header {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-header i {
+    color: var(--accent-color);
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.status-badge i {
+    font-size: 0.6rem;
+}
+
+.status-badge.actif {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-badge.inactif {
+    background: var(--danger-color);
+    color: white;
+}
+
+.status-badge.en-conge {
+    background: var(--warning-color);
+    color: var(--text-dark);
+}
+
+/* Notes */
+.notes-content {
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .content {
+        padding: 1rem;
+    }
+    
+    .content-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .quick-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+let driverIdToDelete = null;
+
+function confirmDelete(driverId) {
+    driverIdToDelete = driverId;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function executeDelete() {
+    if (driverIdToDelete) {
+        window.location.href = `{{ url_for('drivers.delete', driver_id=0) }}`.replace('0', driverIdToDelete);
+    }
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+</script>
 {% endblock %}

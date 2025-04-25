@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from models import User, db
 from functools import wraps
+from datetime import datetime
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -26,29 +27,50 @@ def index():
 @admin_required
 def add():
     if request.method == 'POST':
-        nom = request.form.get('nom')
-        prenom = request.form.get('prenom')
-        role = request.form.get('role')
-        email = request.form.get('email')
-        telephone = request.form.get('telephone')
-        
-        # Vérification si le nom d'utilisateur existe déjà
-        username = f"{nom.lower()}.{prenom.lower()}"
-        if User.query.filter_by(username=username).first():
-            flash(f'L\'utilisateur avec le nom d\'utilisateur {username} existe déjà.', 'danger')
-            return redirect(url_for('users.add'))
-        
-        user = User.create_user(nom=nom, prenom=prenom, role=role)
-        user.email = email
-        user.telephone = telephone
-        
-        db.session.add(user)
-        db.session.commit()
-        
-        flash(f'L\'utilisateur {user.prenom} {user.nom} a été créé avec succès. Nom d\'utilisateur: {user.username}', 'success')
-        return redirect(url_for('users.index'))
-    
+        try:
+            # Récupérer les données du formulaire
+            nom = request.form.get('nom')
+            prenom = request.form.get('prenom')
+            username = request.form.get('username')
+            email = request.form.get('email')
+            telephone = request.form.get('telephone')
+            password = request.form.get('password')
+            role = request.form.get('role')
+            actif = 'is_active' in request.form
+            
+            # Validation des rôles
+            if role not in ['admin', 'manager', 'staff']:
+                raise ValueError("Rôle invalide")
+
+            # Validation des champs requis
+            if not all([nom, prenom, username, password, role]):
+                flash('Tous les champs obligatoires doivent être remplis.', 'danger')
+                return redirect(url_for('users.add'))
+            
+            # Créer le nouvel utilisateur
+            user = User(
+                nom=nom,
+                prenom=prenom,
+                username=username,
+                email=email,
+                telephone=telephone,
+                role=role,
+                actif=actif
+            )
+            user.set_password(password)
+            
+            db.session.add(user)
+            db.session.commit()
+            
+            flash('Utilisateur créé avec succès.', 'success')
+            return redirect(url_for('users.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erreur lors de la création : {str(e)}', 'danger')
+            
     return render_template('users/add.html')
+
 
 @users_bp.route('/edit/<int:user_id>', methods=['GET', 'POST'])
 @login_required
