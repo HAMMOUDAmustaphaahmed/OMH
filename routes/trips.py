@@ -69,7 +69,11 @@ def add():
             flash(f'Une erreur est survenue : {str(e)}', 'danger')
             return redirect(url_for('trips.add'))
 
+<<<<<<< HEAD
     vehicules = Vehicule.query.filter_by(etat='En marche').all()
+=======
+    vehicules = Vehicule.query.filter_by(etat='Disponible').all()
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
     chauffeurs = Chauffeur.query.filter_by(statut='Actif').all()
     
     return render_template('trips/add.html', vehicules=vehicules, chauffeurs=chauffeurs)

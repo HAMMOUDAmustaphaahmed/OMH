@@ -185,6 +185,7 @@ class EntretienVehicule(db.Model):
     prix_entretien = db.Column(db.Numeric(10, 2), nullable=False)
     date_entretien = db.Column(db.Date, nullable=False)
     kilometrage = db.Column(db.Float, nullable=False)
+<<<<<<< HEAD
     kilometrage_suivant = db.Column(db.Float, nullable=False)  # Nouveau champ
     description = db.Column(db.Text)
     prestataire = db.Column(db.String(100))
@@ -206,6 +207,15 @@ class Notification(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     read = db.Column(db.Boolean, default=False)
 
+=======
+    description = db.Column(db.Text)
+    prestataire = db.Column(db.String(100))
+    facture_reference = db.Column(db.String(100))
+    date_prochaine_maintenance = db.Column(db.Date)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'))
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 class Depense(db.Model):
     __tablename__ = 'depenses'
     

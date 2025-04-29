@@ -18,6 +18,7 @@
         </div>
         <nav>
             <ul>
+<<<<<<< HEAD
                 <li class="notifications-dropdown">
                     <a href="#" id="notificationsLink">
                         <i class="fas fa-bell"></i>
@@ -36,11 +37,15 @@
 
 
                 <li><a href="{{ url_for('dashboard.index') }}">Tableau de bord</a></li>
+=======
+                <li><a href="{{ url_for('auth.profile') }}">Tableau de bord</a></li>
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
                
                 <li><a href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
             </ul>
         </nav>
     </header>
+<<<<<<< HEAD
     <style>
         .notifications-dropdown {
             position: relative;
@@ -149,6 +154,8 @@
             updateNotifications();
         });
         </script>
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 
     <main>
         {% block content %}{% endblock %}

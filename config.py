@@ -3,7 +3,11 @@ from datetime import timedelta
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'une_cle_secrete_tres_difficile_a_deviner_12345'
+<<<<<<< HEAD
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:@localhost/omh_travel_db'
+=======
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://avnadmin:AVNS_C96xtkYSwqY0qMlZ2aS@mysql-2ef51fa8-hammouda-9afc.h.aivencloud.com:19726/omh_travel_db'
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     REMEMBER_COOKIE_DURATION = timedelta(days=30)
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')

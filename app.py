@@ -32,12 +32,18 @@ def create_app(config_class=Config):
     from routes.drivers import drivers_bp
     from routes.trips import trips_bp
     from routes.finances import finances_bp
+<<<<<<< HEAD
     from dashboard import dashboard_bp
     from routes.events import events_bp
     from routes.entretiens_vehicules import entretiens
     from routes.calendrier import calendrier_bp
 
     app.register_blueprint(calendrier_bp, url_prefix='/calendrier')
+=======
+    from routes.dashboard import dashboard_bp
+    from routes.events import events_bp
+    
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(vehicles_bp)
@@ -47,8 +53,11 @@ def create_app(config_class=Config):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(events_bp)
     
+<<<<<<< HEAD
     app.register_blueprint(entretiens, url_prefix='/entretiens')
     
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
     # Création des dossiers nécessaires
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -75,4 +84,8 @@ def create_app(config_class=Config):
 
 if __name__ == '__main__':
     app = create_app()
+<<<<<<< HEAD
     app.run('0.0.0.0',port=5000,debug=True)
+=======
+    app.run(debug=True)
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4

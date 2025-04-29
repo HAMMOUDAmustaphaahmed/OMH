@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
+<<<<<<< HEAD
 -- Généré le : mar. 29 avr. 2025 à 07:21
+=======
+-- Généré le : mer. 23 avr. 2025 à 18:17
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.0.30
 
@@ -46,6 +50,7 @@ CREATE TABLE `chauffeurs` (
   `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
 --
 -- Déchargement des données de la table `chauffeurs`
 --
@@ -53,6 +58,8 @@ CREATE TABLE `chauffeurs` (
 INSERT INTO `chauffeurs` (`id_chauffeur`, `nom`, `prenom`, `numero_cin`, `date_naissance`, `sexe`, `telephone`, `telephone_urgence`, `adresse`, `email`, `permis`, `date_expiration_permis`, `date_embauche`, `photo_url`, `statut`, `notes`) VALUES
 (1, 'fleni', 'foulan', '12345678', '1990-01-01', 'M', '12345678', '12345678', 'cdscsdcsdc', 'driver1@gmail.com', '12345678', '1990-01-01', '1990-01-01', NULL, 'Actif', 'sfdvsv');
 
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- --------------------------------------------------------
 
 --
@@ -98,17 +105,24 @@ CREATE TABLE `entretiens_vehicules` (
   `prix_entretien` decimal(10,2) NOT NULL,
   `date_entretien` date NOT NULL,
   `kilometrage` float NOT NULL,
+<<<<<<< HEAD
   `kilometrage_suivant` float DEFAULT NULL,
   `description` text DEFAULT NULL,
   `prestataire` varchar(100) DEFAULT NULL,
   `facture_reference` varchar(100) DEFAULT NULL,
   `facture_url` varchar(255) DEFAULT NULL,
   `pieces` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`pieces`)),
+=======
+  `description` text DEFAULT NULL,
+  `prestataire` varchar(100) DEFAULT NULL,
+  `facture_reference` varchar(100) DEFAULT NULL,
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
   `date_prochaine_maintenance` date DEFAULT NULL,
   `created_by` int(11) DEFAULT NULL,
   `date_creation` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
 --
 -- Déchargement des données de la table `entretiens_vehicules`
 --
@@ -116,6 +130,8 @@ CREATE TABLE `entretiens_vehicules` (
 INSERT INTO `entretiens_vehicules` (`id_entretien`, `id_vehicule`, `type_entretien`, `prix_entretien`, `date_entretien`, `kilometrage`, `kilometrage_suivant`, `description`, `prestataire`, `facture_reference`, `facture_url`, `pieces`, `date_prochaine_maintenance`, `created_by`, `date_creation`) VALUES
 (1, 1, 'Vidange', 48498.00, '1990-01-01', 156555, 110500, 'sdcsdcsdc', 'sdcsd', '4897489', NULL, '[\"sdcsdc\", \"sdcsdcsdcsdc\"]', NULL, 1, '2025-04-28 20:50:30');
 
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- --------------------------------------------------------
 
 --
@@ -140,6 +156,7 @@ CREATE TABLE `evenements` (
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Structure de la table `notifications`
 --
 
@@ -166,6 +183,8 @@ INSERT INTO `notifications` (`id`, `id_vehicule`, `id_entretien`, `message`, `se
 -- --------------------------------------------------------
 
 --
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- Structure de la table `paiements`
 --
 
@@ -212,6 +231,7 @@ CREATE TABLE `trips` (
   `created_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+<<<<<<< HEAD
 --
 -- Déchargement des données de la table `trips`
 --
@@ -219,6 +239,8 @@ CREATE TABLE `trips` (
 INSERT INTO `trips` (`id_trip`, `type`, `id_vehicule`, `id_chauffeur`, `point_depart`, `point_arrivee`, `prix`, `distance`, `heure_depart`, `heure_arrivee`, `date_depart`, `date_arrivee`, `etat_paiement`, `etat_trip`, `client_nom`, `client_telephone`, `client_email`, `nombre_passagers`, `commentaires`, `date_creation`, `created_by`) VALUES
 (1, 'Transfert', 1, 1, 'Sousse', 'Monastir', 50.00, 15, '20:00:00', '21:00:00', '2025-04-28', '2025-04-28', 'Payé', 'Planifié', 'X', '12345678', 'client@gmail.com', 4, 'sdsdscre', '2025-04-28 10:30:17', 1);
 
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- --------------------------------------------------------
 
 --
@@ -244,7 +266,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id_user`, `nom`, `prenom`, `username`, `password`, `email`, `telephone`, `role`, `date_creation`, `derniere_connexion`, `actif`) VALUES
+<<<<<<< HEAD
 (1, 'Admin', 'Admin', 'admin.admin', 'pbkdf2:sha256:260000$4Jek92C0RqfSmAGu$0c1335488b7f7d1f1bbce006be5fd6071e418d06056376ad83b8747e13d08193', 'admin@gmail.com', '12345678', 'admin', '2025-04-23 09:33:02', '2025-04-28 17:03:52', 1);
+=======
+(1, 'Admin', 'Admin', 'admin.admin', 'admin.admin', 'admin@gmail.com', '12345678', 'admin', '2025-04-23 09:33:02', '2025-04-23 10:18:40', 1);
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 
 -- --------------------------------------------------------
 
@@ -277,8 +303,12 @@ CREATE TABLE `vehicules` (
 --
 
 INSERT INTO `vehicules` (`id_vehicule`, `matricule`, `usine`, `modele`, `nombre_place`, `carburant`, `kilometrage_vehicule`, `couleur`, `puissance`, `prix_achat`, `etat`, `annee_fabrication`, `date_acquisition`, `assurance_expiration`, `inspection_expiration`, `image_url`, `notes`) VALUES
+<<<<<<< HEAD
 (1, '211TN1010', 'Peugeot', '205', 5, 'Essence', 110152, 'rouge', 5, NULL, 'En marche', NULL, '1990-01-01', '1990-01-01', '1990-01-01', NULL, 'None'),
 (2, '122TN4456', 'Toyota', 'Corolla', 5, 'Diesel', 123456, NULL, NULL, NULL, 'En marche', NULL, NULL, NULL, NULL, NULL, NULL);
+=======
+(1, '211TN1010', 'Peugeot', '205', 5, 'Essence', 110152, NULL, NULL, NULL, 'En marche', NULL, NULL, NULL, NULL, NULL, NULL);
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 
 --
 -- Index pour les tables déchargées
@@ -324,6 +354,7 @@ ALTER TABLE `evenements`
   ADD KEY `created_by` (`created_by`);
 
 --
+<<<<<<< HEAD
 -- Index pour la table `notifications`
 --
 ALTER TABLE `notifications`
@@ -332,6 +363,8 @@ ALTER TABLE `notifications`
   ADD KEY `id_entretien` (`id_entretien`);
 
 --
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- Index pour la table `paiements`
 --
 ALTER TABLE `paiements`
@@ -370,7 +403,11 @@ ALTER TABLE `vehicules`
 -- AUTO_INCREMENT pour la table `chauffeurs`
 --
 ALTER TABLE `chauffeurs`
+<<<<<<< HEAD
   MODIFY `id_chauffeur` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+=======
+  MODIFY `id_chauffeur` int(11) NOT NULL AUTO_INCREMENT;
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 
 --
 -- AUTO_INCREMENT pour la table `depenses`
@@ -388,7 +425,11 @@ ALTER TABLE `details_evenements`
 -- AUTO_INCREMENT pour la table `entretiens_vehicules`
 --
 ALTER TABLE `entretiens_vehicules`
+<<<<<<< HEAD
   MODIFY `id_entretien` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+=======
+  MODIFY `id_entretien` int(11) NOT NULL AUTO_INCREMENT;
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 
 --
 -- AUTO_INCREMENT pour la table `evenements`
@@ -397,12 +438,15 @@ ALTER TABLE `evenements`
   MODIFY `id_evenement` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT pour la table `notifications`
 --
 ALTER TABLE `notifications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- AUTO_INCREMENT pour la table `paiements`
 --
 ALTER TABLE `paiements`
@@ -412,7 +456,11 @@ ALTER TABLE `paiements`
 -- AUTO_INCREMENT pour la table `trips`
 --
 ALTER TABLE `trips`
+<<<<<<< HEAD
   MODIFY `id_trip` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+=======
+  MODIFY `id_trip` int(11) NOT NULL AUTO_INCREMENT;
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 
 --
 -- AUTO_INCREMENT pour la table `users`
@@ -424,7 +472,11 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `vehicules`
 --
 ALTER TABLE `vehicules`
+<<<<<<< HEAD
   MODIFY `id_vehicule` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+=======
+  MODIFY `id_vehicule` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 
 --
 -- Contraintes pour les tables déchargées
@@ -459,6 +511,7 @@ ALTER TABLE `evenements`
   ADD CONSTRAINT `evenements_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id_user`);
 
 --
+<<<<<<< HEAD
 -- Contraintes pour la table `notifications`
 --
 ALTER TABLE `notifications`
@@ -466,6 +519,8 @@ ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`id_entretien`) REFERENCES `entretiens_vehicules` (`id_entretien`);
 
 --
+=======
+>>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
 -- Contraintes pour la table `paiements`
 --
 ALTER TABLE `paiements`
