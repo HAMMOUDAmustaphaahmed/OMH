@@ -129,7 +129,7 @@ class Trip(db.Model):
     __tablename__ = 'trips'
     
     id_trip = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    type = db.Column(db.Enum('Transfert', 'Transfert Société', 'Excursion', 'Événement', 'Mise à Disposition'), nullable=False)
+    type = db.Column(db.Enum('Transfert', 'Transfert Société', 'Excursion', 'Événement', 'Mise à Disposition','Divers'), nullable=False)
     nom = db.Column(db.String(255))
     
     is_recurring = db.Column(db.Boolean, default=False)
