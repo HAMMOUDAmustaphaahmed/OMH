@@ -1,562 +1,591 @@
-{% extends "base.html" %}
+<!-- trips/details.html -->
+{% extends 'base.html' %}
 
-{% block content %}
-<div class="dashboard-container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-route"></i>
-            <h3>Détails Voyage</h3>
-        </div>
-        <ul class="sidebar-menu">
-            <li>
-                <a href="{{ url_for('trips.index') }}">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Liste des voyages</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ url_for('dashboard.index') }}">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Tableau de bord</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Main Content -->
-    <div class="content">
-        <!-- Header -->
-        <div class="content-header">
-            <div class="header-title">
-                <h2>
-                    <i class="fas fa-info-circle"></i>
-                    Détails du voyage
-                </h2>
-                <p>Informations complètes sur le voyage</p>
-            </div>
-            <div class="header-actions">
-                <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" class="btn btn-primary">
-                    <i class="fas fa-edit"></i>
-                    <span>Modifier</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Trip Details Grid -->
-        <div class="details-grid">
-            <!-- Main Info Card -->
-            <div class="details-card main-info">
-                <div class="card-header">
-                    <div class="trip-type">
-                        <i class="fas fa-tag"></i>
-                        <h3>{{ trip.type }}</h3>
-                    </div>
-                    <span class="status-badge {{ trip.etat_trip|lower }}">
-                        <i class="fas fa-circle"></i>
-                        {{ trip.etat_trip }}
-                    </span>
-                </div>
-                <div class="card-content">
-                    <div class="route-info">
-                        <div class="route-point">
-                            <i class="fas fa-map-marker-alt start"></i>
-                            <div class="point-details">
-                                <span class="point-label">Départ</span>
-                                <span class="point-value">{{ trip.point_depart }}</span>
-                            </div>
-                        </div>
-                        <div class="route-separator">
-                            <i class="fas fa-arrow-down"></i>
-                        </div>
-                        <div class="route-point">
-                            <i class="fas fa-flag-checkered end"></i>
-                            <div class="point-details">
-                                <span class="point-label">Arrivée</span>
-                                <span class="point-value">{{ trip.point_arrivee }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Schedule Card -->
-            <div class="details-card">
-                <div class="card-header">
-                    <i class="fas fa-clock"></i>
-                    <h4>Horaire</h4>
-                </div>
-                <div class="card-content">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">
-                                <i class="fas fa-calendar"></i>
-                                Date de départ
-                            </span>
-                            <span class="info-value">{{ trip.date_depart.strftime('%d/%m/%Y') }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">
-                                <i class="fas fa-clock"></i>
-                                Heure de départ
-                            </span>
-                            <span class="info-value">{{ trip.heure_depart.strftime('%H:%M') }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Vehicle Card -->
-            <div class="details-card">
-                <div class="card-header">
-                    <i class="fas fa-car"></i>
-                    <h4>Véhicule</h4>
-                </div>
-                <div class="card-content">
-                    <div class="vehicle-info">
-                        {% if trip.vehicule.image_url %}
-                            <img src="{{ trip.vehicule.image_url }}" alt="Véhicule" class="vehicle-image">
-                        {% else %}
-                            <div class="vehicle-placeholder">
-                                <i class="fas fa-car"></i>
-                            </div>
-                        {% endif %}
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Modèle</span>
-                                <span class="info-value">{{ trip.vehicule.modele }}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Matricule</span>
-                                <span class="info-value">{{ trip.vehicule.matricule }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Driver Card -->
-            <div class="details-card">
-                <div class="card-header">
-                    <i class="fas fa-user"></i>
-                    <h4>Chauffeur</h4>
-                </div>
-                <div class="card-content">
-                    <div class="driver-info">
-                        {% if trip.chauffeur.photo_url %}
-                            <img src="{{ trip.chauffeur.photo_url }}" alt="Photo chauffeur" class="driver-avatar">
-                        {% else %}
-                            <div class="driver-initials">
-                                {{ trip.chauffeur.prenom[0] }}{{ trip.chauffeur.nom[0] }}
-                            </div>
-                        {% endif %}
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="info-label">Nom complet</span>
-                                <span class="info-value">{{ trip.chauffeur.prenom }} {{ trip.chauffeur.nom }}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label">Téléphone</span>
-                                <a href="tel:{{ trip.chauffeur.telephone }}" class="info-value phone-link">
-                                    <i class="fas fa-phone"></i>
-                                    {{ trip.chauffeur.telephone }}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="details-actions">
-            <button class="btn btn-secondary" onclick="history.back()">
-                <i class="fas fa-arrow-left"></i>
-                <span>Retour</span>
-            </button>
-            <button class="btn btn-danger" onclick="confirmDelete({{ trip.id_trip }})">
-                <i class="fas fa-trash"></i>
-                <span>Supprimer</span>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal" id="deleteModal">
-    <div class="modal-content">
-        <h3>
-            <i class="fas fa-exclamation-triangle"></i>
-            Confirmer la suppression
-        </h3>
-        <p>Êtes-vous sûr de vouloir supprimer ce voyage ?</p>
-        <div class="modal-actions">
-            <button class="btn btn-secondary" onclick="closeModal()">
-                <i class="fas fa-times"></i>
-                Annuler
-            </button>
-            <button class="btn btn-danger" onclick="executeDelete()">
-                <i class="fas fa-trash"></i>
-                Supprimer
-            </button>
-        </div>
-    </div>
-</div>
-
+{% block styles %}
 <style>
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #34495e;
-    --accent-color: #3498db;
-    --success-color: #2ecc71;
-    --warning-color: #f1c40f;
-    --danger-color: #e74c3c;
-    --background-light: #f5f6fa;
-    --text-dark: #2c3e50;
-    --text-light: #ffffff;
-    --border-color: #dfe6e9;
-    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-    --transition: all 0.3s ease;
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --primary-gradient: linear-gradient(135deg, #3498db, #2ecc71);
+    --secondary-gradient: linear-gradient(135deg, #34495e, #2c3e50);
+    --accent-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
 }
 
-/* Layout */
-.dashboard-container {
-    display: grid;
-    grid-template-columns: 280px 1fr;
+.trip-details-container {
     min-height: 100vh;
-    background: var(--background-light);
-}
-
-/* Sidebar */
-.sidebar {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    padding: 2rem 0;
-    color: var(--text-light);
-}
-
-.sidebar-header {
-    padding: 0 2rem;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.sidebar-menu a {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 2rem;
-    color: var(--text-light);
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.sidebar-menu a:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
-}
-
-/* Content */
-.content {
     padding: 2rem;
+    position: relative;
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(52, 152, 219, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 50%, rgba(46, 204, 113, 0.05) 0%, transparent 25%),
+        radial-gradient(circle at 50% 80%, rgba(231, 76, 60, 0.05) 0%, transparent 30%);
 }
 
-.content-header {
+/* En-tête avec effet glassmorphism */
+.trip-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--glass-shadow);
+}
+
+.trip-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
-/* Details Grid */
+.trip-title h1 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.trip-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-weight: 500;
+    color: white;
+}
+
+.trip-status.planifie { background: var(--primary-gradient); }
+.trip-status.en-cours { background: var(--secondary-gradient); }
+.trip-status.termine { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+.trip-status.annule { background: var(--accent-gradient); }
+
+/* Grille des informations */
 .details-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 2rem;
-    margin-bottom: 2rem;
+    margin-top: 2rem;
 }
 
-.details-card {
-    background: white;
+.detail-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
     border-radius: 15px;
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-}
-
-.details-card.main-info {
-    grid-column: 1 / -1;
-}
-
-/* Card Styles */
-.card-header {
     padding: 1.5rem;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--glass-border);
 }
 
-.card-content {
-    padding: 1.5rem;
+.card-header i {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 10px;
+    font-size: 1.2rem;
 }
 
-/* Route Info */
+.card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--primary);
+}
+
+/* Contenu des cartes */
 .route-info {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .route-point {
     display: flex;
     align-items: center;
     gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
 }
 
 .route-point i {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 1.2rem;
-}
-
-.route-point i.start {
-    background: var(--success-color);
-    color: white;
-}
-
-.route-point i.end {
-    background: var(--danger-color);
-    color: white;
-}
-
-.route-separator {
-    padding-left: 20px;
-    color: var(--accent-color);
-}
-
-/* Status Badge */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-}
-
-.status-badge i {
-    font-size: 0.6rem;
-}
-
-.status-badge.planifié {
-    background: var(--accent-color);
-    color: white;
-}
-
-.status-badge.en-cours {
-    background: var(--warning-color);
-    color: var(--text-dark);
-}
-
-.status-badge.terminé {
-    background: var(--success-color);
-    color: white;
-}
-
-.status-badge.annulé {
-    background: var(--danger-color);
-    color: white;
-}
-
-/* Info Grid */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.info-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.info-value {
-    font-size: 1.1rem;
-    color: var(--text-dark);
-}
-
-/* Vehicle and Driver Info */
-.vehicle-info,
-.driver-info {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.vehicle-image,
-.driver-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    object-fit: cover;
-}
-
-.driver-avatar {
-    border-radius: 50%;
-}
-
-.vehicle-placeholder,
-.driver-initials {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--accent-color);
-    color: white;
     font-size: 1.5rem;
 }
 
-.vehicle-placeholder {
+.route-point.depart i { color: #2ecc71; }
+.route-point.arrivee i { color: #e74c3c; }
+
+.time-info {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Affectations */
+.affectation-item {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.vehicle-info,
+.driver-info {
+    flex: 1;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-weight: 500;
+    color: var(--primary);
+}
+
+/* Passagers */
+.passengers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.passenger-type {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
 }
 
-.driver-initials {
-    border-radius: 50%;
+.passenger-count {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0.5rem 0;
 }
 
-/* Phone Link */
-.phone-link {
-    color: var(--accent-color);
-    text-decoration: none;
-    display: inline-flex;
+/* Informations financières */
+.financial-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.amount-card {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.amount-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.amount-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.margin {
+    grid-column: 1 / -1;
+    background: var(--primary-gradient);
+    color: white;
+}
+
+/* Dépenses */
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.expense-table th,
+.expense-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.expense-table th {
+    font-weight: 500;
+    color: #666;
+}
+
+/* Paiements */
+.payment-history {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.payment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+}
+
+.payment-details {
+    display: flex;
+    gap: 2rem;
+}
+
+.payment-method {
+    display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-/* Modal */
-.modal {
-    display: none;
+/* Actions flottantes */
+.floating-actions {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 500px;
-}
-
-.modal-actions {
+    bottom: 2rem;
+    right: 2rem;
     display: flex;
-    justify-content: flex-end;
     gap: 1rem;
-    margin-top: 2rem;
+    z-index: 1000;
 }
 
-/* Buttons */
-.btn {
-    display: inline-flex;
+.action-btn {
+    display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    border-radius: 30px;
+    color: white;
+    font-weight: 500;
     cursor: pointer;
-    transition: var(--transition);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
 }
 
-.btn-primary {
-    background: var(--accent-color);
-    color: white;
-}
-
-.btn-secondary {
-    background: #95a5a6;
-    color: white;
-}
-
-.btn-danger {
-    background: var(--danger-color);
-    color: white;
-}
-
-.btn:hover {
+.action-btn:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+.btn-edit { background: var(--primary-gradient); }
+.btn-delete { background: var(--accent-gradient); }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
-    .dashboard-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .sidebar {
-        display: none;
-    }
-}
-
 @media (max-width: 768px) {
-    .content {
+    .trip-details-container {
         padding: 1rem;
     }
-    
-    .content-header {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
+
     .details-grid {
         grid-template-columns: 1fr;
     }
-    
-    .vehicle-info,
-    .driver-info {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .info-grid {
+
+    .passengers-grid {
         grid-template-columns: 1fr;
     }
-    
-    .modal-actions {
+
+    .financial-info {
+        grid-template-columns: 1fr;
+    }
+
+    .floating-actions {
+        bottom: 1rem;
+        right: 1rem;
         flex-direction: column;
     }
-    
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
 }
-</style>
 
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.detail-card {
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+}
+
+.detail-card:nth-child(1) { animation-delay: 0.1s; }
+.detail-card:nth-child(2) { animation-delay: 0.2s; }
+.detail-card:nth-child(3) { animation-delay: 0.3s; }
+.detail-card:nth-child(4) { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="trip-details-container">
+    <!-- En-tête du voyage -->
+    <div class="trip-header">
+        <div class="trip-title">
+            <h1>
+                <i class="fas fa-{{ trip.type|lower }}"></i>
+                {{ trip.nom or trip.type }}
+            </h1>
+            <div class="trip-status {{ trip.etat_trip|lower }}">
+                <i class="fas fa-{% if trip.etat_trip == 'Planifié' %}clock
+                           {% elif trip.etat_trip == 'En cours' %}play-circle
+                           {% elif trip.etat_trip == 'Terminé' %}check-circle
+                           {% else %}times-circle{% endif %}"></i>
+                {{ trip.etat_trip }}
+            </div>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="quick-info-grid">
+            <div class="quick-info-item">
+                <i class="fas fa-calendar"></i>
+                <div class="info-content">
+                    <span class="info-label">Date de départ</span>
+                    <span class="info-value">{{ trip.date_depart|format_date }}</span>
+                </div>
+            </div>
+
+            <div class="quick-info-item">
+                <i class="fas fa-clock"></i>
+                <div class="info-content">
+                    <span class="info-label">Heure de départ</span>
+                    <span class="info-value">{{ trip.heure_depart|format_time }}</span>
+                </div>
+            </div>
+
+            <div class="quick-info-item">
+                <i class="fas fa-users"></i>
+                <div class="info-content">
+                    <span class="info-label">Total passagers</span>
+                    <span class="info-value">{{ trip.nombre_adultes + trip.nombre_enfants + trip.nombre_bebes }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille des détails -->
+    <div class="details-grid">
+        <!-- Itinéraire -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-route"></i>
+                <h2>Itinéraire</h2>
+            </div>
+            <div class="route-info">
+                <div class="route-point depart">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="point-details">
+                        <div class="point-name">{{ trip.point_depart }}</div>
+                        <div class="time-info">
+                            {{ trip.date_depart|format_date }} à {{ trip.heure_depart|format_time }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="route-separator">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+
+                <div class="route-point arrivee">
+                    <i class="fas fa-flag-checkered"></i>
+                    <div class="point-details">
+                        <div class="point-name">{{ trip.point_arrivee }}</div>
+                        {% if trip.date_arrivee %}
+                        <div class="time-info">
+                            {{ trip.date_arrivee|format_date }} à {{ trip.heure_arrivee|format_time }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Affectations -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-users"></i>
+                <h2>Affectations</h2>
+            </div>
+            {% for affectation in affectations %}
+            <div class="affectation-item">
+                <div class="vehicle-info">
+                    <div class="info-label">Véhicule</div>
+                    <div class="info-value">{{ affectation.Vehicule.modele }}</div>
+                    <div class="info-detail">{{ affectation.Vehicule.matricule }}</div>
+                </div>
+                <div class="driver-info">
+                    <div class="info-label">Chauffeur</div>
+                    <div class="info-value">{{ affectation.Chauffeur.prenom }} {{ affectation.Chauffeur.nom }}</div>
+                    <div class="info-detail">{{ affectation.Chauffeur.telephone }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Passagers -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-user-friends"></i>
+                <h2>Passagers</h2>
+            </div>
+            <div class="passengers-grid">
+                <div class="passenger-type">
+                    <i class="fas fa-user"></i>
+                    <div class="passenger-count">{{ trip.nombre_adultes }}</div>
+                    <div class="passenger-label">Adultes</div>
+                </div>
+                <div class="passenger-type">
+                    <i class="fas fa-child"></i>
+                    <div class="passenger-count">{{ trip.nombre_enfants }}</div>
+                    <div class="passenger-label">Enfants</div>
+                </div>
+                <div class="passenger-type">
+                    <i class="fas fa-baby"></i>
+                    <div class="passenger-count">{{ trip.nombre_bebes }}</div>
+                    <div class="passenger-label">Bébés</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations financières -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-money-bill-wave"></i>
+                <h2>Finances</h2>
+            </div>
+            <div class="financial-info">
+                {% if trip.is_commission %}
+                <div class="amount-card">
+                    <div class="amount-label">Commission</div>
+                    <div class="amount-value">{{ trip.commission }}%</div>
+                </div>
+                {% else %}
+                <div class="amount-card">
+                    <div class="amount-label">Prix d'achat</div>
+                    <div class="amount-value">{{ trip.prix_achat|format_currency }}</div>
+                </div>
+                <div class="amount-card">
+                    <div class="amount-label">Prix de vente</div>
+                    <div class="amount-value">{{ trip.prix_vente|format_currency }}</div>
+                </div>
+                <div class="amount-card margin">
+                    <div class="amount-label">Marge</div>
+                    <div class="amount-value">{{ (trip.prix_vente - trip.prix_achat)|format_currency }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dépenses -->
+        {% if depenses %}
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-receipt"></i>
+                <h2>Dépenses</h2>
+            </div>
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>Désignation</th>
+                        <th>Prix unitaire</th>
+                        <th>Nombre</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for depense in depenses %}
+                    <tr>
+                        <td>{{ depense.nom }}</td>
+                        <td>{{ depense.prix_unitaire|format_currency }}</td>
+                        <td>{{ depense.nombre_personnes }}</td>
+                        <td>{{ depense.total|format_currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Paiements -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-credit-card"></i>
+                <h2>Paiements</h2>
+            </div>
+            <div class="payment-history">
+                {% for paiement in paiements %}
+                <div class="payment-item">
+                    <div class="payment-details">
+                        <div class="payment-method">
+                            <i class="fas fa-{% if paiement.mode_paiement == 'Chèque' %}money-check-alt
+                                        {% elif paiement.mode_paiement == 'Espèces' %}money-bill-wave
+                                        {% else %}credit-card{% endif %}"></i>
+                            {{ paiement.mode_paiement }}
+                        </div>
+                        <div class="payment-amount">
+                            {{ paiement.montant_paye|format_currency }}
+                        </div>
+                    </div>
+                    <div class="payment-date">
+                        {{ paiement.date_paiement|format_datetime }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions flottantes -->
+    <div class="floating-actions">
+        <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" class="action-btn btn-edit">
+            <i class="fas fa-edit"></i>
+            Modifier
+        </a>
+        <button class="action-btn btn-delete" onclick="confirmDelete('{{ trip.id_trip }}')">
+            <i class="fas fa-trash"></i>
+            Supprimer
+        </button>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirmation de suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer ce voyage ?</p>
+        <div class="modal-actions">
+            <button onclick="deleteTrip()" class="btn-delete">Confirmer</button>
+            <button onclick="closeModal()" class="btn-secondary">Annuler</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
 let tripIdToDelete = null;
 
@@ -569,17 +598,39 @@ function closeModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
 
-function executeDelete() {
-    if (tripIdToDelete) {
-        window.location.href = `{{ url_for('trips.delete', trip_id=0) }}`.replace('0', tripIdToDelete);
-    }
+function deleteTrip() {
+    if (!tripIdToDelete) return;
+    
+    fetch(`/trips/${tripIdToDelete}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = "{{ url_for('trips.index') }}";
+        } else {
+            throw new Error('Erreur lors de la suppression');
+        }
+    })
+    .catch(error => {
+        showNotification('error', error.message);
+    });
 }
 
-window.onclick = function(event) {
-    const modal = document.getElementById('deleteModal');
-    if (event.target === modal) {
-        closeModal();
-    }
+// Notifications stylisées
+function showNotification(type, message) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
 }
 </script>
 {% endblock %}

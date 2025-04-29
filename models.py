@@ -36,29 +36,23 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-    # Ajout des méthodes de gestion des rôles
     def get_roles(self):
-        """Retourne la liste des rôles de l'utilisateur"""
         return [role.strip() for role in self.role.split(',') if role.strip()]
     
     def has_role(self, role):
-        """Vérifie si l'utilisateur a un rôle spécifique"""
         return role in self.get_roles()
     
     def has_any_role(self, roles):
-        """Vérifie si l'utilisateur a au moins un des rôles spécifiés"""
         user_roles = self.get_roles()
         return any(role in user_roles for role in roles)
     
     def add_role(self, new_role):
-        """Ajoute un nouveau rôle à l'utilisateur"""
         current_roles = self.get_roles()
         if new_role not in current_roles:
             current_roles.append(new_role)
             self.role = ','.join(current_roles)
     
     def remove_role(self, role_to_remove):
-        """Supprime un rôle de l'utilisateur"""
         current_roles = self.get_roles()
         if role_to_remove in current_roles:
             current_roles.remove(role_to_remove)
@@ -101,10 +95,11 @@ class Vehicule(db.Model):
     notes = db.Column(db.Text)
     
     # Relations
-    trips = db.relationship('Trip', backref='vehicule', lazy=True)
+    affectations = db.relationship('TripAffectation', backref='vehicule', lazy=True)
     entretiens = db.relationship('EntretienVehicule', backref='vehicule', lazy=True)
     depenses = db.relationship('Depense', backref='vehicule', lazy=True)
     details_evenements = db.relationship('DetailEvenement', backref='vehicule', lazy=True)
+    notifications = db.relationship('Notification', backref='vehicule', lazy=True)
 
 class Chauffeur(db.Model):
     __tablename__ = 'chauffeurs'
@@ -127,36 +122,81 @@ class Chauffeur(db.Model):
     notes = db.Column(db.Text)
     
     # Relations
-    trips = db.relationship('Trip', backref='chauffeur', lazy=True)
+    affectations = db.relationship('TripAffectation', backref='chauffeur', lazy=True)
     details_evenements = db.relationship('DetailEvenement', backref='chauffeur', lazy=True)
 
 class Trip(db.Model):
     __tablename__ = 'trips'
     
     id_trip = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    type = db.Column(db.Enum('Transfert', 'Excursion', 'Location', 'Événement'), nullable=False)
-    id_vehicule = db.Column(db.Integer, db.ForeignKey('vehicules.id_vehicule'), nullable=False)
-    id_chauffeur = db.Column(db.Integer, db.ForeignKey('chauffeurs.id_chauffeur'), nullable=False)
-    point_depart = db.Column(db.String(255), nullable=False)
-    point_arrivee = db.Column(db.String(255), nullable=False)
-    prix = db.Column(db.Numeric(10, 2), nullable=False)
+    type = db.Column(db.Enum('Transfert', 'Transfert Société', 'Excursion', 'Événement', 'Mise à Disposition'), nullable=False)
+    nom = db.Column(db.String(255))
+    
+    is_recurring = db.Column(db.Boolean, default=False)
+    recurring_days = db.Column(db.JSON)
+    
+    point_depart = db.Column(db.String(255))
+    point_arrivee = db.Column(db.String(255))
     distance = db.Column(db.Float)
-    heure_depart = db.Column(db.Time, nullable=False)
+    
+    heure_depart = db.Column(db.Time)
     heure_arrivee = db.Column(db.Time)
     date_depart = db.Column(db.Date, nullable=False)
     date_arrivee = db.Column(db.Date)
-    etat_paiement = db.Column(db.Enum('Non payé', 'Acompte', 'Payé'), default='Non payé')
+    nombre_jours = db.Column(db.Integer)
+    
+    prix_achat = db.Column(db.Numeric(10, 2))
+    prix_vente = db.Column(db.Numeric(10, 2))
+    commission = db.Column(db.Numeric(10, 2))
+    is_commission = db.Column(db.Boolean, default=False)
+    
+    nombre_adultes = db.Column(db.Integer, default=0)
+    nombre_enfants = db.Column(db.Integer, default=0)
+    nombre_bebes = db.Column(db.Integer, default=0)
+    
+    etat_paiement = db.Column(db.Enum('Non payé', 'Acompte', 'Payé', 'Facturé', 'Gratuit'), default='Non payé')
     etat_trip = db.Column(db.Enum('Planifié', 'En cours', 'Terminé', 'Annulé'), default='Planifié')
+    
     client_nom = db.Column(db.String(100))
     client_telephone = db.Column(db.String(20))
     client_email = db.Column(db.String(100))
-    nombre_passagers = db.Column(db.Integer)
     commentaires = db.Column(db.Text)
+    
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'))
     
     # Relations
+    affectations = db.relationship('TripAffectation', backref='trip', lazy=True)
+    depenses_supplementaires = db.relationship('TripDepense', backref='trip', lazy=True)
     paiements = db.relationship('Paiement', backref='trip', lazy=True)
+
+    # Propriétés calculées
+    @property
+    def vehicules(self):
+        return [affectation.vehicule for affectation in self.affectations]
+    
+    @property
+    def chauffeurs(self):
+        return [affectation.chauffeur for affectation in self.affectations]
+
+class TripAffectation(db.Model):
+    __tablename__ = 'trip_affectations'
+    
+    id_affectation = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_trip = db.Column(db.Integer, db.ForeignKey('trips.id_trip'), nullable=False)
+    id_vehicule = db.Column(db.Integer, db.ForeignKey('vehicules.id_vehicule'), nullable=False)
+    id_chauffeur = db.Column(db.Integer, db.ForeignKey('chauffeurs.id_chauffeur'), nullable=False)
+    date_affectation = db.Column(db.DateTime, default=datetime.utcnow)
+
+class TripDepense(db.Model):
+    __tablename__ = 'trip_depenses'
+    
+    id_depense = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_trip = db.Column(db.Integer, db.ForeignKey('trips.id_trip'), nullable=False)
+    nom = db.Column(db.String(100), nullable=False)
+    prix_unitaire = db.Column(db.Numeric(10, 2), nullable=False)
+    nombre_personnes = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Numeric(10, 2), nullable=False)
 
 class Paiement(db.Model):
     __tablename__ = 'paiements'
@@ -165,16 +205,14 @@ class Paiement(db.Model):
     id_trip = db.Column(db.Integer, db.ForeignKey('trips.id_trip'), nullable=False)
     montant_total = db.Column(db.Numeric(10, 2), nullable=False)
     montant_paye = db.Column(db.Numeric(10, 2), nullable=False)
-    # reste calculé par la BD
-    date_paiement = db.Column(db.DateTime, default=datetime.utcnow)
-    mode_paiement = db.Column(db.Enum('Espèces', 'Carte bancaire', 'Virement', 'Chèque'), nullable=False)
+    mode_paiement = db.Column(db.Enum('Espèces', 'Acompte', 'Facture', 'Chèque', 'Non payé', 'Gratuit'), nullable=False)
     reference_paiement = db.Column(db.String(100))
+    banque = db.Column(db.String(100))
+    numero_cheque = db.Column(db.String(100))
+    image_cheque = db.Column(db.String(255))
+    date_paiement = db.Column(db.DateTime, default=datetime.utcnow)
     recu_par = db.Column(db.Integer, db.ForeignKey('users.id_user'))
     notes = db.Column(db.Text)
-    
-    @property
-    def reste(self):
-        return float(self.montant_total) - float(self.montant_paye)
 
 class EntretienVehicule(db.Model):
     __tablename__ = 'entretiens_vehicules'
@@ -185,16 +223,17 @@ class EntretienVehicule(db.Model):
     prix_entretien = db.Column(db.Numeric(10, 2), nullable=False)
     date_entretien = db.Column(db.Date, nullable=False)
     kilometrage = db.Column(db.Float, nullable=False)
-    kilometrage_suivant = db.Column(db.Float, nullable=False)  # Nouveau champ
+    kilometrage_suivant = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text)
     prestataire = db.Column(db.String(100))
     facture_reference = db.Column(db.String(100))
-    facture_url = db.Column(db.String(255))  # Nouveau champ pour stocker le chemin du fichier
-    pieces = db.Column(db.JSON)  # Nouveau champ pour stocker la liste des pièces
+    facture_url = db.Column(db.String(255))
+    pieces = db.Column(db.JSON)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'))
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    notifications = db.relationship('Notification', backref='entretien', lazy=True)
 
-# Nouvelle table pour les notifications
 class Notification(db.Model):
     __tablename__ = 'notifications'
     
@@ -202,7 +241,7 @@ class Notification(db.Model):
     id_vehicule = db.Column(db.Integer, db.ForeignKey('vehicules.id_vehicule'), nullable=False)
     id_entretien = db.Column(db.Integer, db.ForeignKey('entretiens_vehicules.id_entretien'), nullable=False)
     message = db.Column(db.String(255), nullable=False)
-    severity = db.Column(db.String(50), nullable=False)  # 'yellow' ou 'red'
+    severity = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     read = db.Column(db.Boolean, default=False)
 
@@ -234,7 +273,6 @@ class Evenement(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'), nullable=False)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relations
     details = db.relationship('DetailEvenement', backref='evenement', lazy=True)
 
 class DetailEvenement(db.Model):

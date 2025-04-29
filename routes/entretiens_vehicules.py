@@ -152,11 +152,16 @@ def details(id):
     entretien = EntretienVehicule.query.get_or_404(id)
     return render_template('entretiens/details.html', entretien=entretien)
 
-@entretiens.route('/delete/<int:id>', methods=['POST'])  # Changer la méthode en POST uniquement
+@entretiens.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete(id):
+    print(f"Tentative de suppression de l'entretien {id}")
     entretien = EntretienVehicule.query.get_or_404(id)
     try:
+        # D'abord, supprimer toutes les notifications associées
+        Notification.query.filter_by(id_entretien=id).delete()
+        
+        # Ensuite, supprimer l'entretien
         if entretien.facture_url:
             file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], entretien.facture_url)
             if os.path.exists(file_path):
@@ -164,8 +169,10 @@ def delete(id):
         
         db.session.delete(entretien)
         db.session.commit()
+        print(f"Suppression réussie de l'entretien {id}")
         flash('Entretien supprimé avec succès!', 'success')
     except Exception as e:
+        print(f"Erreur lors de la suppression de l'entretien {id}: {str(e)}")
         db.session.rollback()
         flash(f'Erreur lors de la suppression: {str(e)}', 'error')
     return redirect(url_for('entretiens.index'))
