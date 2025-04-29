@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Le message flash sera affiché ici -->
+    <div id="welcome-flash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'welcome' %}
+                        <div class="flash-message flash-welcome">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    {% block styles %}
+<style>
+.flash-welcome {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    text-align: center;
+    min-width: 100px;
+}
+
+.flash-welcome::before {
+    content: '👋 ';
+    margin-right: 8px;
+}
+
+@keyframes flashFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes flashFadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+}
+
+/* Animation pour le texte */
+.flash-welcome span {
+    display: inline-block;
+    animation: textWave 1s ease-in-out;
+}
+
+
+
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sélectionner tous les messages flash de bienvenue
+    const welcomeFlashes = document.querySelectorAll('.flash-welcome');
+    
+    // Pour chaque message flash
+    welcomeFlashes.forEach(flash => {
+        // Supprimer le message après 2 secondes
+        setTimeout(() => {
+            flash.style.display = 'none';
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}
+    <div class="sidebar">
+        <h3>Gestion</h3>
+        <ul>
+            <li><a href="{{ url_for('vehicles.index') }}"><i class="fas fa-car"></i> Véhicules</a></li>
+            <li><a href="{{ url_for('drivers.index') }}"><i class="fas fa-id-card"></i> Chauffeurs</a></li>
+            <li><a href="{{ url_for('trips.index') }}"><i class="fas fa-route"></i> Voyages</a></li>
+            <li><a href="{{ url_for('finances.index') }}"><i class="fas fa-wallet"></i> Finances</a></li>
+            <li><a href="{{ url_for('users.index') }}"><i class="fas fa-users"></i> Utilisateurs</a></li>
+            <li><a href="{{ url_for('entretiens.index') }}"><i class="fas fa-car"></i> Entretiens</a></li>
+            <li><a href="{{ url_for('calendrier.afficher_calendrier') }}"><i class="fas fa-calendar"></i> Calendrier</a></li>
+        </ul>
+    </div>
+    {% if current_user.has_any_role(['admin', 'manager']) %}
+    
+
+    <div class="dashboard-content">
+        <h2>Bienvenue sur le tableau de bord</h2>
+        
+        <div class="stats-cards">
+            <div class="card">
+                <div class="card-icon blue"><i class="fas fa-car"></i></div>
+                <div class="card-info">
+                    <span class="card-title">Véhicules</span>
+                    <span class="card-value">{{ vehicles_count }}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon purple"><i class="fas fa-id-card"></i></div>
+                <div class="card-info">
+                    <span class="card-title">Chauffeurs</span>
+                    <span class="card-value">{{ drivers_count }}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon green"><i class="fas fa-route"></i></div>
+                <div class="card-info">
+                    <span class="card-title">Voyages</span>
+                    <span class="card-value">{{ trips_count }}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon orange"><i class="fas fa-wallet"></i></div>
+                <div class="card-info">
+                    <span class="card-title">Revenus</span>
+                    <span class="card-value">{{ total_revenue }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-widgets">
+            <div class="widget">
+                <h3>Voyages récents</h3>
+                <div class="recent-trips">
+                    {% for trip in recent_trips %}
+                    <div class="trip-item">
+                        <div class="trip-info">
+                            <span class="trip-type">{{ trip.type }}</span>
+                            <span class="trip-date">{{ trip.date_depart }}</span>
+                        </div>
+                        <div class="trip-details">
+                            <span class="trip-depart">{{ trip.point_depart }}</span>
+                            <span class="trip-arrow">→</span>
+                            <span class="trip-arrival">{{ trip.point_arrivee }}</span>
+                        </div>
+                        <div class="trip-status {{ trip.etat_trip|lower }}">
+                            {{ trip.etat_trip }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="widget">
+                <h3>Revenus mensuels</h3>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ months|safe }},
+                datasets: [{
+                    label: 'Revenus (€)',
+                    data: {{ monthly_revenue|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

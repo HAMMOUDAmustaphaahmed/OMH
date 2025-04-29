@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="maintenance-form-container">
+    <div class="form-header">
+        <h2><i class="fas fa-plus-circle"></i> Nouvel Entretien</h2>
+        <a href="{{ url_for('entretiens.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <form method="POST" class="maintenance-form" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="vehicule">Véhicule</label>
+                <select name="vehicule" id="vehicule" class="form-control" required>
+                    <option value="">Sélectionner un véhicule</option>
+                    {% for vehicule in vehicules %}
+                    <option value="{{ vehicule.id_vehicule }}">
+                        {{ vehicule.matricule }} - {{ vehicule.modele }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Remplacer le champ type_entretien existant par celui-ci -->
+<div class="form-group">
+    <label for="type_entretien">Type d'entretien</label>
+    <select name="type_entretien" id="type_entretien" class="form-control" required>
+        <option value="">Sélectionner un type d'entretien</option>
+        <optgroup label="Entretien régulier">
+            <option value="Vidange">Vidange</option>
+            <option value="Filtres">Changement des filtres</option>
+            <option value="Bougies">Changement des Bougies</option>
+            <option value="Freinage">Système de freinage</option>
+            <option value="Transmission">Transmission</option>
+            <option value="Suspension">Suspension</option>
+            <option value="Pneumatiques">Pneumatiques</option>
+            <option value="Distribution">Kit distribution</option>
+            <option value="Climatisation">Climatisation</option>
+        </optgroup>
+        
+        <optgroup label="Réparations">
+            <option value="Carrosserie">Carrosserie</option>
+            <option value="Mécanique">Mécanique</option>
+            <option value="Électrique">Système électrique</option>
+            <option value="Électronique">Système électronique</option>
+            <option value="Direction">Direction</option>
+            <option value="Embrayage">Embrayage</option>
+        </optgroup>
+        
+        <optgroup label="Contrôles">
+            <option value="Diagnostic">Diagnostic général</option>
+            <option value="Géométrie">Contrôle géométrie</option>
+            <option value="Antipollution">Contrôle antipollution</option>
+        </optgroup>
+        
+        <optgroup label="Autres">
+            <option value="Batterie">Batterie</option>
+            <option value="Éclairage">Système d'éclairage</option>
+            <option value="Essuie-glaces">Essuie-glaces</option>
+            <option value="Échappement">Système d'échappement</option>
+            <option value="Divers">Autres interventions</option>
+        </optgroup>
+    </select>
+</div>
+
+<style>
+select#type_entretien {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 1rem;
+    width: 100%;
+}
+
+select#type_entretien optgroup {
+    font-weight: bold;
+    color: #495057;
+}
+
+select#type_entretien option {
+    padding: 8px;
+    color: #212529;
+}
+
+select#type_entretien:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    outline: 0;
+}
+
+/* Style pour l'option par défaut */
+select#type_entretien option[value=""] {
+    color: #6c757d;
+}
+
+/* Style pour les groupes */
+select#type_entretien optgroup {
+    background-color: #f8f9fa;
+    margin: 5px 0;
+}
+</style>
+
+<script>
+document.getElementById('type_entretien').addEventListener('change', function() {
+    
+    const selectedType = this.value;
+    console.log('Type d\'entretien sélectionné:', selectedType);
+});
+</script>
+
+            <div class="form-group">
+                <label for="pieces">Pièces concernées</label>
+                <div class="pieces-input-container">
+                    <div class="pieces-list" id="pieces_list">
+                        <!-- Les pièces sélectionnées seront affichées ici -->
+                    </div>
+                    <div class="add-piece-container">
+                        <input type="text" id="new_piece" class="form-control" 
+                               placeholder="Ajouter une pièce...">
+                        <button type="button" id="add_piece" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="date_entretien">Date d'entretien</label>
+                <input type="date" name="date_entretien" id="date_entretien" 
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="kilometrage">Kilométrage actuel</label>
+                <input type="number" name="kilometrage" id="kilometrage" 
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="kilometrage_suivant">Kilométrage suivant</label>
+                <input type="number" name="kilometrage_suivant" id="kilometrage_suivant" 
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prix_entretien">Prix total</label>
+                <input type="number" name="prix_entretien" id="prix_entretien" 
+                       class="form-control" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prestataire">Prestataire</label>
+                <input type="text" name="prestataire" id="prestataire" 
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="facture_reference">Référence facture</label>
+                <input type="text" name="facture_reference" id="facture_reference" 
+                       class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="facture">Facture (PDF, PNG, JPG)</label>
+                <input type="file" name="facture" id="facture" 
+                       class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            <label for="description">Description des travaux</label>
+            <textarea name="description" id="description" 
+                      class="form-control" rows="4"></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
+            <button type="reset" class="btn btn-secondary">
+                <i class="fas fa-undo"></i> Réinitialiser
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+/* ... Styles existants ... */
+
+.pieces-input-container {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.pieces-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+    min-height: 40px;
+}
+
+.piece-item {
+    background: #f8f9fa;
+    padding: 5px 10px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.piece-item .remove-piece {
+    cursor: pointer;
+    color: #dc3545;
+}
+
+.add-piece-container {
+    display: flex;
+    gap: 10px;
+}
+
+.add-piece-container .form-control {
+    flex: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const piecesList = document.getElementById('pieces_list');
+    const newPieceInput = document.getElementById('new_piece');
+    const addPieceBtn = document.getElementById('add_piece');
+    const pieces = new Set();
+
+    function addPiece(pieceName) {
+        if (pieceName.trim() === '' || pieces.has(pieceName)) return;
+        
+        pieces.add(pieceName);
+        const pieceElement = document.createElement('div');
+        pieceElement.className = 'piece-item';
+        pieceElement.innerHTML = `
+            <span>${pieceName}</span>
+            <input type="hidden" name="pieces[]" value="${pieceName}">
+            <i class="fas fa-times remove-piece"></i>
+        `;
+        
+        pieceElement.querySelector('.remove-piece').addEventListener('click', () => {
+            pieces.delete(pieceName);
+            pieceElement.remove();
+        });
+        
+        piecesList.appendChild(pieceElement);
+        newPieceInput.value = '';
+    }
+
+    addPieceBtn.addEventListener('click', () => {
+        addPiece(newPieceInput.value);
+    });
+
+    newPieceInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addPiece(newPieceInput.value);
+        }
+    });
+});
+</script>
+{% endblock %}

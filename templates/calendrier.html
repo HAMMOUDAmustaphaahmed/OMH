@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier des Voyages</title>
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/main.min.css" rel="stylesheet">
+    <!-- Bootstrap for Styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #calendar {
+            max-width: 90%;
+            margin: 40px auto;
+        }
+        .fc-event {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Calendrier des Voyages</h1>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/main.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: {{ voyages|tojson }},
+                eventMouseEnter: function(info) {
+                    var tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip-event';
+                    tooltip.innerHTML = info.event.extendedProps.description;
+                    document.body.appendChild(tooltip);
+                    tooltip.style.position = 'absolute';
+                    tooltip.style.left = info.jsEvent.pageX + 'px';
+                    tooltip.style.top = info.jsEvent.pageY + 'px';
+                    tooltip.style.zIndex = '1000';
+                    tooltip.style.backgroundColor = '#fff';
+                    tooltip.style.border = '1px solid #ccc';
+                    tooltip.style.padding = '10px';
+                },
+                eventMouseLeave: function(info) {
+                    var tooltips = document.getElementsByClassName('tooltip-event');
+                    while(tooltips[0]) {
+                        tooltips[0].parentNode.removeChild(tooltips[0]);
+                    }
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

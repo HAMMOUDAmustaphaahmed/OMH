@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-car"></i>
+            <h3>Gestion Véhicule</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('dashboard.index') }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('vehicles.index') }}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour à la liste</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="content-header">
+            <h2>
+                <i class="fas fa-info-circle"></i>
+                Détails du véhicule
+            </h2>
+            <div class="header-actions">
+                {% if current_user.has_role('admin') %}
+                <a href="{{ url_for('vehicles.edit', vehicle_id=vehicle.id_vehicule) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    <span>Modifier</span>
+                </a>
+                <a href="{{ url_for('vehicles.delete', vehicle_id=vehicle.id_vehicule) }}" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    <span>Supprimer</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="vehicle-details-container">
+            <!-- Vehicle Summary Card -->
+            <div class="detail-card summary-card">
+                <div class="vehicle-title">
+                    <h3>{{ vehicle.marque }} {{ vehicle.modele }}</h3>
+                    <span class="status-badge {{ vehicle.etat|lower }}">{{ vehicle.etat }}</span>
+                </div>
+                <div class="vehicle-quick-info">
+                    <div class="quick-info-item">
+                        <i class="fas fa-hashtag"></i>
+                        <span>{{ vehicle.matricule }}</span>
+                    </div>
+                    <div class="quick-info-item">
+                        <i class="fas fa-road"></i>
+                        <span>{{ vehicle.kilometrage_vehicule }} km</span>
+                    </div>
+                    <div class="quick-info-item">
+                        <i class="fas fa-gas-pump"></i>
+                        <span>{{ vehicle.carburant }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Information Cards -->
+            <div class="details-grid">
+                <!-- Basic Information -->
+                <div class="detail-card">
+                    <div class="card-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>Informations de base</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-group">
+                            <label>Usine</label>
+                            <span>{{ vehicle.usine }}</span>
+                        </div>
+                        <div class="info-group">
+                            <label>Modèle</label>
+                            <span>{{ vehicle.modele }}</span>
+                        </div>
+                        <div class="info-group">
+                            <label>Matricule</label>
+                            <span>{{ vehicle.matricule }}</span>
+                        </div>
+                        <div class="info-group">
+                            <label>Carburant</label>
+                            <span>{{ vehicle.carburant }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="detail-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Statistiques</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-group">
+                            <label>Kilométrage</label>
+                            <span>{{ vehicle.kilometrage_vehicule }} km</span>
+                        </div>
+                        <div class="info-group">
+                            <label>État</label>
+                            <span>{{ vehicle.etat }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --danger-color: #e74c3c;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --text-light: #ffffff;
+    --text-dark: #2c3e50;
+    --border-color: #eee;
+    --background-light: #f5f6fa;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Layout */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    min-height: 100vh;
+    background: var(--background-light);
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem 0;
+    color: var(--text-light);
+}
+
+.sidebar-header {
+    padding: 0 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sidebar-header i {
+    font-size: 1.5rem;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+/* Content Styles */
+.content {
+    padding: 2rem;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.content-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--accent-color);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Cards Styles */
+.vehicle-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.summary-card {
+    padding: 1.5rem;
+}
+
+.vehicle-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.vehicle-title h3 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+}
+
+.vehicle-quick-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.quick-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.card-header {
+    background: var(--background-light);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.info-group {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-group:last-child {
+    border-bottom: none;
+}
+
+.info-group label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Status Badge Styles */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-badge.bon {
+    background: var(--success-color);
+    color: var(--text-light);
+}
+
+.status-badge.moyen {
+    background: var(--warning-color);
+    color: var(--text-dark);
+}
+
+.status-badge.mauvais {
+    background: var(--danger-color);
+    color: var(--text-light);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

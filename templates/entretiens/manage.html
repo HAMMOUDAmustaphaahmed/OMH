@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="maintenance-dashboard">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-wrench"></i> Gestion des Entretiens</h1>
+        <a href="{{ url_for('entretiens.add') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouvel Entretien
+        </a>
+    </div>
+
+    <div class="maintenance-stats">
+        <div class="stat-card">
+            <i class="fas fa-tools"></i>
+            <h3>Total Entretiens</h3>
+            <p>{{ entretiens|length }}</p>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-money-bill-wave"></i>
+            <h3>Coût Total</h3>
+            <p>{{ "%.2f"|format(entretiens|sum(attribute='prix_entretien')) }} €</p>
+        </div>
+    </div>
+
+    <div class="maintenance-filters">
+        <input type="text" id="searchInput" placeholder="Rechercher un entretien..." class="form-control">
+        <select id="vehiculeFilter" class="form-control">
+            <option value="">Tous les véhicules</option>
+            {% for vehicule in vehicules %}
+            <option value="{{ vehicule.matricule }}">{{ vehicule.matricule }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover maintenance-table">
+            <thead>
+                <tr>
+                    <th>Véhicule</th>
+                    <th>Type d'entretien</th>
+                    <th>Date</th>
+                    <th>Kilométrage actuel</th>
+                    <th>Kilométrage suivant</th>
+                    <th>Prix</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entretien in entretiens %}
+                <tr class="maintenance-row">
+                    <td>{{ entretien.vehicule.matricule }}</td>
+                    <td>{{ entretien.type_entretien }}</td>
+                    <td>{{ entretien.date_entretien.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ entretien.kilometrage|int }} km</td>
+                    <td>{{ entretien.kilometrage_suivant|int }} km</td>
+                    <td>{{ "%.2f"|format(entretien.prix_entretien) }} €</td>
+                    <td>
+                        {% set km_diff = entretien.kilometrage_suivant - entretien.vehicule.kilometrage_vehicule %}
+                        {% if km_diff <= 500 %}
+                        <span class="status-badge red">
+                            <i class="fas fa-exclamation-circle"></i> Urgent
+                        </span>
+                        {% elif km_diff <= 1000 %}
+                        <span class="status-badge yellow">
+                            <i class="fas fa-exclamation-triangle"></i> À prévoir
+                        </span>
+                        {% else %}
+                        <span class="status-badge green">
+                            <i class="fas fa-check-circle"></i> OK
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('entretiens.details', id=entretien.id_entretien) }}" 
+                           class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ url_for('entretiens.edit', id=entretien.id_entretien) }}" 
+                           class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('entretiens.delete', id=entretien.id_entretien) }}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet entretien?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<style>
+    .maintenance-dashboard {
+        padding: 20px;
+    }
+    
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .maintenance-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #6e8efb, #4a6cf7);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card i {
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+    
+    .maintenance-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .maintenance-table {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .maintenance-table th {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .actions {
+        white-space: nowrap;
+    }
+    
+    .actions .btn {
+        margin: 0 2px;
+    }
+    
+    @media (max-width: 768px) {
+        .maintenance-filters {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-card {
+            margin-bottom: 15px;
+        }
+    }
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-badge.red {
+    background-color: #ffeded;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.status-badge.yellow {
+    background-color: #fff3cd;
+    color: #ffc107;
+    border: 1px solid #ffc107;
+}
+
+.status-badge.green {
+    background-color: #d4edda;
+    color: #28a745;
+    border: 1px solid #28a745;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const vehiculeFilter = document.getElementById('vehiculeFilter');
+    const rows = document.querySelectorAll('.maintenance-row');
+
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedVehicule = vehiculeFilter.value.toLowerCase();
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const vehicule = row.children[0].textContent.toLowerCase();
+            const matchesSearch = text.includes(searchTerm);
+            const matchesVehicule = selectedVehicule === '' || vehicule === selectedVehicule;
+            
+            row.style.display = matchesSearch && matchesVehicule ? '' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    vehiculeFilter.addEventListener('change', filterTable);
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,1229 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('users.index') }}" class="sidebar-link">
+                    <i class="fas fa-arrow-left" style="color: #dfe6e9;"></i>
+                    <span style="color: #dfe6e9;">Retour à la liste</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Header -->
+        <div class="content-header">
+            <div class="header-title">
+                <h1 class="page-title">
+                    <i class="fas fa-user-plus"></i>
+                    Ajouter un utilisateur
+                </h1>
+                <p class="page-subtitle">Créer un nouveau compte utilisateur</p>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+       
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <form method="POST" id="addForm" class="user-form">
+                <!-- User Info Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="section-icon fas fa-user"></i>
+                        <h2 class="section-title">Informations utilisateur</h2>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-grid">
+                            <div class="input-group floating-input">
+                                <input type="text" 
+                                       id="nom" 
+                                       name="nom" 
+                                       value="{{ request.form.nom }}" 
+                                       required
+                                       autocomplete="off">
+                                <label for="nom">Nom</label>
+                                <div class="input-feedback"></div>
+                            </div>
+                        
+                            <div class="input-group floating-input">
+                                <input type="text" 
+                                       id="prenom" 
+                                       name="prenom" 
+                                       value="{{ request.form.prenom }}" 
+                                       required
+                                       autocomplete="off">
+                                <label for="prenom">Prénom</label>
+                                <div class="input-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="input-group floating-input">
+                            <input type="text" 
+                                   id="username" 
+                                   name="username" 
+                                   value="{{ request.form.username }}" 
+                                   required
+                                   autocomplete="off">
+                            <label for="username">Nom d'utilisateur</label>
+                            <div class="input-feedback"></div>
+                        </div>
+
+                        <div class="input-group floating-input">
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ request.form.email }}" 
+                                   required
+                                   autocomplete="off">
+                            <label for="email">Adresse email</label>
+                            <div class="input-feedback"></div>
+                        </div>
+                        <div class="input-group floating-input">
+                            <input type="number" 
+                                   id="telephone" 
+                                   name="telephone" 
+                                   value="{{ request.form.telephone }}" 
+                                   required
+                                   autocomplete="off">
+                            <label for="telephone">Téléphone</label>
+                            <div class="input-feedback"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="section-icon fas fa-shield-alt"></i>
+                        <h2 class="section-title">Sécurité</h2>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group floating-input password-input">
+                            <input type="password" 
+                                   id="password" 
+                                   name="password" 
+                                   required
+                                   minlength="8">
+                            <label for="password">Mot de passe</label>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="password-strength"></div>
+                            <div class="input-feedback"></div>
+                        </div>
+
+                        <div class="input-group floating-input password-input">
+                            <input type="password" 
+                                   id="confirm_password" 
+                                   name="confirm_password" 
+                                   required
+                                   minlength="8">
+                            <label for="confirm_password">Confirmation</label>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="input-feedback"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="section-icon fas fa-cog"></i>
+                        <h2 class="section-title">Paramètres du compte</h2>
+                    </div>
+                    <!-- Première partie - Sélection du rôle et statut -->
+<div class="custom-settings-grid">
+    <div class="custom-role-selector">
+        <label class="custom-settings-label">
+            <i class="fas fa-user-shield"></i>
+            Rôle utilisateur
+        </label>
+        <div class="custom-select-container">
+            <select id="role" name="role" class="custom-role-select">
+                <option value="admin" {{ 'selected' if request.form.role == 'admin' }}>
+                    <span class="custom-role-option">
+                        <i class="fas fa-shield-alt"></i>
+                        Administrateur
+                    </span>
+                </option>
+                <option value="manager" {{ 'selected' if request.form.role == 'manager' }}>
+                    <span class="custom-role-option">
+                        <i class="fas fa-user-tie"></i>
+                        Manager
+                    </span>
+                </option>
+                <option value="staff" {{ 'selected' if request.form.role == 'staff' }}>
+                    <span class="custom-role-option">
+                        <i class="fas fa-user"></i>
+                        Staff
+                    </span>
+                </option>
+            </select>
+            <div class="custom-select-arrow">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-status-control">
+        <label class="custom-switch-label">
+            <input type="checkbox" 
+                   id="actif" 
+                   name="actif" 
+                   class="custom-switch-input"
+                   {{ 'checked' if request.form.actif|default(True) }}>
+            <span class="custom-switch-slider">
+                <span class="custom-switch-icon">
+                    <i class="fas fa-check"></i>
+                </span>
+                <span class="custom-switch-icon">
+                    <i class="fas fa-times"></i>
+                </span>
+                <span class="custom-switch-handle"></span>
+            </span>
+            <span class="custom-switch-text">
+                
+                Compte actif
+            </span>
+        </label>
+    </div>
+</div>
+
+<style>
+/* Conteneur principal */
+.custom-settings-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: center;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 8px;
+}
+
+/* Sélecteur de rôle */
+.custom-role-selector {
+    position: relative;
+}
+
+.custom-settings-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+}
+
+.custom-settings-label i {
+    color: #3b82f6;
+}
+
+.custom-select-container {
+    position: relative;
+}
+
+.custom-role-select {
+    appearance: none;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    padding-right: 2.5rem;
+    font-size: 0.95rem;
+    color: #1f2937;
+    background-color: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.custom-role-select:hover {
+    border-color: #94a3b8;
+}
+
+.custom-role-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.custom-select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
+    transition: transform 0.2s ease;
+}
+
+.custom-role-select:focus + .custom-select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+    color: #3b82f6;
+}
+
+/* Switch status */
+.custom-status-control {
+    justify-self: end;
+}
+
+.custom-switch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+}
+
+.custom-switch-input {
+    display: none;
+}
+
+.custom-switch-slider {
+    position: relative;
+    width: 56px;
+    height: 30px;
+    background: #e2e8f0;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+}
+
+.custom-switch-handle {
+    position: absolute;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-switch-icon {
+    color: white;
+    font-size: 0.75rem;
+    z-index: 1;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.custom-switch-input:checked + .custom-switch-slider {
+    background: #10b981;
+}
+
+.custom-switch-input:checked + .custom-switch-slider .custom-switch-handle {
+    left: calc(100% - 27px);
+}
+
+.custom-switch-input:checked + .custom-switch-slider .custom-switch-icon:first-child {
+    opacity: 1;
+}
+
+.custom-switch-input:not(:checked) + .custom-switch-slider .custom-switch-icon:last-child {
+    opacity: 1;
+}
+
+.custom-switch-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: #64748b;
+}
+
+.custom-switch-text i {
+    color: #10b981;
+}
+
+/* Animation du switch */
+.custom-switch-slider:active .custom-switch-handle {
+    width: 28px;
+}
+
+/* Style des options du select */
+.custom-role-select option {
+    padding: 0.5rem;
+}
+
+/* Effet de focus visible */
+.custom-role-select:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .custom-settings-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+
+    .custom-status-control {
+        justify-self: start;
+    }
+
+    .custom-switch-label {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* Animation subtile au hover */
+@keyframes custom-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+.custom-role-select:hover,
+.custom-switch-slider:hover {
+    animation: custom-pulse 0.3s ease-in-out;
+}
+</style>
+
+<script>
+// Amélioration de l'interaction avec le select
+document.querySelector('.custom-role-select').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const icon = selectedOption.querySelector('i');
+    const selectContainer = this.closest('.custom-select-container');
+    
+    // Mise à jour visuelle
+    if (selectContainer) {
+        selectContainer.dataset.selected = this.value;
+    }
+});
+
+// Animation du switch
+document.querySelector('.custom-switch-input').addEventListener('change', function() {
+    const slider = this.nextElementSibling;
+    slider.style.transition = 'background-color 0.3s ease';
+    
+    setTimeout(() => {
+        slider.style.transition = 'all 0.3s ease';
+    }, 300);
+});
+</script>
+                </div>
+
+                <!-- Deuxième partie - Boutons d'action -->
+<div class="custom-form-actions">
+    <button type="button" class="custom-btn custom-btn-secondary" data-action="cancel">
+        <span class="custom-btn-content">
+            <i class="fas fa-times"></i>
+            <span class="custom-btn-text">Annuler</span>
+        </span>
+    </button>
+    <button type="submit" class="custom-btn custom-btn-primary" id="submitBtn">
+        <span class="custom-btn-content">
+            <i class="fas fa-save"></i>
+            <span class="custom-btn-text">Créer l'utilisateur</span>
+        </span>
+    </button>
+</div>
+
+<style>
+/* Styles isolés pour les boutons d'action */
+.custom-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    margin-top: auto;
+}
+
+.custom-btn {
+    position: relative;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    line-height: 1.5;
+    min-width: 120px;
+}
+
+.custom-btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.custom-btn-secondary {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.custom-btn-secondary:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-btn-primary {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.custom-btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+}
+
+.custom-btn:active {
+    transform: translateY(0);
+}
+
+.custom-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.custom-btn:hover::before {
+    opacity: 1;
+}
+
+.custom-btn-text {
+    font-weight: 500;
+}
+
+/* Ripple effect */
+.custom-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.custom-btn:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(200, 200);
+        opacity: 0;
+    }
+}
+
+/* Loading state */
+.custom-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.custom-btn.loading .custom-btn-content {
+    visibility: hidden;
+}
+
+.custom-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .custom-form-actions {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .custom-btn {
+        width: 100%;
+    }
+
+    .custom-btn-content {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+// Gestion des effets de boutons
+document.querySelectorAll('.custom-btn').forEach(button => {
+    button.addEventListener('click', function(e) {
+        if (this.type === 'submit') {
+            this.classList.add('loading');
+            // Simuler le temps de chargement
+            setTimeout(() => {
+                this.classList.remove('loading');
+            }, 2000);
+        }
+    });
+});
+</script>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Confirmation Modal -->
+<!-- Confirmation Modal -->
+<div class="modal" id="confirmationModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="header-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="header-title">Confirmation de création</h3>
+            <button type="button" class="close-modal" data-dismiss="modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="confirmation-message">
+                <p>Vous êtes sur le point de créer un nouvel utilisateur.</p>
+                <p class="confirmation-details">Veuillez vérifier les informations ci-dessous :</p>
+            </div>
+            
+            <div class="user-summary">
+                <!-- Cette partie sera remplie dynamiquement par JavaScript -->
+            </div>
+
+            <div class="creation-info">
+                <div class="info-item">
+                    <i class="fas fa-user-clock"></i>
+                    <span>Créé par : {{ current_user.username }}</span>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="fas fa-times"></i>
+                <span>Annuler</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="confirmSubmit">
+                <i class="fas fa-check"></i>
+                <span>Confirmer la création</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal Base */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1050;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1000;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active .modal-backdrop {
+    opacity: 1;
+}
+
+/* Modal Content */
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.modal.active .modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.header-icon {
+    width: 40px;
+    height: 40px;
+    background: #3b82f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    color: #1f2937;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.close-modal {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.close-modal:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+/* Modal Body */
+.modal-body {
+    padding: 1.5rem;
+}
+
+.confirmation-message {
+    margin-bottom: 1.5rem;
+}
+
+.confirmation-message p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.confirmation-details {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+}
+
+.user-summary {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.user-summary p {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.5rem 0;
+    color: #4b5563;
+}
+
+.user-summary p strong {
+    color: #1f2937;
+    min-width: 120px;
+}
+
+.creation-info {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #e5e7eb;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.info-item i {
+    color: #3b82f6;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 1.25rem 1.5rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Buttons */
+.modal .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal .btn-secondary {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.modal .btn-secondary:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.modal .btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.modal .btn-primary:hover {
+    background: #2563eb;
+}
+
+/* Animations */
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes modalOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .modal {
+        padding: 1rem;
+    }
+
+    .modal-content {
+        max-width: 100%;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+
+    // Close on backdrop click
+    modal.querySelector('.modal-backdrop').addEventListener('click', () => {
+        closeModal(modalId);
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal(modalId);
+        }
+    });
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('active');
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+function formatUserSummary(user) {
+    return `
+        <p><i class="fas fa-user"></i><strong>Nom d'utilisateur:</strong> ${user.username}</p>
+        <p><i class="fas fa-envelope"></i><strong>Email:</strong> ${user.email}</p>
+        <p><i class="fas fa-user-shield"></i><strong>Rôle:</strong> ${user.role}</p>
+        <p><i class="fas fa-toggle-on"></i><strong>Statut:</strong> ${user.active ? 'Actif' : 'Inactif'}</p>
+    `;
+}
+
+// Update modal content when showing
+document.getElementById('addForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const userData = {
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        role: document.getElementById('role').options[document.getElementById('role').selectedIndex].text,
+        active: document.getElementById('actif').checked
+    };
+    
+    document.querySelector('.user-summary').innerHTML = formatUserSummary(userData);
+    showModal('confirmationModal');
+});
+
+// Handle confirmation
+document.getElementById('confirmSubmit').addEventListener('click', function() {
+    const form = document.getElementById('addForm');
+    form.submit();
+});
+
+// Handle modal close buttons
+document.querySelectorAll('[data-dismiss="modal"]').forEach(button => {
+    button.addEventListener('click', () => {
+        closeModal('confirmationModal');
+    });
+});
+</script>
+
+<style>
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --success-color: #27ae60;
+    --danger-color: #e74c3c;
+    --background-light: #f8f9fa;
+    --text-dark: #2c3e50;
+    --border-color: #dfe6e9;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Layout amélioré */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: minmax(250px, 300px) 1fr;
+    min-height: 100vh;
+    background: var(--background-light);
+}
+
+.sidebar {
+    background: linear-gradient(160deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem 1rem;
+    color: white;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Carte de formulaire */
+.form-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+/* Sections du formulaire */
+.form-section {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.section-icon {
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+
+/* Champs de formulaire */
+.floating-input {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.floating-input input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.floating-input label {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    padding: 0 0.5rem;
+    color: #666;
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.floating-input input:focus ~ label,
+.floating-input input:not(:placeholder-shown) ~ label {
+    top: 0;
+    font-size: 0.85em;
+    color: var(--accent-color);
+}
+
+.password-strength {
+    height: 3px;
+    background: #eee;
+    margin-top: 0.5rem;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Toggle password */
+.toggle-password {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        position: static;
+        height: auto;
+    }
+    
+    .content {
+        padding: 1rem;
+    }
+    
+    .form-section {
+        padding: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Ajouts pour l'état de chargement */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid white;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+    right: 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('addForm');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const input = e.currentTarget.previousElementSibling;
+            const icon = e.currentTarget.querySelector('i');
+            const type = input.type === 'password' ? 'text' : 'password';
+            input.type = type;
+            icon.classList.toggle('fa-eye-slash');
+        });
+    });
+
+    // Password strength indicator
+    passwordInput.addEventListener('input', function() {
+        const strength = calculatePasswordStrength(this.value);
+        const strengthBar = this.parentNode.querySelector('.password-strength');
+        strengthBar.style.width = strength.percentage + '%';
+        strengthBar.style.backgroundColor = strength.color;
+    });
+
+    // Confirmation modal
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        showConfirmationModal();
+    });
+
+    document.getElementById('confirmSubmit').addEventListener('click', () => {
+        submitForm();
+    });
+});
+
+function calculatePasswordStrength(password) {
+    let strength = 0;
+    if (password.length >= 8) strength += 1;
+    if (password.match(/[A-Z]/)) strength += 1;
+    if (password.match(/[0-9]/)) strength += 1;
+    if (password.match(/[^A-Za-z0-9]/)) strength += 1;
+
+    const colors = ['#e74c3c', '#f1c40f', '#2ecc71'];
+    const percentages = [25, 50, 75, 100];
+    return {
+        percentage: percentages[strength],
+        color: colors[Math.min(strength, 2)]
+    };
+}
+
+function showConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    const userSummary = modal.querySelector('.user-summary');
+    
+    userSummary.innerHTML = `
+        <p><strong>Nom d'utilisateur:</strong> ${document.getElementById('username').value}</p>
+        <p><strong>Email:</strong> ${document.getElementById('email').value}</p>
+        <p><strong>Rôle:</strong> ${document.getElementById('role').options[document.getElementById('role').selectedIndex].text}</p>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function submitForm() {
+    const form = document.getElementById('addForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    submitBtn.classList.add('btn-loading');
+    submitBtn.disabled = true;
+    
+    // Soumission réelle du formulaire
+    form.submit();
+}
+
+// Gestion des erreurs du backend
+{% if messages %}
+    {% for category, message in messages %}
+        {% if category == 'danger' %}
+            showError('{{ message }}');
+        {% endif %}
+    {% endfor %}
+{% endif %}
+</script>
+{% endblock %}

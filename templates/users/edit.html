@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="edit-user-card">
+                <!-- En-tête avec dégradé -->
+                <div class="card-header-gradient">
+                    <h2 class="edit-user-title">
+                        <i class="fas fa-user-edit"></i>
+                        Modifier {{ user.prenom }} {{ user.nom }}
+                    </h2>
+                    <p class="user-id">ID Utilisateur : #{{ user.id_user }}</p>
+                </div>
+
+                <div class="card-body">
+                    <!-- Alertes animées -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} slide-in">
+                                    <i class="alert-icon fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                                    <div class="alert-content">
+                                        <span>{{ message }}</span>
+                                        <button type="button" class="alert-close" data-bs-dismiss="alert">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Formulaire -->
+                    <form method="POST" class="user-edit-form">
+                        <div class="form-grid">
+                            <!-- Colonne gauche -->
+                            <div class="form-column">
+                                <div class="input-group floating-input">
+                                    <input type="text" 
+                                           id="nom" 
+                                           name="nom" 
+                                           value="{{ user.nom }}" 
+                                           required>
+                                    <label for="nom">Nom</label>
+                                </div>
+
+                                <div class="input-group floating-input">
+                                    <input type="text" 
+                                           id="prenom" 
+                                           name="prenom" 
+                                           value="{{ user.prenom }}" 
+                                           required>
+                                    <label for="prenom">Prénom</label>
+                                </div>
+
+                                <div class="input-group floating-input">
+                                    <input type="email" 
+                                           id="email" 
+                                           name="email" 
+                                           value="{{ user.email }}">
+                                    <label for="email">Email</label>
+                                </div>
+
+                                <div class="input-group floating-input">
+                                    <input type="text" 
+                                           id="telephone" 
+                                           name="telephone" 
+                                           value="{{ user.telephone }}">
+                                    <label for="telephone">Téléphone</label>
+                                </div>
+                            </div>
+
+                            <!-- Colonne droite -->
+                            <div class="form-column">
+                               
+                                <div class="input-group">
+                                    <label>Rôle utilisateur</label>
+                                    <div class="role-select">
+                                        <select id="role" name="role" class="custom-select">
+                                            <option value="user" {% if user.role == 'user' %}selected{% endif %}>
+                                                <i class="fas fa-user"></i> Utilisateur
+                                            </option>
+                                            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>
+                                                <i class="fas fa-shield-alt"></i> Administrateur
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="input-group toggle-group">
+                                    <label>Statut du compte</label>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" 
+                                               id="actif" 
+                                               name="actif" 
+                                               {% if user.actif %}checked{% endif %}>
+                                        <label for="actif" class="slider"></label>
+                                        <span class="toggle-label">{{ 'Actif' if user.actif else 'Inactif' }}</span>
+                                    </div>
+                                </div>
+                               
+
+                                <div class="input-group checkbox-group">
+                                    <div class="custom-checkbox">
+                                        <input type="checkbox" 
+                                               id="reset_password" 
+                                               name="reset_password" hidden>
+                                        <label for="reset_password">
+                                            <span class="checkmark"></span>
+                                            Réinitialiser le mot de passe
+                                            <span class="checkbox-note">
+                                                (Mot de passe défini sur "nom.prenom")
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {% if current_user.id_user == user.id_user %}
+                                <div class="self-edit-warning">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <div>
+                                        <h4>Modification de votre propre compte</h4>
+                                        <p>Certaines fonctionnalités sont désactivées pour des raisons de sécurité.</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-save">
+                                <i class="fas fa-save"></i>
+                                Enregistrer
+                            </button>
+                            <a href="{{ url_for('users.index') }}" class="btn btn-cancel">
+                                <i class="fas fa-times"></i>
+                                Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    /* Style pour le sélecteur de rôle */
+    .input-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .input-group label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+        color: var(--text-dark);
+        font-size: 0.95rem;
+    }
+    
+    .role-select {
+        position: relative;
+    }
+    
+    .custom-select {
+        width: 100%;
+        padding: 0.875rem 1.5rem;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background-color: white;
+        appearance: none;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .custom-select:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+    
+    .role-select::after {
+        content: "⌄";
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-dark);
+        font-size: 1.2em;
+        pointer-events: none;
+        transition: transform 0.3s ease;
+    }
+    
+    .custom-select option {
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .custom-select option::before {
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        font-size: 0.9em;
+        margin-right: 0.75rem;
+    }
+    
+    .custom-select option[value="user"]::before {
+        content: "\f007"; /* Icône user */
+    }
+    
+    .custom-select option[value="admin"]::before {
+        content: "\f3ed"; /* Icône shield-alt */
+    }
+    
+    /* Style pour le toggle switch */
+    .toggle-group label {
+        margin-bottom: 0.75rem;
+    }
+    
+    .toggle-switch {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .toggle-switch input[type="checkbox"] {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+        background-color: #e0e0e0;
+        border-radius: 34px;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        cursor: pointer;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .slider::before {
+        content: "";
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    input:checked + .slider {
+        background-color: var(--success-color);
+    }
+    
+    input:checked + .slider::before {
+        transform: translateX(22px);
+    }
+    
+    input:focus + .slider {
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .toggle-label {
+        font-weight: 500;
+        color: var(--text-dark);
+        min-width: 60px;
+        transition: color 0.3s ease;
+    }
+    
+    input:checked ~ .toggle-label {
+        color: var(--success-color);
+    }
+    
+    /* Animation hover */
+    .slider:hover::before {
+        transform: scale(1.1);
+    }
+    
+    input:checked + .slider:hover::before {
+        transform: translateX(22px) scale(1.1);
+    }
+    
+    /* États désactivés */
+    input:disabled + .slider {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    </style>
+<style>
+    
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --success-color: #27ae60;
+    --warning-color: #f39c12;
+    --danger-color: #c0392b;
+    --background-light: #f8f9fa;
+    --text-dark: #2c3e50;
+    --text-light: #ecf0f1;
+    --border-color: #dfe6e9;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+.edit-user-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.card-header-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem;
+    color: white;
+}
+
+.edit-user-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.user-id {
+    margin: 0.5rem 0 0;
+    opacity: 0.8;
+    font-size: 0.9em;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.floating-input {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.floating-input input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.floating-input label {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    padding: 0 0.5rem;
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.floating-input input:focus ~ label,
+.floating-input input:not(:placeholder-shown) ~ label {
+    top: 0;
+    font-size: 0.8em;
+    color: var(--accent-color);
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.custom-checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.checkmark {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    position: relative;
+}
+
+input[type="checkbox"]:checked ~ .checkmark {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.self-edit-warning {
+    background: #fff3cd;
+    border-left: 4px solid var(--warning-color);
+    padding: 1rem;
+    border-radius: 6px;
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    border-top: 2px solid var(--border-color);
+    padding-top: 2rem;
+}
+
+.btn-save {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+// Script existant amélioré avec animations
+document.querySelector('#reset_password').addEventListener('change', function(e) {
+    if (this.checked && !confirm('Confirmer la réinitialisation du mot de passe ?')) {
+        e.preventDefault();
+        this.checked = false;
+    }
+});
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    const roleChanged = document.querySelector('#role')?.value !== '{{ user.role }}';
+    const statusChanged = document.querySelector('#actif')?.checked !== {{ 'true' if user.actif else 'false' }};
+    
+    if ((roleChanged || statusChanged) && !confirm('Modifier le rôle/statut de l\'utilisateur ?')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}
