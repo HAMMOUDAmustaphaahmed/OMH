@@ -502,49 +502,65 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('editForm');
-
-    // Set minimum date for departure
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date_depart').min = today;
-
-    // Form validation
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const requiredFields = form.querySelectorAll('[required]');
-        let isValid = true;
-
-        requiredFields.forEach(field => {
-            if (!field.value) {
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editForm');
+    
+        // Set minimum date for departure
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date_depart').min = today;
+    
+        // Form validation and submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            // Désactiver le bouton de soumission pour éviter les doubles soumissions
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+    
+            // Valider les champs requis
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+    
+            requiredFields.forEach(field => {
+                if (!field.value) {
+                    isValid = false;
+                    field.classList.add('invalid');
+                    const label = field.parentElement.querySelector('label');
+                    if (label) {
+                        label.classList.add('invalid-label');
+                    }
+                } else {
+                    field.classList.remove('invalid');
+                    const label = field.parentElement.querySelector('label');
+                    if (label) {
+                        label.classList.remove('invalid-label');
+                    }
+                }
+            });
+    
+            // Valider les dates
+            const dateDepart = new Date(document.getElementById('date_depart').value);
+            const dateArrivee = document.getElementById('date_arrivee').value 
+                ? new Date(document.getElementById('date_arrivee').value) 
+                : null;
+    
+            if (dateArrivee && dateArrivee < dateDepart) {
                 isValid = false;
-                field.classList.add('invalid');
-                field.parentElement.querySelector('label').classList.add('invalid-label');
-            } else {
-                field.classList.remove('invalid');
-                field.parentElement.querySelector('label').classList.remove('invalid-label');
+                alert('La date d\'arrivée ne peut pas être antérieure à la date de départ');
+                document.getElementById('date_arrivee').classList.add('invalid');
             }
-        });
-
-        // Validate dates
-        const departDate = new Date(document.getElementById('date_depart').value);
-        const arriveeDate = document.getElementById('date_arrivee').value 
-            ? new Date(document.getElementById('date_arrivee').value) 
-            : null;
-
-        if (arriveeDate && arriveeDate < departDate) {
-            isValid = false;
-            alert('La date d\'arrivée ne peut pas être antérieure à la date de départ');
-            document.getElementById('date_arrivee').classList.add('invalid');
-        }
-
-        if (isValid) {
+    
+            if (!isValid) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save"></i> Enregistrer les modifications';
+                alert('Veuillez remplir tous les champs obligatoires correctement.');
+                return;
+            }
+    
+            // Soumettre le formulaire
             form.submit();
-        } else {
-            alert('Veuillez remplir tous les champs obligatoires correctement.');
-        }
+        });
     });
-});
-</script>
+    </script>
 {% endblock %}

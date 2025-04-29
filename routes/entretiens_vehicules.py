@@ -152,7 +152,7 @@ def details(id):
     entretien = EntretienVehicule.query.get_or_404(id)
     return render_template('entretiens/details.html', entretien=entretien)
 
-@entretiens.route('/delete/<int:id>')
+@entretiens.route('/delete/<int:id>', methods=['POST'])  # Changer la méthode en POST uniquement
 @login_required
 def delete(id):
     entretien = EntretienVehicule.query.get_or_404(id)
@@ -166,6 +166,7 @@ def delete(id):
         db.session.commit()
         flash('Entretien supprimé avec succès!', 'success')
     except Exception as e:
+        db.session.rollback()
         flash(f'Erreur lors de la suppression: {str(e)}', 'error')
     return redirect(url_for('entretiens.index'))
 

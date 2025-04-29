@@ -80,11 +80,10 @@
                            class="btn btn-sm btn-warning">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="{{ url_for('entretiens.delete', id=entretien.id_entretien) }}" 
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet entretien?')">
+                        <button onclick="confirmDelete({{ entretien.id_entretien }})" 
+                            class="btn btn-sm btn-danger">
                             <i class="fas fa-trash"></i>
-                        </a>
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -92,6 +91,130 @@
         </table>
     </div>
 </div>
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content">
+        <h3>
+            <i class="fas fa-exclamation-triangle"></i>
+            Confirmer la suppression
+        </h3>
+        <p>Êtes-vous sûr de vouloir supprimer cet entretien ?</p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+                Annuler
+            </button>
+            <button class="btn btn-danger" onclick="executeDelete()">
+                <i class="fas fa-trash"></i>
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-content h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .modal-content p {
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+</style>
+<script>
+    let entretienIdToDelete = null;
+    
+    function confirmDelete(id) {
+        entretienIdToDelete = id;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+    
+    function executeDelete() {
+        if (entretienIdToDelete) {
+            // Créer un formulaire temporaire pour envoyer une requête POST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/entretiens/delete/${entretienIdToDelete}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+    
+    // Fermer le modal en cliquant en dehors
+    window.onclick = function(event) {
+        const modal = document.getElementById('deleteModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+    </script>    
+
+
+
+
 <style>
     .maintenance-dashboard {
         padding: 20px;

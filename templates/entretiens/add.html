@@ -2,234 +2,493 @@
 
 {% block content %}
 <div class="maintenance-form-container">
+    <!-- Header Section -->
     <div class="form-header">
-        <h2><i class="fas fa-plus-circle"></i> Nouvel Entretien</h2>
-        <a href="{{ url_for('entretiens.index') }}" class="btn btn-secondary">
+        <div class="header-content">
+            <h2><i class="fas fa-wrench"></i> Nouvel Entretien</h2>
+            <p class="subtitle">Enregistrer un nouvel entretien de véhicule</p>
+        </div>
+        <a href="{{ url_for('entretiens.index') }}" class="btn btn-return">
             <i class="fas fa-arrow-left"></i> Retour
         </a>
     </div>
 
+    <!-- Main Form -->
     <form method="POST" class="maintenance-form" enctype="multipart/form-data">
-        <div class="form-grid">
-            <div class="form-group">
-                <label for="vehicule">Véhicule</label>
-                <select name="vehicule" id="vehicule" class="form-control" required>
-                    <option value="">Sélectionner un véhicule</option>
-                    {% for vehicule in vehicules %}
-                    <option value="{{ vehicule.id_vehicule }}">
-                        {{ vehicule.matricule }} - {{ vehicule.modele }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Remplacer le champ type_entretien existant par celui-ci -->
-<div class="form-group">
-    <label for="type_entretien">Type d'entretien</label>
-    <select name="type_entretien" id="type_entretien" class="form-control" required>
-        <option value="">Sélectionner un type d'entretien</option>
-        <optgroup label="Entretien régulier">
-            <option value="Vidange">Vidange</option>
-            <option value="Filtres">Changement des filtres</option>
-            <option value="Bougies">Changement des Bougies</option>
-            <option value="Freinage">Système de freinage</option>
-            <option value="Transmission">Transmission</option>
-            <option value="Suspension">Suspension</option>
-            <option value="Pneumatiques">Pneumatiques</option>
-            <option value="Distribution">Kit distribution</option>
-            <option value="Climatisation">Climatisation</option>
-        </optgroup>
-        
-        <optgroup label="Réparations">
-            <option value="Carrosserie">Carrosserie</option>
-            <option value="Mécanique">Mécanique</option>
-            <option value="Électrique">Système électrique</option>
-            <option value="Électronique">Système électronique</option>
-            <option value="Direction">Direction</option>
-            <option value="Embrayage">Embrayage</option>
-        </optgroup>
-        
-        <optgroup label="Contrôles">
-            <option value="Diagnostic">Diagnostic général</option>
-            <option value="Géométrie">Contrôle géométrie</option>
-            <option value="Antipollution">Contrôle antipollution</option>
-        </optgroup>
-        
-        <optgroup label="Autres">
-            <option value="Batterie">Batterie</option>
-            <option value="Éclairage">Système d'éclairage</option>
-            <option value="Essuie-glaces">Essuie-glaces</option>
-            <option value="Échappement">Système d'échappement</option>
-            <option value="Divers">Autres interventions</option>
-        </optgroup>
-    </select>
-</div>
-
-<style>
-select#type_entretien {
-    padding: 8px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background-color: white;
-    font-size: 1rem;
-    width: 100%;
-}
-
-select#type_entretien optgroup {
-    font-weight: bold;
-    color: #495057;
-}
-
-select#type_entretien option {
-    padding: 8px;
-    color: #212529;
-}
-
-select#type_entretien:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-    outline: 0;
-}
-
-/* Style pour l'option par défaut */
-select#type_entretien option[value=""] {
-    color: #6c757d;
-}
-
-/* Style pour les groupes */
-select#type_entretien optgroup {
-    background-color: #f8f9fa;
-    margin: 5px 0;
-}
-</style>
-
-<script>
-document.getElementById('type_entretien').addEventListener('change', function() {
-    
-    const selectedType = this.value;
-    console.log('Type d\'entretien sélectionné:', selectedType);
-});
-</script>
-
-            <div class="form-group">
-                <label for="pieces">Pièces concernées</label>
-                <div class="pieces-input-container">
-                    <div class="pieces-list" id="pieces_list">
-                        <!-- Les pièces sélectionnées seront affichées ici -->
+        <!-- Form Sections -->
+        <div class="form-sections">
+            <!-- Vehicle Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-car"></i>
+                    Informations véhicule
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="vehicule">Véhicule</label>
+                        <div class="select-wrapper">
+                            <select name="vehicule" id="vehicule" required>
+                                <option value="">Sélectionner un véhicule</option>
+                                {% for vehicule in vehicules %}
+                                <option value="{{ vehicule.id_vehicule }}">
+                                    {{ vehicule.matricule }} - {{ vehicule.modele }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
-                    <div class="add-piece-container">
-                        <input type="text" id="new_piece" class="form-control" 
-                               placeholder="Ajouter une pièce...">
-                        <button type="button" id="add_piece" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus"></i>
-                        </button>
+
+                    <div class="form-group">
+                        <label for="type_entretien">Type d'entretien</label>
+                        <select name="type_entretien" id="type_entretien" class="form-control" required>
+                            <option value="">Sélectionner un type d'entretien</option>
+                            <optgroup label="Entretien régulier">
+                                <option value="Vidange">Vidange</option>
+                                <option value="Filtres">Changement des filtres</option>
+                                <option value="Bougies">Changement des Bougies</option>
+                                <option value="Freinage">Système de freinage</option>
+                                <option value="Transmission">Transmission</option>
+                                <option value="Suspension">Suspension</option>
+                                <option value="Pneumatiques">Pneumatiques</option>
+                                <option value="Distribution">Kit distribution</option>
+                                <option value="Climatisation">Climatisation</option>
+                            </optgroup>
+                            
+                            <optgroup label="Réparations">
+                                <option value="Carrosserie">Carrosserie</option>
+                                <option value="Mécanique">Mécanique</option>
+                                <option value="Électrique">Système électrique</option>
+                                <option value="Électronique">Système électronique</option>
+                                <option value="Direction">Direction</option>
+                                <option value="Embrayage">Embrayage</option>
+                            </optgroup>
+                            
+                            <optgroup label="Contrôles">
+                                <option value="Diagnostic">Diagnostic général</option>
+                                <option value="Géométrie">Contrôle géométrie</option>
+                                <option value="Antipollution">Contrôle antipollution</option>
+                            </optgroup>
+                            
+                            <optgroup label="Autres">
+                                <option value="Batterie">Batterie</option>
+                                <option value="Éclairage">Système d'éclairage</option>
+                                <option value="Essuie-glaces">Essuie-glaces</option>
+                                <option value="Échappement">Système d'échappement</option>
+                                <option value="Divers">Autres interventions</option>
+                            </optgroup>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="date_entretien">Date d'entretien</label>
-                <input type="date" name="date_entretien" id="date_entretien" 
-                       class="form-control" required>
+            <!-- Service Details Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-tools"></i>
+                    Détails de l'intervention
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="pieces">Pièces concernées</label>
+                        <div class="pieces-container">
+                            <div class="pieces-list" id="pieces_list"></div>
+                            <div class="add-piece-wrapper">
+                                <input type="text" id="new_piece" placeholder="Ajouter une pièce...">
+                                <button type="button" id="add_piece" class="btn-add-piece">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date_entretien">Date d'entretien</label>
+                        <div class="input-icon-wrapper">
+                            <input type="date" name="date_entretien" id="date_entretien" required>
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="kilometrage">Kilométrage actuel</label>
+                        <div class="input-icon-wrapper">
+                            <input type="number" name="kilometrage" id="kilometrage" required>
+                            <span class="unit">km</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="kilometrage_suivant">Kilométrage suivant</label>
+                        <div class="input-icon-wrapper">
+                            <input type="number" name="kilometrage_suivant" id="kilometrage_suivant" required>
+                            <span class="unit">km</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="kilometrage">Kilométrage actuel</label>
-                <input type="number" name="kilometrage" id="kilometrage" 
-                       class="form-control" required>
+            <!-- Financial Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Informations financières
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="prix_entretien">Prix total</label>
+                        <div class="input-icon-wrapper">
+                            <input type="number" name="prix_entretien" id="prix_entretien" step="0.01" required>
+                            <span class="unit">TND</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prestataire">Prestataire</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" name="prestataire" id="prestataire" required>
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="facture_reference">Référence facture</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" name="facture_reference" id="facture_reference">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="facture">Facture</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" name="facture" id="facture" accept=".pdf,.png,.jpg,.jpeg">
+                            <label for="facture" class="file-upload-label">
+                                <i class="fas fa-upload"></i>
+                                <span>Choisir un fichier</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="kilometrage_suivant">Kilométrage suivant</label>
-                <input type="number" name="kilometrage_suivant" id="kilometrage_suivant" 
-                       class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label for="prix_entretien">Prix total</label>
-                <input type="number" name="prix_entretien" id="prix_entretien" 
-                       class="form-control" step="0.01" required>
-            </div>
-
-            <div class="form-group">
-                <label for="prestataire">Prestataire</label>
-                <input type="text" name="prestataire" id="prestataire" 
-                       class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label for="facture_reference">Référence facture</label>
-                <input type="text" name="facture_reference" id="facture_reference" 
-                       class="form-control">
-            </div>
-
-            <div class="form-group">
-                <label for="facture">Facture (PDF, PNG, JPG)</label>
-                <input type="file" name="facture" id="facture" 
-                       class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+            <!-- Description Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Description
+                </h3>
+                <div class="form-group full-width">
+                    <textarea name="description" id="description" rows="4" 
+                              placeholder="Description détaillée des travaux effectués..."></textarea>
+                </div>
             </div>
         </div>
 
-        <div class="form-group full-width">
-            <label for="description">Description des travaux</label>
-            <textarea name="description" id="description" 
-                      class="form-control" rows="4"></textarea>
-        </div>
-
+        <!-- Form Actions -->
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Enregistrer
+                <i class="fas fa-save"></i>
+                <span>Enregistrer</span>
             </button>
             <button type="reset" class="btn btn-secondary">
-                <i class="fas fa-undo"></i> Réinitialiser
+                <i class="fas fa-undo"></i>
+                <span>Réinitialiser</span>
             </button>
         </div>
     </form>
 </div>
 
 <style>
-/* ... Styles existants ... */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-color: #3498db;
+    --success-color: #2ecc71;
+    --warning-color: #f1c40f;
+    --danger-color: #e74c3c;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+}
 
-.pieces-input-container {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
+/* Container Styles */
+.maintenance-form-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* Header Styles */
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.header-content h2 {
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.subtitle {
+    color: var(--gray-600);
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+}
+
+/* Section Styles */
+.form-section {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.section-title {
+    color: var(--gray-700);
+    font-size: 1.1rem;
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Grid Layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Form Controls */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+/* Input Styles */
+.input-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Select Wrapper */
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper i {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-500);
+    pointer-events: none;
+}
+
+/* File Upload */
+.file-upload-wrapper {
+    position: relative;
+}
+
+.file-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--gray-100);
+    border: 1px dashed var(--gray-400);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-label:hover {
+    background: var(--gray-200);
+}
+
+input[type="file"] {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+/* Pieces List */
+.pieces-container {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
 }
 
 .pieces-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 10px;
-    min-height: 40px;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    min-height: 2rem;
 }
 
 .piece-item {
-    background: #f8f9fa;
-    padding: 5px 10px;
-    border-radius: 15px;
+    background: var(--gray-100);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 0.5rem;
+    font-size: 0.9rem;
 }
 
-.piece-item .remove-piece {
-    cursor: pointer;
-    color: #dc3545;
-}
-
-.add-piece-container {
+.add-piece-wrapper {
     display: flex;
-    gap: 10px;
+    gap: 0.5rem;
 }
 
-.add-piece-container .form-control {
-    flex: 1;
+.btn-add-piece {
+    padding: 0.75rem;
+    background: var(--accent-color);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-piece:hover {
+    background: #2980b9;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--accent-color);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--gray-500);
+    color: white;
+}
+
+.btn-return {
+    background: var(--gray-200);
+    color: var(--gray-700);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-section {
+    animation: fadeIn 0.3s ease-out;
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Pièces management
     const piecesList = document.getElementById('pieces_list');
     const newPieceInput = document.getElementById('new_piece');
     const addPieceBtn = document.getElementById('add_piece');
@@ -265,6 +524,21 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             addPiece(newPieceInput.value);
         }
+    });
+
+    // File upload
+    const fileInput = document.getElementById('facture');
+    const fileLabel = document.querySelector('.file-upload-label span');
+    
+    fileInput.addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name;
+        fileLabel.textContent = fileName || 'Choisir un fichier';
+    });
+
+    // Type d'entretien
+    const typeSelect = document.getElementById('type_entretien');
+    typeSelect.addEventListener('change', function() {
+        console.log('Type d\'entretien sélectionné:', this.value);
     });
 });
 </script>

@@ -204,6 +204,8 @@
         </div>
     </div>
 </div>
+<form id="deleteForm" method="POST" style="display: none;">
+</form>
 
 <style>
 :root {
@@ -577,6 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
 let tripIdToDelete = null;
 
 function confirmDelete(tripId) {
@@ -590,7 +593,9 @@ function closeModal() {
 
 function executeDelete() {
     if (tripIdToDelete) {
-        window.location.href = `{{ url_for('trips.delete', trip_id=0) }}`.replace('0', tripIdToDelete);
+        const form = document.getElementById('deleteForm');
+        form.action = `/trips/delete/${tripIdToDelete}`;
+        form.submit();
     }
 }
 
@@ -601,4 +606,5 @@ window.onclick = function(event) {
     }
 }
 </script>
+
 {% endblock %}

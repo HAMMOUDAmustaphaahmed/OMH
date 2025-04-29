@@ -69,11 +69,7 @@ def add():
             flash(f'Une erreur est survenue : {str(e)}', 'danger')
             return redirect(url_for('trips.add'))
 
-<<<<<<< HEAD
-    vehicules = Vehicule.query.filter_by(etat='En marche').all()
-=======
-    vehicules = Vehicule.query.filter_by(etat='Disponible').all()
->>>>>>> 579dc230bc3674712c8782292c6159cb762701f4
+    vehicules = Vehicule.query.filter_by(etat='En Marche').all()
     chauffeurs = Chauffeur.query.filter_by(statut='Actif').all()
     
     return render_template('trips/add.html', vehicules=vehicules, chauffeurs=chauffeurs)
@@ -85,36 +81,51 @@ def edit(trip_id):
     
     if request.method == 'POST':
         try:
+            # Validation de base
+            if not request.form.get('date_depart') or not request.form.get('heure_depart'):
+                raise ValueError("La date et l'heure de départ sont requises")
+
+            # Mise à jour des champs
             trip.type = request.form.get('type')
-            trip.id_vehicule = request.form.get('id_vehicule')
-            trip.id_chauffeur = request.form.get('id_chauffeur')
+            trip.id_vehicule = int(request.form.get('id_vehicule'))
+            trip.id_chauffeur = int(request.form.get('id_chauffeur'))
             trip.point_depart = request.form.get('point_depart')
             trip.point_arrivee = request.form.get('point_arrivee')
-            trip.prix = request.form.get('prix')
+            trip.prix = float(request.form.get('prix'))
             trip.heure_depart = datetime.strptime(request.form.get('heure_depart'), '%H:%M').time()
             trip.date_depart = datetime.strptime(request.form.get('date_depart'), '%Y-%m-%d').date()
             trip.client_nom = request.form.get('client_nom')
             trip.client_telephone = request.form.get('client_telephone')
             trip.client_email = request.form.get('client_email')
-            trip.nombre_passagers = request.form.get('nombre_passagers')
+            trip.nombre_passagers = int(request.form.get('nombre_passagers')) if request.form.get('nombre_passagers') else None
             trip.commentaires = request.form.get('commentaires')
             trip.etat_trip = request.form.get('etat_trip')
             trip.etat_paiement = request.form.get('etat_paiement')
 
-            # Champs optionnels
+            # Champs optionnels avec validation
             if request.form.get('distance'):
                 trip.distance = float(request.form.get('distance'))
+            else:
+                trip.distance = None
             
             if request.form.get('heure_arrivee'):
                 trip.heure_arrivee = datetime.strptime(request.form.get('heure_arrivee'), '%H:%M').time()
+            else:
+                trip.heure_arrivee = None
             
             if request.form.get('date_arrivee'):
                 trip.date_arrivee = datetime.strptime(request.form.get('date_arrivee'), '%Y-%m-%d').date()
+            else:
+                trip.date_arrivee = None
 
             db.session.commit()
             flash('Le voyage a été mis à jour avec succès.', 'success')
             return redirect(url_for('trips.index'))
             
+        except ValueError as ve:
+            db.session.rollback()
+            flash(f'Erreur de validation : {str(ve)}', 'danger')
+            return redirect(url_for('trips.edit', trip_id=trip_id))
         except Exception as e:
             db.session.rollback()
             flash(f'Une erreur est survenue : {str(e)}', 'danger')
@@ -124,7 +135,6 @@ def edit(trip_id):
     chauffeurs = Chauffeur.query.all()
     
     return render_template('trips/edit.html', trip=trip, vehicules=vehicules, chauffeurs=chauffeurs)
-
 @trips_bp.route('/details/<int:trip_id>')
 @login_required
 def details(trip_id):
