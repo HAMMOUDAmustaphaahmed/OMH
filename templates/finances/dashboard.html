@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="sidebar">
+        <h3>Gestion financière</h3>
+        <ul>
+            <li><a href="{{ url_for('finances.depenses') }}">Dépenses</a></li>
+            <li><a href="{{ url_for('finances.paiements') }}">Paiements</a></li>
+            <li><a href="{{ url_for('finances.rapports') }}">Rapports</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h2>Tableau de bord financier</h2>
+        <div class="card-row">
+            <div class="card">
+                <div class="card-icon blue">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">Revenus totaux</span>
+                    <span class="card-value">{{ total_revenus }}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon red">
+                    <i class="fas fa-minus-circle"></i>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">Dépenses totales</span>
+                    <span class="card-value">{{ total_depenses }}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon green">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="card-info">
+                    <span class="card-title">Bénéfice net</span>
+                    <span class="card-value">{{ (total_revenus - total_depenses) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-widgets">
+            <div class="widget">
+                <h3>Revenus du mois</h3>
+                <div class="chart-container">
+                    <canvas id="monthlyRevenueChart"></canvas>
+                </div>
+            </div>
+            <div class="widget">
+                <h3>Dépenses du mois</h3>
+                <div class="chart-container">
+                    <canvas id="monthlyExpensesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-widgets">
+            <div class="widget">
+                <h3>Derniers paiements</h3>
+                <div class="recent-payments">
+                    {% for payment in derniers_paiements %}
+                    <div class="payment-item">
+                        <div class="payment-details">
+                            <span class="payment-date">{{ payment.date_paiement }}</span>
+                            <span class="payment-amount">{{ payment.montant_paye }}</span>
+                        </div>
+                        <span class="payment-mode">{{ payment.mode_paiement }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="widget">
+                <h3>Dernières dépenses</h3>
+                <div class="recent-expenses">
+                    {% for expense in dernieres_depenses %}
+                    <div class="expense-item">
+                        <div class="expense-details">
+                            <span class="expense-date">{{ expense.date_depense }}</span>
+                            <span class="expense-category">{{ expense.categorie }}</span>
+                        </div>
+                        <span class="expense-amount">{{ expense.montant }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+{% block styles %}
+<style>
+/* Variables pour les couleurs */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --accent-blue: #3498db;
+    --accent-green: #2ecc71;
+    --accent-red: #e74c3c;
+    --background-light: #f5f6fa;
+    --text-dark: #2c3e50;
+    --text-light: #ffffff;
+    --shadow-regular: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Layout principal */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    background-color: var(--background-light);
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow-large);
+    position: sticky;
+    top: 2rem;
+    height: calc(100vh - 4rem);
+}
+
+.sidebar h3 {
+    color: var(--text-light);
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    margin-bottom: 1rem;
+}
+
+.sidebar a {
+    color: var(--text-light);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+/* Content area */
+.content {
+    padding: 2rem;
+}
+
+.content h2 {
+    color: var(--text-dark);
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+/* Cards */
+.card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    box-shadow: var(--shadow-regular);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.card-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.card-icon.blue { background: var(--accent-blue); }
+.card-icon.red { background: var(--accent-red); }
+.card-icon.green { background: var(--accent-green); }
+
+.card-info {
+    flex: 1;
+}
+
+.card-title {
+    display: block;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.card-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-dark);
+}
+
+/* Widgets */
+.dashboard-widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.widget {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-regular);
+}
+
+.widget h3 {
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--background-light);
+}
+
+/* Charts */
+.chart-container {
+    height: 300px;
+    position: relative;
+}
+
+/* Recent transactions */
+.payment-item, .expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--background-light);
+    transition: background-color 0.3s ease;
+}
+
+.payment-item:hover, .expense-item:hover {
+    background-color: var(--background-light);
+}
+
+.payment-details, .expense-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.payment-date, .expense-date {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.payment-amount, .expense-amount {
+    font-weight: bold;
+    color: var(--text-dark);
+}
+
+.payment-mode, .expense-category {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    background-color: var(--background-light);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        position: relative;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-widgets {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card, .widget {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Chart.js Customization */
+canvas {
+    max-width: 100% !important;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Configurations pour Chart.js
+Chart.defaults.color = '#2c3e50';
+Chart.defaults.font.family = "'Poppins', sans-serif";
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration des graphiques avec des options améliorées
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    padding: 20,
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(44, 62, 80, 0.9)',
+                titleFont: {
+                    size: 13
+                },
+                bodyFont: {
+                    size: 12
+                },
+                padding: 12,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    };
+
+    // Graphique des revenus
+    const revenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for month in months %}'{{ month }}',{% endfor %}],
+            datasets: [{
+                label: 'Revenus (€)',
+                data: [{% for revenue in monthly_revenue %}{{ revenue }},{% endfor %}],
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: chartOptions
+    });
+
+    // Graphique des dépenses
+    const expensesCtx = document.getElementById('monthlyExpensesChart').getContext('2d');
+    new Chart(expensesCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for month in months %}'{{ month }}',{% endfor %}],
+            datasets: [{
+                label: 'Dépenses (€)',
+                data: [{% for expense in monthly_expenses %}{{ expense }},{% endfor %}],
+                backgroundColor: 'rgba(231, 76, 60, 0.6)',
+                borderColor: 'rgba(231, 76, 60, 1)',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: chartOptions
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

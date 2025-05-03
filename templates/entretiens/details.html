@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="maintenance-details">
+    <div class="details-header">
+        <h2>
+            <i class="fas fa-wrench"></i> 
+            Détails de l'entretien - {{ entretien.vehicule.matricule }}
+        </h2>
+        <div class="header-actions">
+            <a href="{{ url_for('entretiens.edit', id=entretien.id_entretien) }}" 
+               class="btn btn-warning">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+            <a href="{{ url_for('entretiens.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <div class="details-grid">
+        <div class="detail-card">
+            <h3><i class="fas fa-car"></i> Informations véhicule</h3>
+            <div class="detail-content">
+                <p><strong>Matricule:</strong> {{ entretien.vehicule.matricule }}</p>
+                <p><strong>Modèle:</strong> {{ entretien.vehicule.modele }}</p>
+                <p><strong>Kilométrage actuel:</strong> {{ entretien.vehicule.kilometrage_vehicule|int }} km</p>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <h3><i class="fas fa-tools"></i> Informations entretien</h3>
+            <div class="detail-content">
+                <p><strong>Type:</strong> {{ entretien.type_entretien }}</p>
+                <p><strong>Date:</strong> {{ entretien.date_entretien.strftime('%d/%m/%Y') }}</p>
+                <p><strong>Kilométrage:</strong> {{ entretien.kilometrage|int }} km</p>
+                <p><strong>Kilométrage suivant:</strong> {{ entretien.kilometrage_suivant|int }} km</p>
+                <p><strong>Prix:</strong> {{ "%.2f"|format(entretien.prix_entretien) }} €</p>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <h3><i class="fas fa-cogs"></i> Pièces remplacées</h3>
+            <div class="detail-content pieces-list">
+                {% for piece in entretien.pieces %}
+                <span class="piece-badge">{{ piece }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <h3><i class="fas fa-file-alt"></i> Facture et prestataire</h3>
+            <div class="detail-content">
+                <p><strong>Prestataire:</strong> {{ entretien.prestataire }}</p>
+                <p><strong>Référence facture:</strong> {{ entretien.facture_reference }}</p>
+                {% if entretien.facture_url %}
+                <p>
+                    <strong>Facture:</strong> 
+                    <a href="{{ url_for('static', filename='uploads/' + entretien.facture_url) }}" 
+                       target="_blank" class="btn btn-sm btn-primary">
+                        <i class="fas fa-download"></i> Télécharger
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-card full-width">
+        <h3><i class="fas fa-clipboard-list"></i> Description des travaux</h3>
+        <div class="detail-content">
+            {{ entretien.description or 'Aucune description disponible.' }}
+        </div>
+    </div>
+</div>
+
+<style>
+.maintenance-details {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.detail-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-card h3 {
+    margin-bottom: 15px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-content {
+    color: #666;
+}
+
+.pieces-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.piece-badge {
+    background: #f8f9fa;
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    border: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .details-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+</style>
+{% endblock %}

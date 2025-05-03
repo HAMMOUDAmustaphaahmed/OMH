@@ -1,0 +1,1287 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar avec effet de profondeur -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-compass"></i>
+            <h3>Gestion</h3>
+        </div>
+        <ul>
+            <li><a href="{{ url_for('vehicles.index') }}"><i class="fas fa-car"></i> Véhicules</a></li>
+            <li><a href="{{ url_for('drivers.index') }}"><i class="fas fa-id-card"></i> Chauffeurs</a></li>
+            <li class="active"><a href="{{ url_for('trips.index') }}"><i class="fas fa-route"></i> Voyages</a></li>
+            <li><a href="{{ url_for('finances.index') }}"><i class="fas fa-wallet"></i> Finances</a></li>
+            <li><a href="{{ url_for('users.index') }}"><i class="fas fa-users"></i> Utilisateurs</a></li>
+            <li><a href="{{ url_for('entretiens.index') }}"><i class="fas fa-wrench"></i> Entretiens</a></li>
+            <li><a href="{{ url_for('calendrier.afficher_calendrier') }}"><i class="fas fa-calendar"></i> Calendrier</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- En-tête de page -->
+        <div class="page-header">
+            <div class="header-title">
+                <h1><i class="fas fa-plus-circle"></i> Nouveau Voyage</h1>
+                </div>
+            
+        </div>
+        
+        <!-- Formulaire -->
+        <!-- Type de voyage -->
+        <form method="POST" action="{{ url_for('trips.add') }}" id="tripForm" enctype="multipart/form-data">
+            <input type="hidden" name="nom" id="trip_name" value="Trip">
+            <div class="form-section trip-type-section">
+                <div class="section-header">
+                    
+                    <h2>Type de Voyage</h2>
+                </div>
+                <form method="POST" action="{{ url_for('trips.add') }}" id="tripForm" enctype="multipart/form-data">
+                    <input type="hidden" name="nom" id="trip_name" value="Trip">
+                
+                <div class="trip-type-selector">
+                    <div class="form-grid">
+                        <label class="trip-type-card">
+                            <input type="radio" name="type" value="Transfert" required>
+                            <div class="card-content">
+                                <i class="fas fa-shuttle-van"></i>
+                                <span>Transfert</span>
+                            </div>
+                        </label>
+
+                        <label class="trip-type-card">
+                            <input type="radio" name="type" value="Excursion">
+                            <div class="card-content">
+                                <i class="fas fa-mountain"></i>
+                                <span>Excursion</span>
+                            </div>
+                        </label>
+
+                        <label class="trip-type-card">
+                            <input type="radio" name="type" value="Mise à disposition">
+                            <div class="card-content">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>Mise à disposition</span>
+                            </div>
+                        </label>
+
+                        <label class="trip-type-card">
+                            <input type="radio" name="type" value="Événement">
+                            <div class="card-content">
+                                <i class="fas fa-star"></i>
+                                <span>Événement</span>
+                            </div>
+                        </label>
+
+                        <label class="trip-type-card">
+                            <input type="radio" name="type" value="Divers">
+                            <div class="card-content">
+                                <i class="fas fa-ellipsis-h"></i>
+                                <span>Divers</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Recurrence Section -->
+                    <div class="recurrence-section mt-4">
+                        <label class="custom-radio-toggle">
+                            <input type="checkbox" name="is_recurring" id="isRecurring">
+                            <div class="toggle-content">
+                                <i class="fas fa-redo"></i>
+                                <span>Voyage récurrent</span>
+                            </div>
+                        </label>
+                        <div id="recurringDays" class="days-grid mt-3" style="display: none;">
+                            {% for day in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'] %}
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="recurring_days" value="{{ day }}">
+                                <span class="day-label">{{ day[:3] }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                
+            </div>
+            <!-- Affectations -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-users"></i>
+                        <h2>Affectations</h2>
+                    </div>
+
+                    <div id="affectations-container">
+                        <div class="affectation-item dynamic-item">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-bus"></i>
+                                        Véhicule
+                                    </label>
+                                    <select name="vehicules[]" class="form-control vehicule-select" required>
+                                        <option value="">Sélectionner un véhicule</option>
+                                        {% for vehicule in vehicules %}
+                                            <option value="{{ vehicule.id_vehicule }}" 
+                                                    data-places="{{ vehicule.nombre_place }}">
+                                                {{ vehicule.modele }} - {{ vehicule.matricule }}
+                                                ({{ vehicule.nombre_place }} places)
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="places-info">
+                                        Places disponibles: <span class="available-seats">0</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user-tie"></i>
+                                        Chauffeur
+                                    </label>
+                                    <select name="chauffeurs[]" class="form-control chauffeur-select" required>
+                                        <option value="">Sélectionner un chauffeur</option>
+                                        {% for chauffeur in chauffeurs %}
+                                            <option value="{{ chauffeur.id_chauffeur }}">
+                                                {{ chauffeur.prenom }} {{ chauffeur.nom }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-danger remove-affectation">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary add-affectation mt-3">
+                        <i class="fas fa-plus"></i>
+                        Ajouter une affectation
+                    </button>
+                    <div class="total-places-info mt-2">
+                        Total places disponibles: <span id="totalAvailableSeats">0</span>
+                    </div>
+                </div>
+                <!-- Itinéraire et horaires -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-route"></i>
+                        <h2>Itinéraire et Horaires</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="point_depart">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Point de départ
+                            </label>
+                            <input type="text" name="point_depart" id="point_depart" 
+                                class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="point_arrivee">
+                                <i class="fas fa-flag-checkered"></i>
+                                Point d'arrivée
+                            </label>
+                            <input type="text" name="point_arrivee" id="point_arrivee" 
+                                class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date_depart">
+                                <i class="fas fa-calendar"></i>
+                                Date de départ
+                            </label>
+                            <input type="datetime-local" name="date_depart" id="date_depart" 
+                                class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date_arrivee">
+                                <i class="fas fa-calendar-check"></i>
+                                Date d'arrivée
+                            </label>
+                            <input type="datetime-local" name="date_arrivee" id="date_arrivee" 
+                                class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <!-- Passagers -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-users"></i>
+                        <h2>Passagers</h2>
+                    </div>
+
+                    <div class="total-passengers-container mb-3">
+                        <label>
+                            <i class="fas fa-users"></i>
+                            Nombre total de passagers
+                        </label>
+                        <div class="total-passengers-display">
+                            Total: <span id="totalPassengers">0</span>
+                            <div id="passengersWarning" class="warning-message" style="display: none;">
+                                Nombre de passagers supérieur au nombre de places totales disponibles
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="passengers-grid">
+                        <div class="passenger-type">
+                            <label>
+                                <i class="fas fa-user"></i>
+                                Adultes
+                            </label>
+                            <div class="number-input">
+                                <button type="button" class="btn-counter minus">-</button>
+                                <input type="number" name="nombre_adultes" id="nombre_adultes" 
+                                    value="0" min="0" class="form-control">
+                                <button type="button" class="btn-counter plus">+</button>
+                            </div>
+                        </div>
+
+                        <div class="passenger-type">
+                            <label>
+                                <i class="fas fa-child"></i>
+                                Enfants
+                            </label>
+                            <div class="number-input">
+                                <button type="button" class="btn-counter minus">-</button>
+                                <input type="number" name="nombre_enfants" id="nombre_enfants" 
+                                    value="0" min="0" class="form-control">
+                                <button type="button" class="btn-counter plus">+</button>
+                            </div>
+                        </div>
+
+                        <div class="passenger-type">
+                            <label>
+                                <i class="fas fa-baby"></i>
+                                Bébés
+                            </label>
+                            <div class="number-input">
+                                <button type="button" class="btn-counter minus">-</button>
+                                <input type="number" name="nombre_bebes" id="nombre_bebes" 
+                                    value="0" min="0" class="form-control">
+                                <button type="button" class="btn-counter plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                            <!-- Mode de tarification -->
+                <div class="form-section pricing-section">
+                    <div class="section-header">
+                        <i class="fas fa-coins"></i>
+                        <h2>Mode de tarification</h2>
+                    </div>
+
+                    <div class="pricing-cards">
+                        <label class="pricing-card">
+                            <input type="radio" name="tarification_type" value="simple" checked>
+                            <div class="card-content">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                                <span>Tarification simple</span>
+                                <small>Prix unique sans commission</small>
+                            </div>
+                        </label>
+
+                        <label class="pricing-card">
+                            <input type="radio" name="tarification_type" value="achat_revente">
+                            <div class="card-content">
+                                <i class="fas fa-exchange-alt"></i>
+                                <span>Achat/Revente</span>
+                                <small>Prix d'achat et de vente</small>
+                            </div>
+                        </label>
+
+                        <label class="pricing-card">
+                            <input type="radio" name="tarification_type" value="commission">
+                            <div class="card-content">
+                                <i class="fas fa-percentage"></i>
+                                <span>Commission</span>
+                                <small>Prix avec commission</small>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Champs de prix simples -->
+                    <div id="simple-fields" class="pricing-fields mt-4">
+                        <div class="form-group">
+                            <label for="prix_simple">
+                                <i class="fas fa-tag"></i>
+                                Prix
+                            </label>
+                            <div class="input-group">
+                                <input type="number" name="prix_simple" id="prix_simple" 
+                                    class="form-control" step="0.001" min="0">
+                                <span class="input-group-text">TND</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champs achat/revente -->
+                    <div id="achat-revente-fields" class="pricing-fields mt-4" style="display: none;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="prix_achat">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Prix d'achat
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" name="prix_achat" id="prix_achat" 
+                                        class="form-control" step="0.001" min="0">
+                                    <span class="input-group-text">TND</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="prix_vente">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    Prix de vente
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" name="prix_vente" id="prix_vente" 
+                                        class="form-control" step="0.001" min="0">
+                                    <span class="input-group-text">TND</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-chart-line"></i>
+                                    Marge
+                                </label>
+                                <div class="marge-display">
+                                    <span class="amount">0.000</span>
+                                    <div class="marge-indicator"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Champs commission -->
+                    <div id="commission-fields" class="pricing-fields mt-4" style="display: none;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="prix_base">
+                                    <i class="fas fa-tag"></i>
+                                    Prix de base
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" name="prix_base" id="prix_base" 
+                                        class="form-control" step="0.001" min="0">
+                                    <span class="input-group-text">TND</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="commission">
+                                    <i class="fas fa-percentage"></i>
+                                    Commission (%)
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" name="commission" id="commission" 
+                                        class="form-control" step="0.1" min="0" max="100">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-calculator"></i>
+                                    Montant commission
+                                </label>
+                                <div class="commission-display">
+                                    <span class="amount">0.000</span>
+                                    <span class="currency">TND</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modalités de paiement -->
+                <div class="form-section payment-section">
+                    <div class="section-header">
+                        <i class="fas fa-credit-card"></i>
+                        <h2>Modalités de paiement</h2>
+                    </div>
+                    <div class="payment-status-cards">
+                        <label class="status-card">
+                            <input type="radio" name="etat_paiement" value="Facture" checked>
+                            <div class="card-content">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Facture</span>
+                            </div>
+                        </label>
+                        <label class="status-card">
+                            <input type="radio" name="etat_paiement" value="Non payé" checked>
+                            <div class="card-content">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Non payé</span>
+                            </div>
+                        </label>
+                        <label class="status-card">
+                            <input type="radio" name="etat_paiement" value="Acompte">
+                            <div class="card-content">
+                                <i class="fas fa-clock"></i>
+                                <span>Acompte</span>
+                            </div>
+                        </label>
+                        <label class="status-card">
+                            <input type="radio" name="etat_paiement" value="Chèque">
+                            <div class="card-content">
+                                <i class="fas fa-money-check-alt"></i>
+                                <span>Chèque</span>
+                            </div>
+                        </label>
+                        <label class="status-card">
+                            <input type="radio" name="etat_paiement" value="Payé">
+                            <div class="card-content">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Payé</span>
+                            </div>
+                        </label>
+                    </div>
+                    <!-- Champs pour le chèque -->
+                    <div id="cheque-fields" class="mt-4" style="display: none;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="banque">
+                                    <i class="fas fa-university"></i>
+                                    Nom de la banque
+                                </label>
+                                <input type="text" name="banque" id="banque" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="numero_cheque">
+                                    <i class="fas fa-money-check"></i>
+                                    Numéro du chèque
+                                </label>
+                                <input type="text" name="numero_cheque" id="numero_cheque" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <!-- Dépenses supplémentaires -->
+                <div class="form-section expenses-section">
+                    <div class="section-header">
+                        <i class="fas fa-receipt"></i>
+                        <h2>Dépenses supplémentaires</h2>
+                    </div>
+
+                    <div class="enable-expenses">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="hasExtraExpenses">
+                            <span class="toggle-slider">
+                                <i class="fas fa-times"></i>
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span class="toggle-label">Ajouter des dépenses supplémentaires</span>
+                        </label>
+                    </div>
+
+                    <div id="expensesContainer" class="expenses-container" style="display: none;">
+                        <div class="expenses-list">
+                            <div class="expense-item">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>
+                                            <i class="fas fa-tag"></i>
+                                            Désignation
+                                        </label>
+                                        <input type="text" name="expense_names[]" class="form-control" 
+                                            placeholder="Nom de la dépense">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <i class="fas fa-money-bill-wave"></i>
+                                            Montant
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="number" name="expense_amounts[]" class="form-control expense-amount" 
+                                                step="0.001" min="0" placeholder="0.000">
+                                            <span class="input-group-text">TND</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-icon btn-danger remove-expense">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="expenses-actions">
+                            <button type="button" class="btn btn-secondary add-expense">
+                                <i class="fas fa-plus"></i>
+                                Ajouter une dépense
+                            </button>
+                            <div class="total-expenses">
+                                Total des dépenses: <span class="amount">0.000</span> TND
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary save-btn">
+                                    <i class="fas fa-save"></i>
+                                    Enregistrer
+                                </button>
+                                <a href="{{ url_for('trips.index') }}" class="btn btn-secondary cancel-btn">
+                                    <i class="fas fa-times"></i>
+                                    Annuler
+                                </a>
+                            </div>
+                </form>
+              
+                <style>
+                    .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+                    .invalid {
+    border-color: var(--danger-color) !important;
+    background-color: rgba(231, 76, 60, 0.05) !important;
+}
+
+.invalid-label {
+    color: var(--danger-color) !important;
+}
+
+.alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+}
+
+.alert-danger {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #c0392b;
+    border: 1px solid #e74c3c;
+}
+
+.alert-success {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+    border: 1px solid #2ecc71;
+}
+                </style>
+
+<style>
+/* Style pour la section des dépenses */
+.expenses-section {
+    position: relative;
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    margin-bottom: var(--spacing-8);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: var(--spacing-6);
+}
+
+.toggle-switch input {
+    display: none;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: var(--gray-300);
+    border-radius: var(--radius-full);
+    margin-right: var(--spacing-3);
+    transition: var(--transition-all);
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: var(--transition-all);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--success);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(30px);
+}
+
+.toggle-slider i {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 12px;
+}
+
+.toggle-slider .fa-times {
+    right: 8px;
+}
+
+.toggle-slider .fa-check {
+    left: 8px;
+    opacity: 0;
+}
+
+.toggle-switch input:checked + .toggle-slider .fa-times {
+    opacity: 0;
+}
+
+.toggle-switch input:checked + .toggle-slider .fa-check {
+    opacity: 1;
+}
+
+.toggle-label {
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+/* Liste des dépenses */
+.expenses-list {
+    margin-bottom: var(--spacing-4);
+}
+
+.expense-item {
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-3);
+    border: 1px solid var(--gray-200);
+    transition: var(--transition-all);
+}
+
+.expense-item:hover {
+    background: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.expense-item .form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: var(--spacing-4);
+    align-items: flex-end;
+}
+
+.btn-icon {
+    padding: var(--spacing-3);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-all);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+/* Total des dépenses */
+.expenses-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-6);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--gray-200);
+}
+
+.total-expenses {
+    font-weight: 500;
+    color: var(--gray-700);
+    font-size: 1.1rem;
+}
+
+.total-expenses .amount {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Boutons d'action */
+.form-actions {
+    position: sticky;
+    bottom: var(--spacing-4);
+    background: white;
+    padding: var(--spacing-4);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-8);
+    z-index: 100;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: var(--spacing-3) var(--spacing-8);
+}
+
+.save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.cancel-btn {
+    background: var(--gray-500);
+    color: white;
+}
+
+.cancel-btn:hover {
+    background: var(--gray-600);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .expense-item .form-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-3);
+    }
+
+    .expenses-actions {
+        flex-direction: column;
+        gap: var(--spacing-4);
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .save-btn, .cancel-btn {
+        width: 100%;
+    }
+}
+</style>
+
+
+    </div>
+</div>
+
+<!-- Modal de confirmation amélioré -->
+<div class="modal fade" id="leaveConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Voulez-vous vraiment quitter cette page ? Les modifications non enregistrées seront perdues.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-arrow-left"></i> Rester
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmLeave">
+                    <i class="fas fa-times"></i> Quitter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ===== VARIABLES ===== */
+:root {
+    --primary: #2A5C82;
+    --primary-light: #3a7fb2;
+    --primary-dark: #1e4a6d;
+    --secondary: #5CB3A9;
+    --secondary-light: #7fd0c7;
+    --secondary-dark: #46968d;
+    --accent: #FFC857;
+    --red: #e74c3c;
+    --green: #2ecc71;
+    --orange: #f39c12;
+    --gray-light: #f8f9fa;
+    --gray: #e9ecef;
+    --gray-dark: #6c757d;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --transition: all 0.3s ease;
+    --font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+}
+
+/* ===== BASE STYLES ===== */
+body {
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: #f5f7fa;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    width: 280px;
+    background: white;
+    box-shadow: var(--shadow);
+    padding: 20px 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    z-index: 10;
+    transition: var(--transition);
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 0 25px 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--gray);
+}
+
+.sidebar-header i {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-right: 10px;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    margin-bottom: 5px;
+}
+
+.sidebar li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    color: var(--gray-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+}
+
+.sidebar li a i {
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.sidebar li a:hover,
+.sidebar li.active a {
+    background-color: rgba(42, 92, 130, 0.1);
+    color: var(--primary);
+    border-left-color: var(--primary);
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        box-shadow: none;
+    }
+
+    .sidebar ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        padding: 10px 0;
+    }
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    flex: 1;
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ===== FORM STYLES ===== */
+.form-section {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 20px 30px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--gray-dark);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid var(--gray);
+    border-radius: var(--radius);
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ===== BUTTONS ===== */
+button,
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgb(2, 2, 2);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background: var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: var(--gray-dark);
+}
+
+.btn-secondary:hover {
+    background: var(--gray);
+}
+
+.btn-danger {
+    background: var(--red);
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+/* ===== RESPONSIVENESS ===== */
+@media (max-width: 1200px) {
+    .main-content {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 900px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .form-section {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 780px) {
+    .form-group input,
+    .form-group select {
+        font-size: 0.9rem;
+    }
+
+    button,
+    .btn {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+    }
+}
+
+@media (max-width: 520px) {
+    .form-section {
+        padding: 10px;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+
+    button,
+    .btn {
+        font-size: 0.85rem;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 380px) {
+    .form-section {
+        padding: 10px 5px;
+    }
+
+    .form-group label,
+    .form-group input,
+    .form-group select {
+        font-size: 0.8rem;
+    }
+
+    button,
+    .btn {
+        font-size: 0.8rem;
+        padding: 5px 8px;
+    }
+}
+</style>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const tripForm = document.getElementById('tripForm');
+
+    // Form Validation Functions
+    function validateDates() {
+        const dateDepart = document.getElementById('date_depart');
+        const dateArrivee = document.getElementById('date_arrivee');
+
+        if (!dateDepart.value) {
+            flash('La date de départ est requise', 'danger');
+            return false;
+        }
+
+        if (dateArrivee.value && new Date(dateArrivee.value) < new Date(dateDepart.value)) {
+            flash("La date d'arrivée doit être postérieure à la date de départ", 'danger');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Seats and Passengers Management
+    let totalAvailableSeats = 0;
+    const affectationsContainer = document.getElementById('affectations-container');
+    const totalSeatsDisplay = document.getElementById('totalAvailableSeats');
+    const totalPassengersDisplay = document.getElementById('totalPassengers');
+    const passengersWarning = document.getElementById('passengersWarning');
+
+    function calculateTotalSeats() {
+        totalAvailableSeats = 0;
+        document.querySelectorAll('.vehicule-select').forEach((select) => {
+            if (select.value) {
+                const places = parseInt(select.selectedOptions[0].dataset.places) || 0;
+                totalAvailableSeats += places;
+            }
+        });
+        totalSeatsDisplay.textContent = totalAvailableSeats;
+        return validatePassengersCount();
+    }
+
+    function calculateTotalPassengers() {
+        const adultes = parseInt(document.getElementById('nombre_adultes').value) || 0;
+        const enfants = parseInt(document.getElementById('nombre_enfants').value) || 0;
+        const bebes = parseInt(document.getElementById('nombre_bebes').value) || 0;
+        const total = adultes + enfants + bebes;
+        totalPassengersDisplay.textContent = total;
+        return total;
+    }
+
+    function validatePassengersCount() {
+        const totalPassengers = calculateTotalPassengers();
+        if (totalPassengers > totalAvailableSeats) {
+            passengersWarning.style.display = 'block';
+            return false;
+        }
+        passengersWarning.style.display = 'none';
+        return true;
+    }
+
+    // Pricing Management
+    function validatePricing() {
+        const tarificationType = document.querySelector('input[name="tarification_type"]:checked').value;
+
+        if (tarificationType === 'simple') {
+            const prixSimple = document.getElementById('prix_simple').value;
+            if (!prixSimple) {
+                flash('Le prix est requis', 'danger');
+                return false;
+            }
+        } else if (tarificationType === 'achat_revente') {
+            const prixAchat = document.getElementById('prix_achat').value;
+            const prixVente = document.getElementById('prix_vente').value;
+            if (!prixAchat || !prixVente) {
+                flash("Les prix d'achat et de vente sont requis", 'danger');
+                return false;
+            }
+        } else if (tarificationType === 'commission') {
+            const prixBase = document.getElementById('prix_base').value;
+            const commission = document.getElementById('commission').value;
+            if (!prixBase || !commission) {
+                flash('Le prix de base et la commission sont requis', 'danger');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Event Listeners
+    if (tripForm) {
+        tripForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            console.log('Form submission started');
+
+            // Basic validation
+            let isValid = true;
+            const requiredFields = tripForm.querySelectorAll('[required]');
+
+            requiredFields.forEach((field) => {
+                if (!field.value) {
+                    isValid = false;
+                    field.classList.add('invalid');
+                    const label = field.parentElement.querySelector('label');
+                    if (label) label.classList.add('invalid-label');
+                } else {
+                    field.classList.remove('invalid');
+                    const label = field.parentElement.querySelector('label');
+                    if (label) label.classList.remove('invalid-label');
+                }
+            });
+
+            // Additional validations
+            if (!validateDates()) isValid = false;
+            if (!validatePassengersCount()) isValid = false;
+            if (!validatePricing()) isValid = false;
+
+            if (isValid) {
+                console.log('Form is valid, submitting...');
+                const submitBtn = tripForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+
+                // Set trip name based on type
+                const tripType = document.querySelector('input[name="type"]:checked');
+                if (tripType) {
+                    document.getElementById('trip_name').value = `${tripType.value} - ${new Date().toLocaleDateString()}`;
+                }
+
+                this.submit();
+            } else {
+                console.log('Form validation failed');
+                flash('Veuillez corriger les erreurs dans le formulaire', 'danger');
+            }
+        });
+    }
+
+    // Passenger Counter Management
+    ['adultes', 'enfants', 'bebes'].forEach((type) => {
+        const input = document.getElementById(`nombre_${type}`);
+        if (input) {
+            const container = input.closest('.number-input');
+            if (container) {
+                container.querySelector('.minus')?.addEventListener('click', () => {
+                    if (input.value > 0) {
+                        input.value = parseInt(input.value) - 1;
+                        calculateTotalPassengers();
+                    }
+                });
+
+                container.querySelector('.plus')?.addEventListener('click', () => {
+                    input.value = parseInt(input.value) + 1;
+                    calculateTotalPassengers();
+                });
+            }
+            input.addEventListener('input', calculateTotalPassengers);
+        }
+    });
+
+    // Vehicle Selection Management
+    document.querySelector('.add-affectation')?.addEventListener('click', function () {
+        const template = affectationsContainer.querySelector('.affectation-item').cloneNode(true);
+        template.querySelector('.vehicule-select').value = '';
+        template.querySelector('.chauffeur-select').value = '';
+        template.querySelector('.remove-affectation').addEventListener('click', function () {
+            template.remove();
+            calculateTotalSeats();
+        });
+        affectationsContainer.appendChild(template);
+    });
+
+    affectationsContainer.addEventListener('change', function (e) {
+        if (e.target.classList.contains('vehicule-select')) {
+            calculateTotalSeats();
+        }
+    });
+
+    // Flash Message Helper
+    function flash(message, type) {
+        const flashDiv = document.createElement('div');
+        flashDiv.className = `alert alert-${type}`;
+        flashDiv.innerHTML = message;
+        document.querySelector('.main-content').insertBefore(flashDiv, document.querySelector('.main-content').firstChild);
+        setTimeout(() => flashDiv.remove(), 5000);
+    }
+
+    // Initialize Calculations
+    calculateTotalSeats();
+    calculateTotalPassengers();
+});
+</script>
+
+{% endblock %}
