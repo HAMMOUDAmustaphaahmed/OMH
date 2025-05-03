@@ -138,21 +138,60 @@
                             <td>
                                 <div class="vehicle-info">
                                     <i class="fas fa-car"></i>
-                                    <span>{{ trip.vehicule.modele }}</span>
+                                    {% if trip.vehicules %}
+                                        {% for vehicule in trip.vehicules %}
+                                            <div class="vehicle-entry">
+                                                <span>{{ vehicule.modele }}</span>
+                                                {% if not loop.last %}<br>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span>No vehicle assigned</span>
+                                    {% endif %}
                                 </div>
                             </td>
                             <td>
                                 <div class="driver-info">
-                                    {% if trip.chauffeur.photo_url %}
-                                    <img src="{{ trip.chauffeur.photo_url }}" alt="Photo chauffeur" class="driver-avatar">
+                                    {% if trip.chauffeurs %}
+                                        {% for chauffeur in trip.chauffeurs %}
+                                            <div class="driver-entry">
+                                                {% if chauffeur.photo_url %}
+                                                    <img src="{{ chauffeur.photo_url }}" alt="Photo chauffeur" class="driver-avatar">
+                                                {% else %}
+                                                    <div class="driver-initials">
+                                                        {{ chauffeur.prenom[0] }}{{ chauffeur.nom[0] }}
+                                                    </div>
+                                                {% endif %}
+                                                <span>{{ chauffeur.prenom }} {{ chauffeur.nom }}</span>
+                                                {% if not loop.last %}<br>{% endif %}
+                                            </div>
+                                        {% endfor %}
                                     {% else %}
-                                    <div class="driver-initials">
-                                        {{ trip.chauffeur.prenom[0] }}{{ trip.chauffeur.nom[0] }}
-                                    </div>
+                                        <div class="driver-entry">
+                                            <div class="driver-initials">NA</div>
+                                            <span>No driver assigned</span>
+                                        </div>
                                     {% endif %}
-                                    <span>{{ trip.chauffeur.prenom }} {{ trip.chauffeur.nom }}</span>
                                 </div>
                             </td>
+                            <style>
+                                .vehicle-entry, .driver-entry {
+                                display: flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                                padding: 0.25rem 0;
+                            }
+
+                            .driver-info, .vehicle-info {
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0.5rem;
+                            }
+
+                            .driver-info br, .vehicle-info br {
+                                margin: 0.25rem 0;
+                            }
+                            </style>
                             <td>
                                 <span class="status-badge {{ trip.etat_trip|lower }}">
                                     <i class="fas fa-circle"></i>

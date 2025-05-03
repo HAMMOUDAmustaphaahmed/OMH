@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required
-from models import Chauffeur, db
+from models import Chauffeur, db, TripAffectation
 from werkzeug.utils import secure_filename
 import os
 from app import Config
 import uuid
 from datetime import datetime
+from sqlalchemy import func
+
 
 drivers_bp = Blueprint('drivers', __name__, url_prefix='/drivers')
 
@@ -16,8 +18,31 @@ def allowed_file(filename):
 @drivers_bp.route('/')
 @login_required
 def index():
-    drivers = Chauffeur.query.all()
-    return render_template('drivers/manage.html', drivers=drivers)
+    # Obtenir le premier jour du mois courant
+    current_date = datetime.now()
+    first_day_of_month = datetime(current_date.year, current_date.month, 1)
+
+    # Requête pour obtenir les chauffeurs avec leur nombre de voyages ce mois
+    drivers_with_trips = db.session.query(
+        Chauffeur,
+        func.count(TripAffectation.id_affectation).label('trips_count')
+    ).outerjoin(
+        TripAffectation,
+        (Chauffeur.id_chauffeur == TripAffectation.id_chauffeur)
+    ).group_by(
+        Chauffeur
+    ).all()
+
+    # Convertir les résultats en dictionnaire pour un accès plus facile dans le template
+    drivers_data = [
+        {
+            'driver': driver,
+            'trips_count': trips_count
+        }
+        for driver, trips_count in drivers_with_trips
+    ]
+
+    return render_template('drivers/manage.html', drivers=drivers_data)
 
 @drivers_bp.route('/add', methods=['GET', 'POST'])
 @login_required

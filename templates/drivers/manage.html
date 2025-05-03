@@ -82,8 +82,13 @@
                                 Nom complet
                             </th>
                             <th>
-                                <i class="fas fa-id-card"></i>
-                                CIN
+                                <i class="fas fa-route"></i>
+                                Missions
+                                <div class="th-description">Ce mois</div>
+                            </th>
+                            <th>
+                                <i class="fas fa-percentage"></i>
+                                
                             </th>
                             <th>
                                 <i class="fas fa-phone"></i>
@@ -100,46 +105,55 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for driver in drivers %}
+                        {% for data in drivers %}
                         <tr class="driver-row">
                             <td>
                                 <div class="driver-info">
-                                    {% if driver.photo_url %}
-                                    <img src="{{ driver.photo_url }}" alt="Photo" class="driver-avatar">
+                                    {% if data.driver.photo_url %}
+                                    <img src="{{ data.driver.photo_url }}" alt="Photo" class="driver-avatar">
                                     {% else %}
                                     <div class="driver-avatar-placeholder">
-                                        {{ driver.nom[0] }}{{ driver.prenom[0] }}
+                                        {{ data.driver.nom[0] }}{{ data.driver.prenom[0] }}
                                     </div>
                                     {% endif %}
                                     <div class="driver-name">
-                                        <span class="full-name">{{ driver.nom }} {{ driver.prenom }}</span>
-                                        <span class="driver-email">{{ driver.email or 'Pas d\'email' }}</span>
+                                        <span class="full-name">{{ data.driver.nom }} {{ data.driver.prenom }}</span>
+                                        <span class="driver-email">{{ data.driver.email or 'Pas d\'email' }}</span>
                                     </div>
                                 </div>
                             </td>
-                            <td>{{ driver.numero_cin }}</td>
                             <td>
-                                <a href="tel:{{ driver.telephone }}" class="phone-link">
-                                    {{ driver.telephone }}
+                                <div class="trips-count">
+                                    <span class="count">{{ data.trips_count }}</span>
+                                    <div class="trips-badge">
+                                        <i class="fas fa-route"></i>
+                                        missions
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ data.driver.gain_percentage }}</td>
+                            <td>
+                                <a href="tel:{{ data.driver.telephone }}" class="phone-link">
+                                    {{ data.driver.telephone }}
                                 </a>
                             </td>
                             <td>
-                                <span class="status-badge {{ driver.statut|lower }}">
+                                <span class="status-badge {{ data.driver.statut|lower }}">
                                     <i class="fas fa-circle"></i>
-                                    {{ driver.statut }}
+                                    {{ data.driver.statut }}
                                 </span>
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="{{ url_for('drivers.details', driver_id=driver.id_chauffeur) }}" 
+                                    <a href="{{ url_for('drivers.details', driver_id=data.driver.id_chauffeur) }}" 
                                        class="action-btn view-btn" title="Voir les détails">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ url_for('drivers.edit', driver_id=driver.id_chauffeur) }}" 
+                                    <a href="{{ url_for('drivers.edit', driver_id=data.driver.id_chauffeur) }}" 
                                        class="action-btn edit-btn" title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button onclick="confirmDelete({{ driver.id_chauffeur }})" 
+                                    <button onclick="confirmDelete({{ data.driver.id_chauffeur }})" 
                                             class="action-btn delete-btn" title="Supprimer">
                                         <i class="fas fa-trash"></i>
                                     </button>

@@ -184,10 +184,12 @@ class Trip(db.Model):
     # Propriétés calculées
     @property
     def vehicules(self):
+        """Get all vehicles assigned to this trip."""
         return [affectation.vehicule for affectation in self.affectations]
-    
+
     @property
     def chauffeurs(self):
+        """Get all drivers assigned to this trip."""
         return [affectation.chauffeur for affectation in self.affectations]
 
 class TripAffectation(db.Model):

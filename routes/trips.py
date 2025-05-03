@@ -57,21 +57,20 @@ def index():
 @trips_bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
-    print('Entered the add route')  # Debug
+    print('Entered the add route')
     if request.method == 'POST':
         try:
-            print('Handling POST request')  # Debug
+            print('Handling POST request')
 
             # Parse dates and times
             print('parsing dates and times')
             try:
-                # Handle date and time parsing
                 date_depart_str = request.form.get('date_depart')
                 date_arrivee_str = request.form.get('date_arrivee')
                 print('handle dates and times parsing', date_depart_str, date_arrivee_str)
                 
                 if not date_depart_str:
-                    print('Date de départ is missing')  # Debug
+                    print('Date de départ is missing')
                     flash('La date de départ est requise', 'danger')
                     return redirect(url_for('trips.add'))
 
@@ -81,47 +80,52 @@ def add():
                 print('date_arrivee', date_arrivee)
                 
                 if date_arrivee and date_arrivee < date_depart:
-                    print('Date d\'arrivée is earlier than date de départ')  # Debug
+                    print('Date d\'arrivée is earlier than date de départ')
                     flash('La date d\'arrivée doit être postérieure à la date de départ', 'danger')
                     return redirect(url_for('trips.add'))
 
-                # Split into date and time components
                 date_depart_date = date_depart.date()
                 date_depart_time = date_depart.time()
                 date_arrivee_date = date_arrivee.date() if date_arrivee else None
                 date_arrivee_time = date_arrivee.time() if date_arrivee else None
-                print('Dates and times parsed successfully')  # Debug
+                print('Dates and times parsed successfully')
                 
             except ValueError as e:
-                print(f'Date parsing error: {e}')  # Debug
+                print(f'Date parsing error: {e}')
                 flash('Format de date invalide. Utilisez le format YYYY-MM-DD HH:MM', 'danger')
                 return redirect(url_for('trips.add'))
 
-            # Validate vehicle and driver assignments
-            print('Validating vehicle and driver assignments')  # Debug
+            # Validate vehicle and driver assignments first
+            print('Validating vehicle and driver assignments')
             vehicules = request.form.getlist('vehicules[]')
             chauffeurs = request.form.getlist('chauffeurs[]')
-            print('Vehicles:', vehicules, 'Drivers:', chauffeurs)  # Debug
 
             if not vehicules or not chauffeurs:
-                print('Missing vehicle or driver')  # Debug
-                flash('Au moins un véhicule et un chauffeur doivent être sélectionnés', 'danger')
+                flash('Au moins un véhicule et un chauffeur doivent être assignés.', 'error')
                 return redirect(url_for('trips.add'))
 
+            # Validate that we have valid IDs
+            for v_id, c_id in zip(vehicules, chauffeurs):
+                if not v_id or not c_id:
+                    flash('Tous les véhicules et chauffeurs doivent être sélectionnés.', 'error')
+                    return redirect(url_for('trips.add'))
+
+            print('Vehicles:', vehicules, 'Drivers:', chauffeurs)
+
             # Validate passenger count
-            print('Validating passenger count')  # Debug
+            print('Validating passenger count')
             nombre_adultes = int(request.form.get('nombre_adultes', 0))
             nombre_enfants = int(request.form.get('nombre_enfants', 0))
             nombre_bebes = int(request.form.get('nombre_bebes', 0))
-            print('Passenger counts:', nombre_adultes, nombre_enfants, nombre_bebes)  # Debug
+            print('Passenger counts:', nombre_adultes, nombre_enfants, nombre_bebes)
             
             if (nombre_adultes + nombre_enfants + nombre_bebes) <= 0:
-                print('Invalid passenger count')  # Debug
+                print('Invalid passenger count')
                 flash('Le nombre total de passagers doit être supérieur à 0', 'danger')
                 return redirect(url_for('trips.add'))
 
             # Create new trip with all fields
-            print('Creating new trip')  # Debug
+            print('Creating new trip')
             new_trip = Trip(
                 type=request.form.get('type'),
                 nom=request.form.get('nom'),
@@ -144,22 +148,21 @@ def add():
                 created_by=current_user.id_user,
                 etat_trip='Planifié'
             )
-            print('New trip created:', new_trip)  # Debug
 
             # Handle pricing based on tarification type
-            print('Handling pricing logic')  # Debug
+            print('Handling pricing logic')
             tarification_type = request.form.get('tarification_type')
-            print('Tarification type:', tarification_type)  # Debug
+            print('Tarification type:', tarification_type)
 
             if not tarification_type:
-                print('Missing tarification type')  # Debug
+                print('Missing tarification type')
                 flash('Le type de tarification est requis', 'danger')
                 return redirect(url_for('trips.add'))
 
             if tarification_type == 'achat_revente':
                 prix_achat = request.form.get('prix_achat', type=float)
                 prix_vente = request.form.get('prix_vente', type=float)
-                print('Achat/Revente pricing:', prix_achat, prix_vente)  # Debug
+                print('Achat/Revente pricing:', prix_achat, prix_vente)
                 
                 if not prix_achat or not prix_vente:
                     flash('Les prix d\'achat et de vente sont requis pour ce type de tarification', 'danger')
@@ -170,7 +173,7 @@ def add():
             elif tarification_type == 'commission':
                 prix_base = request.form.get('prix_base', type=float)
                 commission = request.form.get('commission', type=float)
-                print('Commission pricing:', prix_base, commission)  # Debug
+                print('Commission pricing:', prix_base, commission)
                 
                 if not prix_base or not commission:
                     flash('Le prix de base et la commission sont requis pour ce type de tarification', 'danger')
@@ -178,35 +181,40 @@ def add():
                 new_trip.prix_base = prix_base
                 new_trip.commission = commission
 
-            # Save trip
-            print('Saving trip to database')  # Debug
+            # Save trip first to get the ID
+            print('Saving trip to database')
             db.session.add(new_trip)
-            db.session.flush()
-            print('Trip saved, ID:', new_trip.id_trip)  # Debug
+            db.session.flush()  # This will set the id_trip
+            print('Trip saved, ID:', new_trip.id_trip)
 
-            # Handle additional logic (assignments, expenses, payments, etc.)
-            print('Handling additional logic')  # Debug
-            # Add your additional logic here.
+            # Now create the affectations with the trip ID
+            print('Creating affectations')
+            for v_id, c_id in zip(vehicules, chauffeurs):
+                affectation = TripAffectation(
+                    id_trip=new_trip.id_trip,
+                    id_vehicule=int(v_id),
+                    id_chauffeur=int(c_id)
+                )
+                db.session.add(affectation)
 
-            # Commit transaction
+            # Commit all changes
             db.session.commit()
-            print('Transaction committed')  # Debug
+            print('Transaction committed')
             flash('Le voyage a été ajouté avec succès.', 'success')
             return redirect(url_for('trips.details', trip_id=new_trip.id_trip))
 
         except Exception as e:
-            print(f'Error occurred: {e}')  # Debug
+            print(f'Error occurred: {e}')
             db.session.rollback()
             flash(f'Une erreur est survenue : {str(e)}', 'danger')
             return redirect(url_for('trips.add'))
 
-    print('Handling GET request')  # Debug
-    # GET request
+    print('Handling GET request')
     current_date = datetime.utcnow()
     vehicules = Vehicule.query.filter_by(etat='En marche').order_by(Vehicule.modele).all()
     chauffeurs = Chauffeur.query.filter_by(statut='Actif').order_by(Chauffeur.nom).all()
     
-    print('Rendering add.html template')  # Debug
+    print('Rendering add.html template')
     return render_template('trips/add.html', 
                          vehicules=vehicules, 
                          chauffeurs=chauffeurs,

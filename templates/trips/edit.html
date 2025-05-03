@@ -3,16 +3,67 @@
 
 {% block styles %}
 <style>
-/* Styles spécifiques pour l'édition */
+    :root {
+    /* Colors */
+    --primary: #3498db;
+    --primary-dark: #2980b9;
+    --secondary: #8e44ad;
+    --secondary-dark: #703688;
+    --success: #2ecc71;
+    --warning: #f1c40f;
+    --danger: #e74c3c;
+    --info: #3498db;
+    
+    /* Gradients */
+    --header-gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --success-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
+    --danger-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
+    
+    /* Effects */
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    
+    /* Layout */
+    --sidebar-width: 280px;
+    --header-height: 200px;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    min-height: 100vh;
+    background: 
+        radial-gradient(circle at 0% 0%, rgba(52, 152, 219, 0.05) 0%, transparent 30%),
+        radial-gradient(circle at 100% 0%, rgba(142, 68, 173, 0.05) 0%, transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(46, 204, 113, 0.05) 0%, transparent 30%);
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid var(--glass-border);
+    padding: 2rem 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+/* Enhanced Edit Header */
 .edit-header {
-    background: linear-gradient(135deg, #3498db, #8e44ad);
+    background: var(--header-gradient);
     color: white;
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: 20px;
     margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
 }
 
 .edit-header::before {
@@ -24,6 +75,12 @@
     bottom: 0;
     background: url('/static/img/pattern.svg');
     opacity: 0.1;
+    animation: patternMove 20s linear infinite;
+}
+
+@keyframes patternMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 100% 100%; }
 }
 
 .edit-title {
@@ -36,70 +93,93 @@
 
 .edit-title h1 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .edit-metadata {
     position: relative;
     z-index: 1;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     display: flex;
     gap: 2rem;
-    font-size: 0.9rem;
+    font-size: 1rem;
     opacity: 0.9;
+    backdrop-filter: blur(5px);
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 12px;
 }
 
-.metadata-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Modification des styles de formulaire pour l'édition */
+/* Enhanced Form Sections */
 .form-section {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--glass-bg);
     border-radius: 15px;
-    padding: 2rem;
+    padding: 2.5rem;
     margin-bottom: 2rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--glass-shadow);
+    transition: all 0.3s ease;
+    border: 1px solid var(--glass-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.form-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--header-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.form-section:hover::before {
+    transform: scaleX(1);
 }
 
 .form-section:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 
-/* Styles pour les champs modifiés */
+/* Enhanced Field Styles */
 .field-modified {
-    border-color: #3498db !important;
+    border-color: var(--primary) !important;
     background-color: rgba(52, 152, 219, 0.05) !important;
+    position: relative;
+    transition: all 0.3s ease;
 }
 
-.field-modified::before {
+.field-modified::after {
     content: '✏️';
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
 }
 
-/* Historique des modifications */
+/* Enhanced Change History */
 .change-history {
     position: fixed;
-    right: -300px;
+    right: -350px;
     top: 0;
     bottom: 0;
-    width: 300px;
-    background: white;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-    transition: right 0.3s ease;
-    padding: 1rem;
+    width: 350px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    padding: 2rem;
     z-index: 1000;
 }
 
@@ -112,90 +192,115 @@
     justify-content: space-between;
     align-items: center;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid var(--glass-border);
+    margin-bottom: 1.5rem;
 }
 
 .change-list {
     margin-top: 1rem;
-    max-height: calc(100% - 60px);
+    max-height: calc(100% - 80px);
     overflow-y: auto;
+    padding-right: 10px;
 }
 
 .change-item {
-    padding: 0.75rem;
-    border-radius: 8px;
-    background: #f8f9fa;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.5);
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    border: 1px solid var(--glass-border);
+    transition: all 0.3s ease;
 }
 
 .change-item:hover {
-    background: #e9ecef;
+    background: white;
+    transform: translateX(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
-.change-time {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-/* Styles pour les validations en temps réel */
+/* Enhanced Validation Indicators */
 .validation-indicator {
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .validation-indicator.valid {
     background-color: rgba(46, 204, 113, 0.1);
-    color: #2ecc71;
+    color: var(--success);
+    animation: validPulse 1s ease;
 }
 
 .validation-indicator.invalid {
     background-color: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
+    color: var(--danger);
+    animation: invalidShake 0.5s ease;
 }
 
-/* Animation de sauvegarde */
-@keyframes saveSpinner {
-    to { transform: rotate(360deg); }
-}
-
+/* Enhanced Save Indicator */
 .saving-indicator {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.8);
+    bottom: 30px;
+    right: 30px;
+    background: rgba(0,0,0,0.9);
     color: white;
     padding: 1rem 2rem;
-    border-radius: 30px;
+    border-radius: 50px;
     display: flex;
     align-items: center;
     gap: 1rem;
     z-index: 1000;
-    animation: fadeInUp 0.3s ease;
+    animation: slideInUp 0.3s ease;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
-.saving-indicator .spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid transparent;
-    border-top-color: white;
-    border-radius: 50%;
-    animation: saveSpinner 0.8s linear infinite;
+/* Animations */
+@keyframes validPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
-/* Styles responsifs spécifiques à l'édition */
+@keyframes invalidShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .edit-header {
+        border-radius: 0;
+        margin: -1rem -1rem 2rem -1rem;
+    }
+}
+
 @media (max-width: 768px) {
     .edit-header {
         padding: 1.5rem;
-        margin-bottom: 1.5rem;
     }
 
     .edit-metadata {
@@ -203,16 +308,26 @@
         gap: 1rem;
     }
 
+    .form-section {
+        padding: 1.5rem;
+    }
+
     .change-history {
         width: 100%;
-        height: 50%;
+        height: 60%;
         right: 0;
-        bottom: -50%;
+        bottom: -60%;
         top: auto;
     }
 
     .change-history.active {
         bottom: 0;
+    }
+
+    .saving-indicator {
+        bottom: 20px;
+        right: 20px;
+        padding: 0.75rem 1.5rem;
     }
 }
 </style>
@@ -235,19 +350,16 @@
                 </div>
                 <div class="metadata-item">
                     <i class="fas fa-clock"></i>
-                    Le: {{ trip.date_modification|format_datetime }}
+                    Le: {{ trip.date_modification }}
                 </div>
             </div>
         </div>
         <div class="edit-metadata">
             <div class="metadata-item">
                 <i class="fas fa-calendar-alt"></i>
-                Créé le: {{ trip.date_creation|format_datetime }}
+                Créé le: {{ trip.date_creation }}
             </div>
-            <div class="metadata-item">
-                <i class="fas fa-user-plus"></i>
-                Par: {{ trip.created_by_user.nom }}
-            </div>
+            
         </div>
     </div>
 
@@ -342,15 +454,15 @@
                 <div class="form-group">
                     <label for="date_depart">Date de départ</label>
                     <input type="date" name="date_depart" id="date_depart" 
-                           class="form-control" required value="{{ trip.date_depart|format_date }}"
-                           data-original="{{ trip.date_depart|format_date }}">
+                           class="form-control" required value="{{ trip.date_depart }}"
+                           data-original="{{ trip.date_depart }}">
                 </div>
 
                 <div class="form-group">
                     <label for="heure_depart">Heure de départ</label>
                     <input type="time" name="heure_depart" id="heure_depart" 
-                           class="form-control" value="{{ trip.heure_depart|format_time }}"
-                           data-original="{{ trip.heure_depart|format_time }}">
+                           class="form-control" value="{{ trip.heure_depart }}"
+                           data-original="{{ trip.heure_depart }}">
                 </div>
 
                 {% if trip.type in ['Transfert', 'Excursion'] %}
@@ -358,15 +470,15 @@
                     <div class="form-group">
                         <label for="date_arrivee">Date d'arrivée</label>
                         <input type="date" name="date_arrivee" id="date_arrivee" 
-                               class="form-control" value="{{ trip.date_arrivee|format_date }}"
-                               data-original="{{ trip.date_arrivee|format_date }}">
+                               class="form-control" value="{{ trip.date_arrivee }}"
+                               data-original="{{ trip.date_arrivee }}">
                     </div>
 
                     <div class="form-group">
                         <label for="heure_arrivee">Heure d'arrivée</label>
                         <input type="time" name="heure_arrivee" id="heure_arrivee" 
-                               class="form-control" value="{{ trip.heure_arrivee|format_time }}"
-                               data-original="{{ trip.heure_arrivee|format_time }}">
+                               class="form-control" value="{{ trip.heure_arrivee }}"
+                               data-original="{{ trip.heure_arrivee }}">
                     </div>
                 </div>
                 {% endif %}

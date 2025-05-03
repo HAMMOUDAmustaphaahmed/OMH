@@ -1,273 +1,614 @@
-<!-- trips/details.html -->
 {% extends 'base.html' %}
 
-{% block styles %}
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-compass"></i>
+            <h3>Gestion</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{{ url_for('vehicles.index') }}" class="menu-item">
+                <i class="fas fa-car"></i>
+                <span>Véhicules</span>
+            </a></li>
+            <li><a href="{{ url_for('drivers.index') }}" class="menu-item">
+                <i class="fas fa-id-card"></i>
+                <span>Chauffeurs</span>
+            </a></li>
+            <li class="active"><a href="{{ url_for('trips.index') }}" class="menu-item">
+                <i class="fas fa-route"></i>
+                <span>Voyages</span>
+            </a></li>
+            <li><a href="{{ url_for('finances.index') }}" class="menu-item">
+                <i class="fas fa-wallet"></i>
+                <span>Finances</span>
+            </a></li>
+            <li><a href="{{ url_for('users.index') }}" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Utilisateurs</span>
+            </a></li>
+            <li><a href="{{ url_for('entretiens.index') }}" class="menu-item">
+                <i class="fas fa-wrench"></i>
+                <span>Entretiens</span>
+            </a></li>
+            <li><a href="{{ url_for('calendrier.afficher_calendrier') }}" class="menu-item">
+                <i class="fas fa-calendar"></i>
+                <span>Calendrier</span>
+            </a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <!-- Main Content Area -->
+<div class="details-grid">
+    <!-- Itinéraire Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <i class="fas fa-route"></i>
+            <h2>Itinéraire</h2>
+        </div>
+        <div class="route-info">
+            <div class="route-point depart">
+                <i class="fas fa-map-marker-alt"></i>
+                <div class="point-details">
+                    <h3>Point de départ</h3>
+                    <p>{{ trip.point_depart }}</p>
+                    <div class="time-info">
+                        <i class="fas fa-calendar"></i> {{ trip.date_depart.strftime('%d/%m/%Y') }}
+                        <i class="fas fa-clock ml-2"></i> {{ trip.heure_depart.strftime('%H:%M') }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="route-arrow">
+                <i class="fas fa-long-arrow-alt-down"></i>
+            </div>
+            
+            <div class="route-point arrivee">
+                <i class="fas fa-flag-checkered"></i>
+                <div class="point-details">
+                    <h3>Point d'arrivée</h3>
+                    <p>{{ trip.point_arrivee }}</p>
+                    {% if trip.date_arrivee %}
+                    <div class="time-info">
+                        <i class="fas fa-calendar"></i> {{ trip.date_arrivee.strftime('%d/%m/%Y') }}
+                        <i class="fas fa-clock ml-2"></i> {{ trip.heure_arrivee.strftime('%H:%M') }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="trip-details mt-4">
+            
+            {% if trip.is_recurring %}
+            <div class="detail-item">
+                <i class="fas fa-redo"></i>
+                <span>Voyage récurrent: {{ trip.recurring_days }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Affectations Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <i class="fas fa-users-cog"></i>
+            <h2>Affectations</h2>
+        </div>
+        <div class="affectations-list">
+            {% for affectation, vehicule, chauffeur in affectations %}
+            <div class="affectation-item">
+                <div class="vehicle-info">
+                    <div class="info-label">Véhicule</div>
+                    <div class="info-value">
+                        <i class="fas fa-bus"></i>
+                        {{ vehicule.modele }}
+                    </div>
+                    <div class="info-details">
+                        <span><i class="fas fa-hashtag"></i> {{ vehicule.matricule }}</span>
+                        <span><i class="fas fa-chair"></i> {{ vehicule.nombre_place }} places</span>
+                    </div>
+                </div>
+                <div class="driver-image-container">
+                    <img src="{{ chauffeur.photo_url if chauffeur.photo_url else '' }}" 
+                         alt="Photo {{ chauffeur.prenom }} {{ chauffeur.nom }}" 
+                         class="driver-photo"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                    <div class="driver-photo-placeholder" style="display: none;">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ chauffeur.prenom[0] }}{{ chauffeur.nom[0] }}</span>
+                    </div>
+                </div>
+                <style>
+                    .driver-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--glass-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #f8f9fa; /* Couleur de fond par défaut */
+}
+
+.driver-photo:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+/* Fallback pour image non trouvée */
+.driver-photo:not([src]), 
+.driver-photo[src=""], 
+.driver-photo[src="null"] {
+    border: 2px dashed var(--glass-border);
+    padding: 5px;
+    position: relative;
+}
+
+.driver-photo:not([src])::after, 
+.driver-photo[src=""]::after, 
+.driver-photo[src="null"]::after {
+    content: 'Photo non disponible';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    width: 100%;
+}
+                </style>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Passagers Card -->
+    <div class="detail-card">
+        <div class="card-header">
+            <i class="fas fa-users"></i>
+            <h2>Passagers</h2>
+        </div>
+        <div class="passengers-grid">
+            <div class="passenger-type">
+                <i class="fas fa-user"></i>
+                <div class="passenger-count">{{ trip.nombre_adultes }}</div>
+                <div class="passenger-label">Adultes</div>
+            </div>
+            <div class="passenger-type">
+                <i class="fas fa-child"></i>
+                <div class="passenger-count">{{ trip.nombre_enfants }}</div>
+                <div class="passenger-label">Enfants</div>
+            </div>
+            <div class="passenger-type">
+                <i class="fas fa-baby"></i>
+                <div class="passenger-count">{{ trip.nombre_bebes }}</div>
+                <div class="passenger-label">Bébés</div>
+            </div>
+        </div>
+        <div class="client-info mt-4">
+            <h3>Information Client</h3>
+            <div class="client-details">
+                <div class="detail-item">
+                    <i class="fas fa-user"></i>
+                    <span>{{ trip.client_nom or 'Non spécifié' }}</span>
+                </div>
+                {% if trip.client_telephone %}
+                <div class="detail-item">
+                    <i class="fas fa-phone"></i>
+                    <span>{{ trip.client_telephone }}</span>
+                </div>
+                {% endif %}
+                {% if trip.client_email %}
+                <div class="detail-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ trip.client_email }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Finances Card -->
+<div class="detail-card">
+    <div class="card-header">
+        <i class="fas fa-money-bill-wave"></i>
+        <h2>Finances</h2>
+    </div>
+    <div class="financial-info">
+        {% if trip.is_commission %}
+            <div class="finance-item commission">
+                <div class="finance-label">Commission</div>
+                <div class="finance-value">{{ "%.2f"|format(trip.commission|float) if trip.commission else '0.00' }}%</div>
+            </div>
+        {% else %}
+            <div class="finance-grid">
+                <div class="finance-item">
+                    <div class="finance-label">Prix d'achat</div>
+                    <div class="finance-value">{{ "%.3f"|format(trip.prix_achat|float) if trip.prix_achat else '0.000' }} TND</div>
+                </div>
+                <div class="finance-item">
+                    <div class="finance-label">Prix de vente</div>
+                    <div class="finance-value">{{ "%.3f"|format(trip.prix_vente|float) if trip.prix_vente else '0.000' }} TND</div>
+                </div>
+                <div class="finance-item margin">
+                    <div class="finance-label">Marge</div>
+                    <div class="finance-value">
+                        {% if trip.prix_vente is not none and trip.prix_achat is not none %}
+                            {{ "%.3f"|format(trip.prix_vente - trip.prix_achat) }} TND
+                        {% else %}
+                            0.000 TND
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if depenses %}
+        <div class="expenses-section mt-4">
+            <h3>Dépenses supplémentaires</h3>
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>Désignation</th>
+                        <th>Prix unitaire</th>
+                        <th>Nombre</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for depense in depenses %}
+                        <tr>
+                            <td>{{ depense.nom }}</td>
+                            <td>{{ "%.3f"|format(depense.prix_unitaire|float) if depense.prix_unitaire else '0.000' }} TND</td>
+                            <td>{{ depense.nombre_personnes }}</td>
+                            <td>{{ "%.3f"|format(depense.total|float) if depense.total else '0.000' }} TND</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="3">Total des dépenses</td>
+                        <td>
+                            {% set total_depenses = depenses|sum(attribute='total') %}
+                            {{ "%.3f"|format(total_depenses|float) if total_depenses else '0.000' }} TND
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Paiements Card -->
+<div class="detail-card">
+    <div class="card-header">
+        <i class="fas fa-credit-card"></i>
+        <h2>Paiements</h2>
+    </div>
+    <div class="payment-info">
+        {% if paiements %}
+            <div class="payment-list">
+                {% for paiement in paiements %}
+                    <div class="payment-item">
+                        <div class="payment-details">
+                            <div class="payment-type">
+                                <i class="fas fa-{{ 'money-check-alt' if paiement.mode_paiement == 'Chèque' else 'money-bill-wave' }}"></i>
+                                {{ paiement.mode_paiement }}
+                            </div>
+                            <div class="payment-amount">{{ "%.3f"|format(paiement.montant_paye|float) if paiement.montant_paye else '0.000' }} TND</div>
+                            <div class="payment-date">
+                                <i class="fas fa-calendar"></i>
+                                {{ paiement.date_paiement.strftime('%d/%m/%Y') if paiement.date_paiement else 'Date non spécifiée' }}
+                            </div>
+                        </div>
+                        {% if paiement.mode_paiement == 'Chèque' %}
+                            <div class="cheque-details">
+                                <span><i class="fas fa-university"></i> {{ paiement.banque or 'Non spécifié' }}</span>
+                                <span><i class="fas fa-hashtag"></i> {{ paiement.numero_cheque or 'Non spécifié' }}</span>
+                                {% if paiement.image_cheque %}
+                                    <a href="{{ url_for('static', filename=paiement.image_cheque) }}" target="_blank" class="btn btn-sm btn-info">
+                                        <i class="fas fa-image"></i> Voir l'image
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="payment-summary">
+                {% set total_paye = paiements|sum(attribute='montant_paye') %}
+                {% set reste_a_payer = (trip.prix_vente or 0) - (total_paye or 0) %}
+                <div class="summary-item">
+                    <span>Total payé</span>
+                    <span>{{ "%.3f"|format(total_paye|float) if total_paye else '0.000' }} TND</span>
+                </div>
+                <div class="summary-item">
+                    <span>Reste à payer</span>
+                    <span>{{ "%.3f"|format(reste_a_payer|float) if reste_a_payer else '0.000' }} TND</span>
+                </div>
+            </div>
+        {% else %}
+            <div class="no-payments">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Aucun paiement enregistré</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+    <!-- Commentaires Card -->
+    {% if trip.commentaires %}
+    <div class="detail-card">
+        <div class="card-header">
+            <i class="fas fa-comments"></i>
+            <h2>Commentaires</h2>
+        </div>
+        <div class="comments-section">
+            <div class="comment-text">
+                {{ trip.commentaires }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    
+</div>
+</div>
+
+<!-- Your existing delete modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirmation de suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer ce voyage ?</p>
+        <div class="modal-actions">
+            <button onclick="deleteTrip()" class="btn-delete">Confirmer</button>
+            <button onclick="closeModal()" class="btn-secondary">Annuler</button>
+        </div>
+    </div>
+</div>
+
 <style>
-:root {
+    :root {
+    /* Colors */
+    --primary: #3498db;
+    --primary-dark: #2980b9;
+    --secondary: #2ecc71;
+    --secondary-dark: #27ae60;
+    --accent: #e74c3c;
+    --accent-dark: #c0392b;
+    --success: #2ecc71;
+    --warning: #f1c40f;
+    --danger: #e74c3c;
+    --info: #3498db;
+    
+    /* Gradients */
+    --primary-gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+    --secondary-gradient: linear-gradient(135deg, #34495e, #2c3e50);
+    --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    --success-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
+    
+    /* Glass Effects */
     --glass-bg: rgba(255, 255, 255, 0.95);
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    --primary-gradient: linear-gradient(135deg, #3498db, #2ecc71);
-    --secondary-gradient: linear-gradient(135deg, #34495e, #2c3e50);
-    --accent-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
+    
+    /* Dimensions */
+    --sidebar-width: 280px;
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 20px;
+    --border-radius-xl: 30px;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
-.trip-details-container {
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f8fafc;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
     min-height: 100vh;
-    padding: 2rem;
-    position: relative;
     background: 
-        radial-gradient(circle at 10% 20%, rgba(52, 152, 219, 0.05) 0%, transparent 20%),
-        radial-gradient(circle at 90% 50%, rgba(46, 204, 113, 0.05) 0%, transparent 25%),
-        radial-gradient(circle at 50% 80%, rgba(231, 76, 60, 0.05) 0%, transparent 30%);
+        radial-gradient(circle at 0% 0%, rgba(52, 152, 219, 0.05) 0%, transparent 30%),
+        radial-gradient(circle at 100% 0%, rgba(46, 204, 113, 0.05) 0%, transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(231, 76, 60, 0.05) 0%, transparent 30%);
 }
 
-/* En-tête avec effet glassmorphism */
-.trip-header {
+/* Enhanced Sidebar */
+.sidebar {
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--glass-shadow);
+    border-right: 1px solid var(--glass-border);
+    padding: 2rem 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+    z-index: 1000;
 }
 
-.trip-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.trip-title h1 {
-    font-size: 2rem;
-    color: var(--primary);
-    margin: 0;
+.sidebar-header {
     display: flex;
     align-items: center;
     gap: 1rem;
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+    position: relative;
 }
 
-.trip-status {
-    display: inline-flex;
+.sidebar-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 1rem;
+    right: 1rem;
+    height: 2px;
+    background: var(--primary-gradient);
+    border-radius: var(--border-radius-xl);
+}
+
+.sidebar-header i {
+    font-size: 1.75rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-item {
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 30px;
-    font-weight: 500;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--primary-gradient);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.menu-item:hover {
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--primary);
+}
+
+.menu-item:hover::before {
+    transform: scaleY(1);
+}
+
+.menu-item i {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.menu-item:hover i {
+    transform: scale(1.2);
+}
+
+.sidebar-menu li.active .menu-item {
+    background: var(--primary-gradient);
     color: white;
+    font-weight: 500;
 }
 
-.trip-status.planifie { background: var(--primary-gradient); }
-.trip-status.en-cours { background: var(--secondary-gradient); }
-.trip-status.termine { background: linear-gradient(135deg, #27ae60, #2ecc71); }
-.trip-status.annule { background: var(--accent-gradient); }
-
-/* Grille des informations */
-.details-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
+/* Main Content Area */
+.main-content {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
 }
 
+/* Enhanced Cards */
 .detail-card {
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
-    border-radius: 15px;
+    border-radius: var(--border-radius-lg);
     padding: 1.5rem;
-    box-shadow: var(--glass-shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.detail-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.detail-card:hover::before {
+    transform: scaleX(1);
 }
 
 .detail-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-xl);
 }
 
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--glass-border);
-}
-
-.card-header i {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--primary-gradient);
-    color: white;
-    border-radius: 10px;
-    font-size: 1.2rem;
-}
-
-.card-header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    color: var(--primary);
-}
-
-/* Contenu des cartes */
-.route-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.route-point {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-}
-
-.route-point i {
-    font-size: 1.5rem;
-}
-
-.route-point.depart i { color: #2ecc71; }
-.route-point.arrivee i { color: #e74c3c; }
-
-.time-info {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 0.25rem;
-}
-
-/* Affectations */
-.affectation-item {
-    display: flex;
-    gap: 1.5rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-    margin-bottom: 1rem;
-}
-
-.vehicle-info,
-.driver-info {
-    flex: 1;
-}
-
-.info-label {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 0.25rem;
-}
-
-.info-value {
-    font-weight: 500;
-    color: var(--primary);
-}
-
-/* Passagers */
-.passengers-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.passenger-type {
-    text-align: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-}
-
-.passenger-count {
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--primary);
-    margin: 0.5rem 0;
-}
-
-/* Informations financières */
-.financial-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-}
-
-.amount-card {
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-    text-align: center;
-}
-
-.amount-label {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 0.5rem;
-}
-
-.amount-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.margin {
-    grid-column: 1 / -1;
-    background: var(--primary-gradient);
-    color: white;
-}
-
-/* Dépenses */
-.expense-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.expense-table th,
-.expense-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--glass-border);
-}
-
-.expense-table th {
-    font-weight: 500;
-    color: #666;
-}
-
-/* Paiements */
-.payment-history {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.payment-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-}
-
-.payment-details {
-    display: flex;
-    gap: 2rem;
-}
-
-.payment-method {
-    display: flex;
+/* Enhanced Status Badges */
+.trip-status {
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-xl);
+    font-weight: 500;
+    color: white;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Actions flottantes */
+.trip-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.trip-status:hover::before {
+    transform: translateX(0);
+}
+
+/* Enhanced Floating Actions */
 .floating-actions {
     position: fixed;
     bottom: 2rem;
@@ -280,40 +621,74 @@
 .action-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 30px;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius-xl);
     color: white;
     font-weight: 500;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
     border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-100%) skewX(-15deg);
+    transition: transform 0.5s ease;
+}
+
+.action-btn:hover::before {
+    transform: translateX(0) skewX(-15deg);
 }
 
 .action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
 }
 
-.btn-edit { background: var(--primary-gradient); }
-.btn-delete { background: var(--accent-gradient); }
+/* Enhanced Responsive Design */
+@media (max-width: 1200px) {
+    .details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .trip-details-container {
-        padding: 1rem;
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
     }
 
+    .sidebar {
+        position: fixed;
+        transform: translateX(-100%);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
     .details-grid {
         grid-template-columns: 1fr;
     }
 
-    .passengers-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .financial-info {
-        grid-template-columns: 1fr;
+    .trip-title {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
     }
 
     .floating-actions {
@@ -321,17 +696,40 @@
         right: 1rem;
         flex-direction: column;
     }
+
+    .action-btn {
+        padding: 0.75rem 1.5rem;
+    }
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Enhanced Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
 }
 
 .detail-card {
-    animation: fadeIn 0.5s ease forwards;
+    animation: fadeInUp 0.5s ease forwards;
     opacity: 0;
+}
+
+.sidebar {
+    animation: slideIn 0.5s ease forwards;
 }
 
 .detail-card:nth-child(1) { animation-delay: 0.1s; }
@@ -339,249 +737,6 @@
 .detail-card:nth-child(3) { animation-delay: 0.3s; }
 .detail-card:nth-child(4) { animation-delay: 0.4s; }
 </style>
-{% endblock %}
-
-{% block content %}
-<div class="trip-details-container">
-    <!-- En-tête du voyage -->
-    <div class="trip-header">
-        <div class="trip-title">
-            <h1>
-                <i class="fas fa-{{ trip.type|lower }}"></i>
-                {{ trip.nom or trip.type }}
-            </h1>
-            <div class="trip-status {{ trip.etat_trip|lower }}">
-                <i class="fas fa-{% if trip.etat_trip == 'Planifié' %}clock
-                           {% elif trip.etat_trip == 'En cours' %}play-circle
-                           {% elif trip.etat_trip == 'Terminé' %}check-circle
-                           {% else %}times-circle{% endif %}"></i>
-                {{ trip.etat_trip }}
-            </div>
-        </div>
-
-        <!-- Quick Info -->
-        <div class="quick-info-grid">
-            <div class="quick-info-item">
-                <i class="fas fa-calendar"></i>
-                <div class="info-content">
-                    <span class="info-label">Date de départ</span>
-                    <span class="info-value">{{ trip.date_depart }}</span>
-                </div>
-            </div>
-
-            <div class="quick-info-item">
-                <i class="fas fa-clock"></i>
-                <div class="info-content">
-                    <span class="info-label">Heure de départ</span>
-                    <span class="info-value">{{ trip.heure_depart }}</span>
-                </div>
-            </div>
-
-            <div class="quick-info-item">
-                <i class="fas fa-users"></i>
-                <div class="info-content">
-                    <span class="info-label">Total passagers</span>
-                    <span class="info-value">{{ trip.nombre_adultes + trip.nombre_enfants + trip.nombre_bebes }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Grille des détails -->
-    <div class="details-grid">
-        <!-- Itinéraire -->
-        <div class="detail-card">
-            <div class="card-header">
-                <i class="fas fa-route"></i>
-                <h2>Itinéraire</h2>
-            </div>
-            <div class="route-info">
-                <div class="route-point depart">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <div class="point-details">
-                        <div class="point-name">{{ trip.point_depart }}</div>
-                        <div class="time-info">
-                            {{ trip.date_depart }} à {{ trip.heure_depart }}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="route-separator">
-                    <i class="fas fa-ellipsis-v"></i>
-                </div>
-
-                <div class="route-point arrivee">
-                    <i class="fas fa-flag-checkered"></i>
-                    <div class="point-details">
-                        <div class="point-name">{{ trip.point_arrivee }}</div>
-                        {% if trip.date_arrivee %}
-                        <div class="time-info">
-                            {{ trip.date_arrivee }} à {{ trip.heure_arrivee }}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Affectations -->
-        <div class="detail-card">
-            <div class="card-header">
-                <i class="fas fa-users"></i>
-                <h2>Affectations</h2>
-            </div>
-            {% for affectation in affectations %}
-            <div class="affectation-item">
-                <div class="vehicle-info">
-                    <div class="info-label">Véhicule</div>
-                    <div class="info-value">{{ affectation.Vehicule.modele }}</div>
-                    <div class="info-detail">{{ affectation.Vehicule.matricule }}</div>
-                </div>
-                <div class="driver-info">
-                    <div class="info-label">Chauffeur</div>
-                    <div class="info-value">{{ affectation.Chauffeur.prenom }} {{ affectation.Chauffeur.nom }}</div>
-                    <div class="info-detail">{{ affectation.Chauffeur.telephone }}</div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Passagers -->
-        <div class="detail-card">
-            <div class="card-header">
-                <i class="fas fa-user-friends"></i>
-                <h2>Passagers</h2>
-            </div>
-            <div class="passengers-grid">
-                <div class="passenger-type">
-                    <i class="fas fa-user"></i>
-                    <div class="passenger-count">{{ trip.nombre_adultes }}</div>
-                    <div class="passenger-label">Adultes</div>
-                </div>
-                <div class="passenger-type">
-                    <i class="fas fa-child"></i>
-                    <div class="passenger-count">{{ trip.nombre_enfants }}</div>
-                    <div class="passenger-label">Enfants</div>
-                </div>
-                <div class="passenger-type">
-                    <i class="fas fa-baby"></i>
-                    <div class="passenger-count">{{ trip.nombre_bebes }}</div>
-                    <div class="passenger-label">Bébés</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Informations financières -->
-        <div class="detail-card">
-            <div class="card-header">
-                <i class="fas fa-money-bill-wave"></i>
-                <h2>Finances</h2>
-            </div>
-            <div class="financial-info">
-                {% if trip.is_commission %}
-                <div class="amount-card">
-                    <div class="amount-label">Commission</div>
-                    <div class="amount-value">{{ trip.commission }}%</div>
-                </div>
-                {% else %}
-                <div class="amount-card">
-                    <div class="amount-label">Prix d'achat</div>
-                    <div class="amount-value">{{ trip.prix_achat }}</div>
-                </div>
-                <div class="amount-card">
-                    <div class="amount-label">Prix de vente</div>
-                    <div class="amount-value">{{ trip.prix_vente }}</div>
-                </div>
-                
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Dépenses -->
-        {% if depenses %}
-        <div class="detail-card">
-            <div class="card-header">
-                <i class="fas fa-receipt"></i>
-                <h2>Dépenses</h2>
-            </div>
-            <table class="expense-table">
-                <thead>
-                    <tr>
-                        <th>Désignation</th>
-                        <th>Prix unitaire</th>
-                        <th>Nombre</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for depense in depenses %}
-                    <tr>
-                        <td>{{ depense.nom }}</td>
-                        <td>{{ depense.prix_unitaire }}</td>
-                        <td>{{ depense.nombre_personnes }}</td>
-                        <td>{{ depense.total }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-
-        <!-- Paiements -->
-        <div class="detail-card">
-            <div class="card-header">
-                <i class="fas fa-credit-card"></i>
-                <h2>Paiements</h2>
-            </div>
-            <div class="payment-history">
-                {% for paiement in paiements %}
-                <div class="payment-item">
-                    <div class="payment-details">
-                        <div class="payment-method">
-                            <i class="fas fa-{% if paiement.mode_paiement == 'Chèque' %}money-check-alt
-                                        {% elif paiement.mode_paiement == 'Espèces' %}money-bill-wave
-                                        {% else %}credit-card{% endif %}"></i>
-                            {{ paiement.mode_paiement }}
-                        </div>
-                        <div class="payment-amount">
-                            {{ paiement.montant_paye }}
-                        </div>
-                    </div>
-                    <div class="payment-date">
-                        {{ paiement.date_paiement }}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions flottantes -->
-    <div class="floating-actions">
-        <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" class="action-btn btn-edit">
-            <i class="fas fa-edit"></i>
-            Modifier
-        </a>
-        <button class="action-btn btn-delete" onclick="confirmDelete('{{ trip.id_trip }}')">
-            <i class="fas fa-trash"></i>
-            Supprimer
-        </button>
-    </div>
-</div>
-
-<!-- Modal de confirmation de suppression -->
-<div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <h3>Confirmation de suppression</h3>
-        <p>Êtes-vous sûr de vouloir supprimer ce voyage ?</p>
-        <div class="modal-actions">
-            <button onclick="deleteTrip()" class="btn-delete">Confirmer</button>
-            <button onclick="closeModal()" class="btn-secondary">Annuler</button>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
 {% block scripts %}
 <script>
 let tripIdToDelete = null;
@@ -602,8 +757,7 @@ function deleteTrip() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token() }}'
-        }
+            
     })
     .then(response => {
         if (response.ok) {
@@ -629,5 +783,70 @@ function showNotification(type, message) {
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
 }
+
+// Add animation for cards on scroll
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.detail-card');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    cards.forEach(card => observer.observe(card));
+});
 </script>
+<script>
+    let tripIdToDelete = null;
+    
+    function confirmDelete(tripId) {
+        tripIdToDelete = tripId;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+    
+    function deleteTrip() {
+        if (!tripIdToDelete) return;
+        
+        fetch(`/trips/${tripIdToDelete}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = "{{ url_for('trips.index') }}";
+            } else {
+                throw new Error('Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            showNotification('error', error.message);
+        });
+    }
+    
+    // Notifications stylisées
+    function showNotification(type, message) {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+</script>
+{% endblock %}
+
 {% endblock %}
