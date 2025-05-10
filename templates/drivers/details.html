@@ -155,6 +155,36 @@
                     </div>
                 </div>
             </div>
+            
+            
+
+            <div class="info-item">
+                <span class="info-label">
+                    <i class="fas fa-money-bill"></i>
+                    Type de financement
+                </span>
+                <span class="info-value">{{ driver.type_financement }}</span>
+            </div>
+            
+            {% if driver.type_financement in ['Commission', 'Commission et Salaire'] %}
+            <div class="info-item">
+                <span class="info-label">
+                    <i class="fas fa-percentage"></i>
+                    Commission
+                </span>
+                <span class="info-value">{{ driver.pourcentage_commission }}%</span>
+            </div>
+            {% endif %}
+            
+            {% if driver.type_financement in ['Salaire Fixe', 'Commission et Salaire'] %}
+            <div class="info-item">
+                <span class="info-label">
+                    <i class="fas fa-money-check-alt"></i>
+                    Salaire fixe
+                </span>
+                <span class="info-value">{{ driver.salaire_fixe }}€/mois</span>
+            </div>
+            {% endif %}
 
             {% if driver.notes %}
             <!-- Notes Card -->

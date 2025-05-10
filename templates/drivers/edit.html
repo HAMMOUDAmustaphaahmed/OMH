@@ -160,6 +160,18 @@
                     </div>
                 </div>
 
+                <div id="commission_field" class="form-group" style="display: {{ 'block' if driver.type_financement in ['Commission', 'Commission et Salaire'] else 'none' }};">
+                    <label for="pourcentage_commission">Pourcentage de commission (%)</label>
+                    <input type="number" id="pourcentage_commission" name="pourcentage_commission" 
+                           min="0" max="100" step="0.1" value="{{ driver.pourcentage_commission or '' }}">
+                </div>
+                
+                <div id="salaire_field" class="form-group" style="display: {{ 'block' if driver.type_financement in ['Salaire Fixe', 'Commission et Salaire'] else 'none' }};">
+                    <label for="salaire_fixe">Salaire fixe mensuel</label>
+                    <input type="number" id="salaire_fixe" name="salaire_fixe" 
+                           min="0" step="100" value="{{ driver.salaire_fixe or '' }}">
+                </div>
+
                 <!-- Notes -->
                 <div class="form-section">
                     <div class="section-header">

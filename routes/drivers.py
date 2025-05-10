@@ -71,12 +71,15 @@ def add():
                 date_embauche = datetime.strptime(request.form.get('date_embauche'), '%Y-%m-%d')
             
             # Get and validate gain percentage
-            gain_percentage = request.form.get('gain_percentage', type=float)
-            if gain_percentage is None:
-                gain_percentage = 0  # Default value
-            elif gain_percentage < 0 or gain_percentage > 100:
-                flash('Le pourcentage de gain doit être entre 0 et 100.', 'danger')
-                return redirect(url_for('drivers.add'))
+            type_financement = request.form.get('type_financement')
+            pourcentage_commission = None
+            salaire_fixe = None
+
+            if type_financement in ['Commission', 'Commission et Salaire']:
+                pourcentage_commission = float(request.form.get('pourcentage_commission'))
+            
+            if type_financement in ['Salaire Fixe', 'Commission et Salaire']:
+                salaire_fixe = float(request.form.get('salaire_fixe'))
             
             new_driver = Chauffeur(
                 nom=request.form.get('nom'),
@@ -93,7 +96,9 @@ def add():
                 date_embauche=date_embauche,
                 statut=request.form.get('statut'),
                 notes=request.form.get('notes'),
-                gain_percentage=gain_percentage  # Add the gain percentage
+                type_financement=type_financement,
+                pourcentage_commission=pourcentage_commission,
+                salaire_fixe=salaire_fixe
             )
             
             # Traitement de la photo...

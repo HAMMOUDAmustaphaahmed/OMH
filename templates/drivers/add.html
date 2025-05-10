@@ -144,25 +144,92 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="gain_percentage">
-                                <i class="fas fa-percentage"></i>
-                                Pourcentage de gain par voyage
-                            </label>
-                            <div class="input-group">
-                                <input type="number" 
-                                       id="gain_percentage" 
-                                       name="gain_percentage" 
-                                       min="0" 
-                                       max="100" 
-                                       step="0.01" 
-                                       required 
-                                       class="form-input"
-                                       value="0">
-                                <span class="input-group-text">%</span>
+                        <div class="form-section">
+                            <div class="section-header">
+                                <i class="fas fa-money-bill"></i>
+                                <h3>Type de Financement</h3>
                             </div>
-                            <small class="help-text">Pourcentage que le chauffeur gagne sur chaque voyage (0-100)</small>
+                            <div class="form-group">
+                                <label for="type_financement">Type de financement</label>
+                                <select id="type_financement" name="type_financement" required onchange="toggleFinancementFields()">
+                                    <option value="">Sélectionnez un type</option>
+                                    <option value="Commission">Commission par voyage</option>
+                                    <option value="Salaire Fixe">Salaire fixe</option>
+                                    <option value="Commission et Salaire">Commission et Salaire fixe</option>
+                                </select>
+                            </div>
+                        
+                            <div id="commission_field" class="form-group" style="display: none;">
+                                <label for="pourcentage_commission">Pourcentage de commission (%)</label>
+                                <input type="number" id="pourcentage_commission" name="pourcentage_commission" 
+                                       min="0" max="100" step="0.1" placeholder="Ex: 10.5">
+                            </div>
+                        
+                            <div id="salaire_field" class="form-group" style="display: none;">
+                                <label for="salaire_fixe">Salaire fixe mensuel</label>
+                                <input type="number" id="salaire_fixe" name="salaire_fixe" 
+                                       min="0" step="100" placeholder="Ex: 2500">
+                            </div>
                         </div>
+                        
+                        <script>
+                        function toggleFinancementFields() {
+                            const type = document.getElementById('type_financement').value;
+                            const commissionField = document.getElementById('commission_field');
+                            const salaireField = document.getElementById('salaire_field');
+                        
+                            // Cacher tous les champs d'abord
+                            commissionField.style.display = 'none';
+                            salaireField.style.display = 'none';
+                        
+                            // Réinitialiser les validations required
+                            document.getElementById('pourcentage_commission').required = false;
+                            document.getElementById('salaire_fixe').required = false;
+                        
+                            // Afficher les champs appropriés selon le type sélectionné
+                            switch (type) {
+                                case 'Commission':
+                                    commissionField.style.display = 'block';
+                                    document.getElementById('pourcentage_commission').required = true;
+                                    break;
+                                case 'Salaire Fixe':
+                                    salaireField.style.display = 'block';
+                                    document.getElementById('salaire_fixe').required = true;
+                                    break;
+                                case 'Commission et Salaire':
+                                    commissionField.style.display = 'block';
+                                    salaireField.style.display = 'block';
+                                    document.getElementById('pourcentage_commission').required = true;
+                                    document.getElementById('salaire_fixe').required = true;
+                                    break;
+                            }
+                        }
+                        
+                        // Validation supplémentaire pour le formulaire
+                        document.getElementById('driverForm').addEventListener('submit', function(e) {
+                            const type = document.getElementById('type_financement').value;
+                            const commission = document.getElementById('pourcentage_commission').value;
+                            const salaire = document.getElementById('salaire_fixe').value;
+                        
+                            if (type === 'Commission' && (!commission || commission <= 0)) {
+                                e.preventDefault();
+                                alert('Veuillez saisir un pourcentage de commission valide');
+                                return;
+                            }
+                        
+                            if (type === 'Salaire Fixe' && (!salaire || salaire <= 0)) {
+                                e.preventDefault();
+                                alert('Veuillez saisir un salaire fixe valide');
+                                return;
+                            }
+                        
+                            if (type === 'Commission et Salaire' && (!commission || !salaire || commission <= 0 || salaire <= 0)) {
+                                e.preventDefault();
+                                alert('Veuillez saisir un pourcentage de commission et un salaire fixe valides');
+                                return;
+                            }
+                        });
+                        </script>
                         <style>
                             .input-group {
                                 display: flex;

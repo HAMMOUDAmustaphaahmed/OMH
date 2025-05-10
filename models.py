@@ -121,7 +121,9 @@ class Chauffeur(db.Model):
     photo_url = db.Column(db.String(255))
     statut = db.Column(db.Enum('Actif', 'En congé', 'Inactif'), default='Actif')
     notes = db.Column(db.Text)
-    gain_percentage = db.Column(db.Float, default=0.0, nullable=False)
+    type_financement = db.Column(db.Enum('Commission', 'Salaire Fixe', 'Commission et Salaire'), nullable=False)
+    pourcentage_commission = db.Column(db.Float)  # Pourcentage de commission
+    salaire_fixe = db.Column(db.Numeric(10, 2))  # Salaire fixe mensuel
     
     
     def validate_gain_percentage(self, key, value):
