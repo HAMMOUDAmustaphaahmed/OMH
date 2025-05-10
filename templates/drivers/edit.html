@@ -160,17 +160,55 @@
                     </div>
                 </div>
 
-                <div id="commission_field" class="form-group" style="display: {{ 'block' if driver.type_financement in ['Commission', 'Commission et Salaire'] else 'none' }};">
-                    <label for="pourcentage_commission">Pourcentage de commission (%)</label>
-                    <input type="number" id="pourcentage_commission" name="pourcentage_commission" 
-                           min="0" max="100" step="0.1" value="{{ driver.pourcentage_commission or '' }}">
-                </div>
-                
-                <div id="salaire_field" class="form-group" style="display: {{ 'block' if driver.type_financement in ['Salaire Fixe', 'Commission et Salaire'] else 'none' }};">
-                    <label for="salaire_fixe">Salaire fixe mensuel</label>
-                    <input type="number" id="salaire_fixe" name="salaire_fixe" 
-                           min="0" step="100" value="{{ driver.salaire_fixe or '' }}">
-                </div>
+                <!-- Informations de financement -->
+<div class="form-section">
+    <div class="section-header">
+        <i class="fas fa-money-bill"></i>
+        <h3>Informations de financement</h3>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="type_financement">Type de financement</label>
+            <select id="type_financement" name="type_financement" required onchange="toggleFinancement()">
+                <option value="Salaire" {% if driver.type_financement == 'Salaire' %}selected{% endif %}>Salaire</option>
+                <option value="Commission" {% if driver.type_financement == 'Commission' %}selected{% endif %}>Commission</option>
+            </select>
+        </div>
+        <div class="form-group" id="salaire_group">
+            <label for="montant_salaire">Montant du salaire</label>
+            <input type="number" id="montant_salaire" name="montant_salaire" 
+                   step="0.01" value="{{ driver.montant_salaire or '' }}">
+        </div>
+        <div class="form-group" id="commission_group" style="display: none;">
+            <label for="taux_commission">Taux de commission (%)</label>
+            <input type="number" id="taux_commission" name="taux_commission" 
+                   step="0.01" min="0" max="100" value="{{ driver.taux_commission or '' }}">
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFinancement() {
+    const typeFinancement = document.getElementById('type_financement').value;
+    const salaireGroup = document.getElementById('salaire_group');
+    const commissionGroup = document.getElementById('commission_group');
+    
+    if (typeFinancement === 'Salaire') {
+        salaireGroup.style.display = 'block';
+        commissionGroup.style.display = 'none';
+        document.getElementById('taux_commission').value = '';
+    } else {
+        salaireGroup.style.display = 'none';
+        commissionGroup.style.display = 'block';
+        document.getElementById('montant_salaire').value = '';
+    }
+}
+
+// Appeler la fonction au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    toggleFinancement();
+});
+</script>
 
                 <!-- Notes -->
                 <div class="form-section">

@@ -102,42 +102,48 @@ class Vehicule(db.Model):
     details_evenements = db.relationship('DetailEvenement', backref='vehicule', lazy=True)
     notifications = db.relationship('Notification', backref='vehicule', lazy=True)
 
+
 class Chauffeur(db.Model):
     __tablename__ = 'chauffeurs'
     
     id_chauffeur = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nom = db.Column(db.String(100), nullable=False)
     prenom = db.Column(db.String(100), nullable=False)
-    numero_cin = db.Column(db.String(20), unique=True, nullable=False)
+    numero_cin = db.Column(db.String(20), nullable=False, unique=True, index=True)
     date_naissance = db.Column(db.Date, nullable=False)
     sexe = db.Column(db.Enum('M', 'F'), nullable=False)
     telephone = db.Column(db.String(20), nullable=False)
-    telephone_urgence = db.Column(db.String(20))
+    telephone_urgence = db.Column(db.String(20), nullable=True)
     adresse = db.Column(db.Text, nullable=False)
-    email = db.Column(db.String(100))
+    email = db.Column(db.String(100), nullable=True)
     permis = db.Column(db.String(50), nullable=False)
     date_expiration_permis = db.Column(db.Date, nullable=False)
     date_embauche = db.Column(db.Date, nullable=False)
-    photo_url = db.Column(db.String(255))
-    statut = db.Column(db.Enum('Actif', 'En congé', 'Inactif'), default='Actif')
-    notes = db.Column(db.Text)
-    type_financement = db.Column(db.Enum('Commission', 'Salaire Fixe', 'Commission et Salaire'), nullable=False)
-    pourcentage_commission = db.Column(db.Float)  # Pourcentage de commission
-    salaire_fixe = db.Column(db.Numeric(10, 2))  # Salaire fixe mensuel
-    
-    
-    def validate_gain_percentage(self, key, value):
-        if value is None:
-            return 0.0
-        if not (0 <= float(value) <= 100):
-            raise ValueError("Le pourcentage de gain doit être entre 0 et 100")
-        return float(value)
+    photo_url = db.Column(db.String(255), nullable=True)
+    statut = db.Column(db.Enum('Actif', 'En congé', 'Inactif'), nullable=True, default='Actif')
+    notes = db.Column(db.Text, nullable=True)
+    gain_percentage = db.Column(db.Float, nullable=False, default=0)
+    type_financement = db.Column(db.Enum('Commission', 'Salaire Fixe', 'Commission et Salaire Fixe'), nullable=False)
+    pourcentage_commission = db.Column(db.Float, nullable=True)
+    salaire_fixe = db.Column(db.Numeric(10, 2), nullable=True)
 
+    # Relation pour les cahiers journaliers
+    cahiers = db.relationship('CahierJournalier', backref='chauffeur', lazy=True)
+
+class CahierJournalier(db.Model):
+    __tablename__ = 'cahiers_journaliers'
     
-    # Relations
-    affectations = db.relationship('TripAffectation', backref='chauffeur', lazy=True)
-    details_evenements = db.relationship('DetailEvenement', backref='chauffeur', lazy=True)
+    id_cahier = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_chauffeur = db.Column(db.Integer, db.ForeignKey('chauffeurs.id_chauffeur', ondelete='CASCADE'), nullable=False)
+    date_cahier = db.Column(db.Date, nullable=False)
+    fichier_url = db.Column(db.String(255), nullable=False)
+    type_fichier = db.Column(db.String(10), nullable=False)  # 'pdf' ou 'image'
+    date_upload = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.Text, nullable=True)
     
+    __table_args__ = (
+        db.UniqueConstraint('id_chauffeur', 'date_cahier', name='unique_cahier_date'),
+    )
 
 class Trip(db.Model):
     __tablename__ = 'trips'

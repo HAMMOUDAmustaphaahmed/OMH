@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required
-from models import Chauffeur, db, TripAffectation
+from models import Chauffeur,CahierJournalier, db, TripAffectation
 from werkzeug.utils import secure_filename
 import os
 from app import Config
@@ -152,6 +152,18 @@ def edit(driver_id):
         driver.statut = request.form.get('statut')
         driver.notes = request.form.get('notes')
         
+
+
+        driver.type_financement = request.form.get('type_financement')
+        if driver.type_financement == 'Salaire':
+            driver.montant_salaire = request.form.get('montant_salaire')
+            driver.taux_commission = None
+        elif driver.type_financement == 'Commission':
+            driver.taux_commission = request.form.get('taux_commission')
+            driver.montant_salaire = None
+        else :
+            driver.taux_commission = request.form.get('taux_commission')
+            driver.montant_salaire = request.form.get('montant_salaire')
         # Traitement de la photo
         if 'photo' in request.files:
             file = request.files['photo']
@@ -202,3 +214,72 @@ def delete(driver_id):
 def details(driver_id):
     driver = Chauffeur.query.get_or_404(driver_id)
     return render_template('drivers/details.html', driver=driver)
+
+
+@drivers_bp.route('/cahier/<int:driver_id>', methods=['GET'])
+@login_required
+def cahier(driver_id):
+    driver = Chauffeur.query.get_or_404(driver_id)
+    cahiers = CahierJournalier.query.filter_by(id_chauffeur=driver_id).order_by(CahierJournalier.date_cahier.desc()).all()
+    return render_template('drivers/cahier.html', driver=driver, cahiers=cahiers)
+
+@drivers_bp.route('/cahier/<int:driver_id>/upload', methods=['POST'])
+@login_required
+def upload_cahier(driver_id):
+    if 'fichier' not in request.files:
+        flash('Aucun fichier n\'a été envoyé.', 'danger')
+        return redirect(url_for('drivers.cahier', driver_id=driver_id))
+    
+    file = request.files['fichier']
+    if file.filename == '':
+        flash('Aucun fichier sélectionné.', 'danger')
+        return redirect(url_for('drivers.cahier', driver_id=driver_id))
+    
+    try:
+        date_cahier = datetime.strptime(request.form.get('date_cahier'), '%Y-%m-%d').date()
+        
+        # Vérifier si un cahier existe déjà pour cette date
+        existing_cahier = CahierJournalier.query.filter_by(
+            id_chauffeur=driver_id, 
+            date_cahier=date_cahier
+        ).first()
+        
+        if existing_cahier:
+            flash('Un cahier existe déjà pour cette date.', 'danger')
+            return redirect(url_for('drivers.cahier', driver_id=driver_id))
+        
+        if file and allowed_cahier_file(file.filename):
+            filename = secure_filename(file.filename)
+            unique_filename = f"{uuid.uuid4()}_{filename}"
+            
+            # Créer le dossier pour ce chauffeur s'il n'existe pas
+            driver_folder = os.path.join(Config.UPLOAD_FOLDER, 'cahiers', f'chauffeur_{driver_id}')
+            date_folder = os.path.join(driver_folder, date_cahier.strftime('%Y-%m-%d'))
+            os.makedirs(date_folder, exist_ok=True)
+            
+            file_path = os.path.join(date_folder, unique_filename)
+            file.save(file_path)
+            
+            # Créer l'entrée dans la base de données
+            new_cahier = CahierJournalier(
+                id_chauffeur=driver_id,
+                date_cahier=date_cahier,
+                fichier_url=f'/static/uploads/cahiers/chauffeur_{driver_id}/{date_cahier.strftime("%Y-%m-%d")}/{unique_filename}',
+                type_fichier='pdf' if file.filename.endswith('.pdf') else 'image',
+                notes=request.form.get('notes')
+            )
+            
+            db.session.add(new_cahier)
+            db.session.commit()
+            
+            flash('Le cahier a été uploadé avec succès.', 'success')
+            return redirect(url_for('drivers.cahier', driver_id=driver_id))
+    
+    except Exception as e:
+        flash(f'Une erreur est survenue : {str(e)}', 'danger')
+        
+    return redirect(url_for('drivers.cahier', driver_id=driver_id))
+
+def allowed_cahier_file(filename):
+    ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

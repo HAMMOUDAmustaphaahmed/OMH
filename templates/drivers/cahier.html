@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-book"></i>
+            <h3>Cahier du chauffeur</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('drivers.details', driver_id=driver.id_chauffeur) }}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour au profil</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('drivers.index') }}">
+                    <i class="fas fa-list"></i>
+                    <span>Liste des chauffeurs</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Header -->
+        <div class="content-header">
+            <div class="header-title">
+                <h2>
+                    <i class="fas fa-book"></i>
+                    Cahier de {{ driver.prenom }} {{ driver.nom }}
+                </h2>
+                <p>Gestion des activités journalières</p>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="upload-section">
+            <form method="POST" action="{{ url_for('drivers.upload_cahier', driver_id=driver.id_chauffeur) }}" 
+                  enctype="multipart/form-data" class="upload-form">
+                <div class="form-group">
+                    <label for="date_cahier">Date</label>
+                    <input type="date" id="date_cahier" name="date_cahier" required>
+                </div>
+                <div class="form-group">
+                    <label for="fichier">Fichier (PDF ou Image)</label>
+                    <input type="file" id="fichier" name="fichier" accept=".pdf,.png,.jpg,.jpeg" required>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload"></i>
+                    Upload
+                </button>
+            </form>
+        </div>
+
+        <!-- Cahiers List -->
+        <div class="cahiers-list">
+            <h3>Historique des cahiers</h3>
+            <div class="cahiers-grid">
+                {% for cahier in cahiers %}
+                <div class="cahier-card">
+                    <div class="cahier-header">
+                        <span class="date">{{ cahier.date_cahier.strftime('%d/%m/%Y') }}</span>
+                        <span class="type-badge {{ cahier.type_fichier }}">
+                            {% if cahier.type_fichier == 'pdf' %}
+                                <i class="fas fa-file-pdf"></i>
+                            {% else %}
+                                <i class="fas fa-file-image"></i>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="cahier-content">
+                        <a href="{{ cahier.fichier_url }}" target="_blank" class="btn btn-view">
+                            <i class="fas fa-eye"></i>
+                            Voir
+                        </a>
+                        {% if cahier.notes %}
+                        <div class="notes">
+                            <i class="fas fa-sticky-note"></i>
+                            {{ cahier.notes }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Ajoutez ces styles à ceux existants */
+.upload-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: var(--shadow-md);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.upload-form {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 600px;
+}
+
+.cahiers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.cahier-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.cahier-header {
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.type-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cahier-content {
+    padding: 1rem;
+}
+
+.btn-view {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.notes {
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+</style>
+{% endblock %}
