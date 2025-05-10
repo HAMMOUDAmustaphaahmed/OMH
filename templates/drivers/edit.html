@@ -160,53 +160,83 @@
                     </div>
                 </div>
 
-                <!-- Informations de financement -->
+<!-- Ajoutez cette section dans le formulaire, juste après la section "Informations professionnelles" -->
 <div class="form-section">
     <div class="section-header">
-        <i class="fas fa-money-bill"></i>
+        <i class="fas fa-money-bill-wave"></i>
         <h3>Informations de financement</h3>
     </div>
     <div class="form-row">
         <div class="form-group">
             <label for="type_financement">Type de financement</label>
-            <select id="type_financement" name="type_financement" required onchange="toggleFinancement()">
-                <option value="Salaire" {% if driver.type_financement == 'Salaire' %}selected{% endif %}>Salaire</option>
-                <option value="Commission" {% if driver.type_financement == 'Commission' %}selected{% endif %}>Commission</option>
+            <select id="type_financement" name="type_financement" required 
+                    onchange="updateFinancementFields()">
+                <option value="Commission" 
+                        {% if driver.type_financement == 'Commission' %}selected{% endif %}>
+                    Commission
+                </option>
+                <option value="Salaire Fixe" 
+                        {% if driver.type_financement == 'Salaire Fixe' %}selected{% endif %}>
+                    Salaire Fixe
+                </option>
+                <option value="Commission et Salaire Fixe" 
+                        {% if driver.type_financement == 'Commission et Salaire Fixe' %}selected{% endif %}>
+                    Commission et Salaire Fixe
+                </option>
             </select>
         </div>
-        <div class="form-group" id="salaire_group">
-            <label for="montant_salaire">Montant du salaire</label>
-            <input type="number" id="montant_salaire" name="montant_salaire" 
-                   step="0.01" value="{{ driver.montant_salaire or '' }}">
-        </div>
+        
         <div class="form-group" id="commission_group" style="display: none;">
-            <label for="taux_commission">Taux de commission (%)</label>
-            <input type="number" id="taux_commission" name="taux_commission" 
-                   step="0.01" min="0" max="100" value="{{ driver.taux_commission or '' }}">
+            <label for="pourcentage_commission">Pourcentage de commission (%)</label>
+            <input type="number" step="0.01" min="0" max="100" 
+                   id="pourcentage_commission" name="pourcentage_commission"
+                   value="{{ driver.pourcentage_commission or '' }}">
+        </div>
+        
+        <div class="form-group" id="salaire_group" style="display: none;">
+            <label for="salaire_fixe">Salaire fixe (DH)</label>
+            <input type="number" step="0.01" min="0" 
+                   id="salaire_fixe" name="salaire_fixe"
+                   value="{{ driver.salaire_fixe or '' }}">
         </div>
     </div>
 </div>
 
+<!-- Ajoutez ce script à la fin du fichier, juste avant la fermeture de la balise </body> -->
 <script>
-function toggleFinancement() {
+function updateFinancementFields() {
     const typeFinancement = document.getElementById('type_financement').value;
-    const salaireGroup = document.getElementById('salaire_group');
     const commissionGroup = document.getElementById('commission_group');
+    const salaireGroup = document.getElementById('salaire_group');
     
-    if (typeFinancement === 'Salaire') {
-        salaireGroup.style.display = 'block';
-        commissionGroup.style.display = 'none';
-        document.getElementById('taux_commission').value = '';
-    } else {
-        salaireGroup.style.display = 'none';
-        commissionGroup.style.display = 'block';
-        document.getElementById('montant_salaire').value = '';
+    // Masquer d'abord tous les champs
+    commissionGroup.style.display = 'none';
+    salaireGroup.style.display = 'none';
+    
+    // Afficher les champs appropriés selon le type de financement
+    switch(typeFinancement) {
+        case 'Commission':
+            commissionGroup.style.display = 'block';
+            document.getElementById('pourcentage_commission').required = true;
+            document.getElementById('salaire_fixe').required = false;
+            break;
+        case 'Salaire Fixe':
+            salaireGroup.style.display = 'block';
+            document.getElementById('pourcentage_commission').required = false;
+            document.getElementById('salaire_fixe').required = true;
+            break;
+        case 'Commission et Salaire Fixe':
+            commissionGroup.style.display = 'block';
+            salaireGroup.style.display = 'block';
+            document.getElementById('pourcentage_commission').required = true;
+            document.getElementById('salaire_fixe').required = true;
+            break;
     }
 }
 
 // Appeler la fonction au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    toggleFinancement();
+    updateFinancementFields();
 });
 </script>
 

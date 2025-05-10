@@ -122,8 +122,9 @@ class Chauffeur(db.Model):
     photo_url = db.Column(db.String(255), nullable=True)
     statut = db.Column(db.Enum('Actif', 'En congé', 'Inactif'), nullable=True, default='Actif')
     notes = db.Column(db.Text, nullable=True)
-    gain_percentage = db.Column(db.Float, nullable=False, default=0)
-    type_financement = db.Column(db.Enum('Commission', 'Salaire Fixe', 'Commission et Salaire Fixe'), nullable=False)
+    type_financement = db.Column(db.Enum('Commission', 'Salaire Fixe', 'Commission et Salaire Fixe', 
+                                   name='type_financement_enum'), 
+                           nullable=False, default='Commission')
     pourcentage_commission = db.Column(db.Float, nullable=True)
     salaire_fixe = db.Column(db.Numeric(10, 2), nullable=True)
 

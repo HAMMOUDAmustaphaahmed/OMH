@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-book"></i>
+            <h3>Cahier Journalier</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('drivers.index') }}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Liste des chauffeurs</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="content-header">
+            <div class="header-title">
+                <h2>
+                    <i class="fas fa-book"></i>
+                    Cahier de {{ driver.prenom }} {{ driver.nom }}
+                </h2>
+                <p>Documents classés par date</p>
+            </div>
+        </div>
+
+        {% if documents %}
+            {% for date, files in documents.items() %}
+            <div class="date-section">
+                <h3>{{ date }}</h3>
+                <div class="documents-grid">
+                    {% for file in files %}
+                    <div class="document-card">
+                        {% if file.type == 'pdf' %}
+                            <i class="fas fa-file-pdf document-icon"></i>
+                        {% else %}
+                            <img src="/{{ file.path }}" alt="Aperçu" class="document-preview">
+                        {% endif %}
+                        <div class="document-info">
+                            <span class="document-name">{{ file.name }}</span>
+                            <a href="/{{ file.path }}" target="_blank" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i>
+                                Voir
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>Aucun document trouvé dans le cahier</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Ajoutez ces styles spécifiques pour la vue du cahier */
+.date-section {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.date-section h3 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.document-card {
+    background: var(--background-light);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.document-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.document-preview {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.document-icon {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #e74c3c;
+    background: #f8f9fa;
+}
+
+.document-info {
+    padding: 1rem;
+}
+
+.document-name {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

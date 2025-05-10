@@ -70,6 +70,23 @@
                         <span>Réinitialiser</span>
                     </button>
                 </div>
+                <div class="export-dropdown">
+                    <button class="btn btn-secondary dropdown-toggle">
+                        <i class="fas fa-download"></i>
+                        <span>Exporter</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item" id="exportXLSX">
+                            <i class="fas fa-file-excel"></i> Exporter en XLSX
+                        </a>
+                        <a href="#" class="dropdown-item" id="exportPDF">
+                            <i class="fas fa-file-pdf"></i> Exporter en PDF
+                        </a>
+                        <a href="#" class="dropdown-item" id="printTable">
+                            <i class="fas fa-print"></i> Imprimer
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <!-- Table Section -->
@@ -157,6 +174,16 @@
                                             class="action-btn delete-btn" title="Supprimer">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    <!-- Nouveau bouton pour ajouter une feuille -->
+                                    <button onclick="showUploadModal({{ data.driver.id_chauffeur }})" 
+                                            class="action-btn upload-btn" title="Ajouter une feuille">
+                                        <i class="fas fa-file-upload"></i>
+                                    </button>
+                                    <!-- Nouveau bouton pour consulter le cahier -->
+                                    <a href="{{ url_for('drivers.view_cahier', driver_id=data.driver.id_chauffeur) }}" 
+                                       class="action-btn cahier-btn" title="Consulter le cahier">
+                                        <i class="fas fa-book"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -537,6 +564,333 @@ window.onclick = function(event) {
     if (event.target === modal) {
         closeModal();
     }
+}
+</script>
+
+
+<!-- Upload Modal -->
+<div class="modal" id="uploadModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-file-upload"></i>
+                Ajouter des documents au cahier
+            </h3>
+            <button type="button" class="close-btn" onclick="closeUploadModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="uploadForm" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="date_document">Date des documents</label>
+                <input type="date" id="date_document" name="date_document" required>
+            </div>
+            <div class="form-group">
+                <label for="documents">Sélectionner les documents</label>
+                <input type="file" id="documents" name="documents[]" multiple 
+                       accept=".pdf,.jpg,.jpeg,.png" required>
+                <small class="help-text">Formats acceptés: PDF, JPG, PNG</small>
+            </div>
+            <div class="selected-files" id="selectedFiles"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Ajoutez ces styles à votre CSS existant */
+.action-btn.upload-btn {
+    background: #3498db;
+}
+
+.action-btn.cahier-btn {
+    background: #9b59b6;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+.selected-files {
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.selected-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: var(--background-light);
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+}
+
+.help-text {
+    display: block;
+    margin-top: 0.25rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+</style>
+
+<script>
+let currentDriverId = null;
+
+function showUploadModal(driverId) {
+    currentDriverId = driverId;
+    document.getElementById('uploadModal').style.display = 'flex';
+    document.getElementById('uploadForm').action = `/drivers/${driverId}/upload-cahier`;
+    
+    // Réinitialiser le formulaire
+    document.getElementById('uploadForm').reset();
+    document.getElementById('selectedFiles').innerHTML = '';
+    
+    // Définir la date du jour par défaut
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date_document').value = today;
+}
+
+function closeUploadModal() {
+    document.getElementById('uploadModal').style.display = 'none';
+    currentDriverId = null;
+}
+
+// Gérer l'affichage des fichiers sélectionnés
+document.getElementById('documents').addEventListener('change', function(e) {
+    const selectedFiles = document.getElementById('selectedFiles');
+    selectedFiles.innerHTML = '';
+    
+    Array.from(this.files).forEach(file => {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'selected-file';
+        fileDiv.innerHTML = `
+            <span>
+                <i class="fas ${file.type.includes('pdf') ? 'fa-file-pdf' : 'fa-file-image'}"></i>
+                ${file.name}
+            </span>
+            <span>${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+        `;
+        selectedFiles.appendChild(fileDiv);
+    });
+});
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeUploadModal();
+            // Afficher un message de succès
+            alert('Documents uploadés avec succès');
+            // Optionnel : recharger la page
+            location.reload();
+        } else {
+            alert(data.message || 'Une erreur est survenue');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue lors de l\'upload');
+    });
+});
+
+// Fermer le modal en cliquant en dehors
+window.onclick = function(event) {
+    const modal = document.getElementById('uploadModal');
+    if (event.target === modal) {
+        closeUploadModal();
+    }
+}
+</script>
+
+
+
+<!-- Excel Export Library -->
+<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+<!-- PDF Export Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+    @media print {
+    .sidebar, .content-header, .filter-section, .action-buttons {
+        display: none !important;
+    }
+    
+    .content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .table-responsive {
+        overflow: visible !important;
+    }
+    
+    .data-table {
+        width: 100% !important;
+    }
+}
+.export-dropdown {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #778ca1;
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dropdown-toggle:hover {
+    background-color: #475665;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: rgb(205, 213, 221);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    min-width: 200px;
+    z-index: 1000;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #2d343b;
+    text-decoration: none;
+}
+
+.dropdown-item i {
+    width: 20px;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle dropdown
+    const dropdownToggle = document.querySelector('.dropdown-toggle');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+
+    dropdownToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.export-dropdown')) {
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    // Export to XLSX
+    document.getElementById('exportXLSX').addEventListener('click', function(e) {
+        e.preventDefault();
+        exportTableToExcel();
+    });
+
+    // Export to PDF
+    document.getElementById('exportPDF').addEventListener('click', function(e) {
+        e.preventDefault();
+        exportTableToPDF();
+    });
+
+    // Print
+    document.getElementById('printTable').addEventListener('click', function(e) {
+        e.preventDefault();
+        printTable();
+    });
+});
+
+function exportTableToExcel() {
+    const table = document.querySelector('.data-table');
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Chauffeurs" });
+    XLSX.writeFile(wb, 'liste_chauffeurs.xlsx');
+}
+
+function exportTableToPDF() {
+    const element = document.querySelector('.data-table');
+    
+    html2pdf().from(element).set({
+        margin: 10,
+        filename: 'liste_chauffeurs.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    }).save();
+}
+
+function printTable() {
+    window.print();
 }
 </script>
 {% endblock %}

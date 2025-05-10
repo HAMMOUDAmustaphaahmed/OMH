@@ -35,18 +35,17 @@
                 </h2>
                 <p>Détails complets du profil</p>
             </div>
-            <div class="header-actions">
-                <a href="{{ url_for('drivers.edit', driver_id=driver.id_chauffeur) }}" class="btn btn-primary">
-                    <i class="fas fa-edit"></i>
-                    <span>Modifier</span>
-                </a>
-            </div>
-            <div class="profile-actions">
-                <a href="{{ url_for('drivers.cahier', driver_id=driver.id_chauffeur) }}" class="btn btn-primary">
-                    <i class="fas fa-book"></i>
-                    <span>Voir le cahier journalier</span>
-                </a>
-            </div>
+            <!-- Ajoutez ce bouton dans la section header-actions -->
+<div class="header-actions">
+    <a href="{{ url_for('drivers.list_cahiers', driver_id=driver.id_chauffeur) }}" class="btn btn-primary">
+        <i class="fas fa-book"></i>
+        <span>Cahiers journaliers</span>
+    </a>
+    <a href="{{ url_for('drivers.edit', driver_id=driver.id_chauffeur) }}" class="btn btn-primary">
+        <i class="fas fa-edit"></i>
+        <span>Modifier</span>
+    </a>
+</div>
         </div>
 
         <!-- Profile Card -->

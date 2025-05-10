@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required
 from models import Chauffeur,CahierJournalier, db, TripAffectation
 from werkzeug.utils import secure_filename
@@ -131,63 +131,96 @@ def add():
     return render_template('drivers/add.html')
 
 
+def create_driver_folder(driver_id):
+    folder_path = os.path.join(Config.UPLOAD_FOLDER, f'cahiers/cahier_{driver_id}')
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    return folder_path
+
+def create_date_folder(driver_id, date):
+    base_folder = create_driver_folder(driver_id)
+    date_folder = os.path.join(base_folder, date.strftime('%Y-%m-%d'))
+    if not os.path.exists(date_folder):
+        os.makedirs(date_folder)
+    return date_folder
+
 @drivers_bp.route('/edit/<int:driver_id>', methods=['GET', 'POST'])
 @login_required
 def edit(driver_id):
     driver = Chauffeur.query.get_or_404(driver_id)
     
     if request.method == 'POST':
-        driver.nom = request.form.get('nom')
-        driver.prenom = request.form.get('prenom')
-        driver.numero_cin = request.form.get('numero_cin')
-        driver.date_naissance = datetime.strptime(request.form.get('date_naissance'), '%Y-%m-%d')
-        driver.sexe = request.form.get('sexe')
-        driver.telephone = request.form.get('telephone')
-        driver.telephone_urgence = request.form.get('telephone_urgence')
-        driver.adresse = request.form.get('adresse')
-        driver.email = request.form.get('email')
-        driver.permis = request.form.get('permis')
-        driver.date_expiration_permis = datetime.strptime(request.form.get('date_expiration_permis'), '%Y-%m-%d')
-        driver.date_embauche = datetime.strptime(request.form.get('date_embauche'), '%Y-%m-%d')
-        driver.statut = request.form.get('statut')
-        driver.notes = request.form.get('notes')
-        
-
-
-        driver.type_financement = request.form.get('type_financement')
-        if driver.type_financement == 'Salaire':
-            driver.montant_salaire = request.form.get('montant_salaire')
-            driver.taux_commission = None
-        elif driver.type_financement == 'Commission':
-            driver.taux_commission = request.form.get('taux_commission')
-            driver.montant_salaire = None
-        else :
-            driver.taux_commission = request.form.get('taux_commission')
-            driver.montant_salaire = request.form.get('montant_salaire')
-        # Traitement de la photo
-        if 'photo' in request.files:
-            file = request.files['photo']
-            if file and file.filename and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                unique_filename = f"{uuid.uuid4()}_{filename}"
-                file_path = os.path.join(Config.UPLOAD_FOLDER, 'drivers', unique_filename)
+        try:
+            driver.nom = request.form.get('nom')
+            driver.prenom = request.form.get('prenom')
+            driver.numero_cin = request.form.get('numero_cin')
+            driver.date_naissance = datetime.strptime(request.form.get('date_naissance'), '%Y-%m-%d')
+            driver.sexe = request.form.get('sexe')
+            driver.telephone = request.form.get('telephone')
+            driver.telephone_urgence = request.form.get('telephone_urgence')
+            driver.adresse = request.form.get('adresse')
+            driver.email = request.form.get('email')
+            driver.permis = request.form.get('permis')
+            driver.date_expiration_permis = datetime.strptime(request.form.get('date_expiration_permis'), '%Y-%m-%d')
+            driver.date_embauche = datetime.strptime(request.form.get('date_embauche'), '%Y-%m-%d')
+            driver.statut = request.form.get('statut')
+            driver.notes = request.form.get('notes')
+            
+            # Traitement de la photo
+            if 'photo' in request.files:
+                file = request.files['photo']
+                if file and file.filename and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    unique_filename = f"{uuid.uuid4()}_{filename}"
+                    file_path = os.path.join(Config.UPLOAD_FOLDER, 'drivers', unique_filename)
+                    
+                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                    file.save(file_path)
+                    
+                    if driver.photo_url and os.path.exists(os.path.join(Config.UPLOAD_FOLDER, driver.photo_url.replace('/static/uploads/', ''))):
+                        os.remove(os.path.join(Config.UPLOAD_FOLDER, driver.photo_url.replace('/static/uploads/', '')))
+                    
+                    driver.photo_url = f'/static/uploads/drivers/{unique_filename}'
+            
+            # Gestion du type de financement
+            type_financement = request.form.get('type_financement')
+            if type_financement in ['Commission', 'Salaire Fixe', 'Commission et Salaire Fixe']:
+                driver.type_financement = type_financement
                 
-                # Créer le dossier s'il n'existe pas
-                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                # Gestion de la commission
+                if type_financement in ['Commission', 'Commission et Salaire Fixe']:
+                    commission = request.form.get('pourcentage_commission')
+                    driver.pourcentage_commission = float(commission) if commission else None
+                else:
+                    driver.pourcentage_commission = None
                 
-                file.save(file_path)
-                
-                # Supprimer l'ancienne photo si elle existe
-                if driver.photo_url and os.path.exists(os.path.join(Config.UPLOAD_FOLDER, driver.photo_url.replace('/static/uploads/', ''))):
-                    os.remove(os.path.join(Config.UPLOAD_FOLDER, driver.photo_url.replace('/static/uploads/', '')))
-                
-                driver.photo_url = f'/static/uploads/drivers/{unique_filename}'
-        
-        db.session.commit()
-        flash('Le chauffeur a été mis à jour avec succès.', 'success')
-        return redirect(url_for('drivers.index'))
+                # Gestion du salaire fixe
+                if type_financement in ['Salaire Fixe', 'Commission et Salaire Fixe']:
+                    salaire = request.form.get('salaire_fixe')
+                    driver.salaire_fixe = float(salaire) if salaire else None
+                else:
+                    driver.salaire_fixe = None
+            
+            db.session.commit()
+            flash('Le chauffeur a été mis à jour avec succès.', 'success')
+            return redirect(url_for('drivers.index'))
+            
+        except ValueError as e:
+            db.session.rollback()
+            flash('Erreur de validation des données : ' + str(e), 'danger')
+        except Exception as e:
+            db.session.rollback()
+            flash('Une erreur est survenue : ' + str(e), 'danger')
     
     return render_template('drivers/edit.html', driver=driver)
+
+
+@drivers_bp.route('/cahiers/<int:driver_id>')
+@login_required
+def list_cahiers(driver_id):
+    driver = Chauffeur.query.get_or_404(driver_id)
+    cahiers = CahierJournalier.query.filter_by(id_chauffeur=driver_id).order_by(CahierJournalier.date_cahier.desc()).all()
+    return render_template('drivers/cahiers.html', driver=driver, cahiers=cahiers)
 
 @drivers_bp.route('/delete/<int:driver_id>', methods=['POST'])
 @login_required
@@ -223,63 +256,92 @@ def cahier(driver_id):
     cahiers = CahierJournalier.query.filter_by(id_chauffeur=driver_id).order_by(CahierJournalier.date_cahier.desc()).all()
     return render_template('drivers/cahier.html', driver=driver, cahiers=cahiers)
 
-@drivers_bp.route('/cahier/<int:driver_id>/upload', methods=['POST'])
-@login_required
-def upload_cahier(driver_id):
-    if 'fichier' not in request.files:
-        flash('Aucun fichier n\'a été envoyé.', 'danger')
-        return redirect(url_for('drivers.cahier', driver_id=driver_id))
-    
-    file = request.files['fichier']
-    if file.filename == '':
-        flash('Aucun fichier sélectionné.', 'danger')
-        return redirect(url_for('drivers.cahier', driver_id=driver_id))
-    
-    try:
-        date_cahier = datetime.strptime(request.form.get('date_cahier'), '%Y-%m-%d').date()
-        
-        # Vérifier si un cahier existe déjà pour cette date
-        existing_cahier = CahierJournalier.query.filter_by(
-            id_chauffeur=driver_id, 
-            date_cahier=date_cahier
-        ).first()
-        
-        if existing_cahier:
-            flash('Un cahier existe déjà pour cette date.', 'danger')
-            return redirect(url_for('drivers.cahier', driver_id=driver_id))
-        
-        if file and allowed_cahier_file(file.filename):
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4()}_{filename}"
-            
-            # Créer le dossier pour ce chauffeur s'il n'existe pas
-            driver_folder = os.path.join(Config.UPLOAD_FOLDER, 'cahiers', f'chauffeur_{driver_id}')
-            date_folder = os.path.join(driver_folder, date_cahier.strftime('%Y-%m-%d'))
-            os.makedirs(date_folder, exist_ok=True)
-            
-            file_path = os.path.join(date_folder, unique_filename)
-            file.save(file_path)
-            
-            # Créer l'entrée dans la base de données
-            new_cahier = CahierJournalier(
-                id_chauffeur=driver_id,
-                date_cahier=date_cahier,
-                fichier_url=f'/static/uploads/cahiers/chauffeur_{driver_id}/{date_cahier.strftime("%Y-%m-%d")}/{unique_filename}',
-                type_fichier='pdf' if file.filename.endswith('.pdf') else 'image',
-                notes=request.form.get('notes')
-            )
-            
-            db.session.add(new_cahier)
-            db.session.commit()
-            
-            flash('Le cahier a été uploadé avec succès.', 'success')
-            return redirect(url_for('drivers.cahier', driver_id=driver_id))
-    
-    except Exception as e:
-        flash(f'Une erreur est survenue : {str(e)}', 'danger')
-        
-    return redirect(url_for('drivers.cahier', driver_id=driver_id))
 
 def allowed_cahier_file(filename):
     ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+import os
+from datetime import datetime
+from werkzeug.utils import secure_filename
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'pdf', 'png', 'jpg', 'jpeg'}
+
+@drivers_bp.route('/<int:driver_id>/upload-cahier', methods=['POST'])
+@login_required
+def upload_cahier(driver_id):
+    try:
+        if 'documents[]' not in request.files:
+            return jsonify({'success': False, 'message': 'Aucun fichier sélectionné'})
+
+        date_str = request.form.get('date_document')
+        if not date_str:
+            return jsonify({'success': False, 'message': 'Date requise'})
+
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        date_folder = date_obj.strftime('%d-%m-%Y')
+
+        # Créer le dossier du chauffeur s'il n'existe pas
+        driver_folder = os.path.join(Config.UPLOAD_FOLDER, 'cahiers', str(driver_id))
+        date_path = os.path.join(driver_folder, date_folder)
+        os.makedirs(date_path, exist_ok=True)
+
+        files = request.files.getlist('documents[]')
+        uploaded_files = []
+
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(date_path, filename)
+                
+                # Vérifier si le fichier existe déjà
+                if os.path.exists(file_path):
+                    base, ext = os.path.splitext(filename)
+                    counter = 1
+                    while os.path.exists(file_path):
+                        filename = f"{base}_{counter}{ext}"
+                        file_path = os.path.join(date_path, filename)
+                        counter += 1
+
+                file.save(file_path)
+                uploaded_files.append(filename)
+
+        return jsonify({
+            'success': True,
+            'message': f'{len(uploaded_files)} fichier(s) uploadé(s) avec succès',
+            'files': uploaded_files
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@drivers_bp.route('/<int:driver_id>/cahier')
+@login_required
+def view_cahier(driver_id):
+    driver = Chauffeur.query.get_or_404(driver_id)
+    cahier_path = os.path.join(Config.UPLOAD_FOLDER, 'cahiers', str(driver_id))
+    
+    # Structure pour stocker les documents organisés par date
+    documents = {}
+    
+    if os.path.exists(cahier_path):
+        for date_folder in sorted(os.listdir(cahier_path), reverse=True):
+            folder_path = os.path.join(cahier_path, date_folder)
+            if os.path.isdir(folder_path):
+                documents[date_folder] = []
+                for file in os.listdir(folder_path):
+                    file_path = os.path.join('static', 'uploads', 'cahiers', 
+                                           str(driver_id), date_folder, file)
+                    documents[date_folder].append({
+                        'name': file,
+                        'path': file_path,
+                        'type': 'pdf' if file.lower().endswith('.pdf') else 'image'
+                    })
+    
+    return render_template('drivers/view_cahier.html', 
+                         driver=driver, documents=documents)

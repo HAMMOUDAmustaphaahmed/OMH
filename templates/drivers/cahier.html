@@ -6,7 +6,7 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <i class="fas fa-book"></i>
-            <h3>Cahier du chauffeur</h3>
+            <h3>Cahiers Journaliers</h3>
         </div>
         <ul class="sidebar-menu">
             <li>
@@ -15,107 +15,91 @@
                     <span>Retour au profil</span>
                 </a>
             </li>
-            <li>
-                <a href="{{ url_for('drivers.index') }}">
-                    <i class="fas fa-list"></i>
-                    <span>Liste des chauffeurs</span>
-                </a>
-            </li>
         </ul>
     </div>
 
     <!-- Main Content -->
     <div class="content">
-        <!-- Header -->
         <div class="content-header">
             <div class="header-title">
                 <h2>
                     <i class="fas fa-book"></i>
-                    Cahier de {{ driver.prenom }} {{ driver.nom }}
+                    Cahiers journaliers de {{ driver.prenom }} {{ driver.nom }}
                 </h2>
-                <p>Gestion des activités journalières</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="document.getElementById('uploadForm').style.display='block'">
+                    <i class="fas fa-upload"></i>
+                    <span>Nouveau cahier</span>
+                </button>
             </div>
         </div>
 
         <!-- Upload Form -->
-        <div class="upload-section">
+        <div id="uploadForm" class="upload-form" style="display: none;">
             <form method="POST" action="{{ url_for('drivers.upload_cahier', driver_id=driver.id_chauffeur) }}" 
-                  enctype="multipart/form-data" class="upload-form">
-                <div class="form-group">
-                    <label for="date_cahier">Date</label>
-                    <input type="date" id="date_cahier" name="date_cahier" required>
+                  enctype="multipart/form-data" class="form-card">
+                <div class="form-header">
+                    <h3>Uploader un nouveau cahier</h3>
+                    <button type="button" class="close-btn" 
+                            onclick="document.getElementById('uploadForm').style.display='none'">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="fichier">Fichier (PDF ou Image)</label>
-                    <input type="file" id="fichier" name="fichier" accept=".pdf,.png,.jpg,.jpeg" required>
+                <div class="form-content">
+                    <div class="form-group">
+                        <label for="date_cahier">Date du cahier</label>
+                        <input type="date" id="date_cahier" name="date_cahier" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cahier_file">Fichier (PDF ou Image)</label>
+                        <input type="file" id="cahier_file" name="cahier_file" 
+                               accept=".pdf,.jpg,.jpeg,.png" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="notes">Notes</label>
-                    <textarea id="notes" name="notes" rows="3"></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>Enregistrer</span>
+                    </button>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-upload"></i>
-                    Upload
-                </button>
             </form>
         </div>
 
         <!-- Cahiers List -->
-        <div class="cahiers-list">
-            <h3>Historique des cahiers</h3>
-            <div class="cahiers-grid">
-                {% for cahier in cahiers %}
-                <div class="cahier-card">
-                    <div class="cahier-header">
-                        <span class="date">{{ cahier.date_cahier.strftime('%d/%m/%Y') }}</span>
-                        <span class="type-badge {{ cahier.type_fichier }}">
-                            {% if cahier.type_fichier == 'pdf' %}
-                                <i class="fas fa-file-pdf"></i>
-                            {% else %}
-                                <i class="fas fa-file-image"></i>
-                            {% endif %}
-                        </span>
-                    </div>
-                    <div class="cahier-content">
-                        <a href="{{ cahier.fichier_url }}" target="_blank" class="btn btn-view">
-                            <i class="fas fa-eye"></i>
-                            Voir
-                        </a>
-                        {% if cahier.notes %}
-                        <div class="notes">
-                            <i class="fas fa-sticky-note"></i>
-                            {{ cahier.notes }}
-                        </div>
-                        {% endif %}
-                    </div>
+        <div class="cahiers-grid">
+            {% for cahier in cahiers %}
+            <div class="cahier-card">
+                <div class="cahier-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ cahier.date_cahier.strftime('%d/%m/%Y') }}
                 </div>
-                {% endfor %}
+                <div class="cahier-preview">
+                    {% if cahier.type_fichier == 'pdf' %}
+                        <i class="fas fa-file-pdf"></i>
+                    {% else %}
+                        <i class="fas fa-file-image"></i>
+                    {% endif %}
+                </div>
+                <div class="cahier-actions">
+                    <a href="{{ cahier.fichier_url }}" target="_blank" class="btn btn-primary">
+                        <i class="fas fa-eye"></i>
+                        <span>Voir</span>
+                    </a>
+                </div>
             </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
 <style>
-/* Ajoutez ces styles à ceux existants */
-.upload-section {
-    background: white;
-    border-radius: 15px;
-    box-shadow: var(--shadow-md);
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.upload-form {
-    display: grid;
-    gap: 1.5rem;
-    max-width: 600px;
-}
-
+/* Ajoutez les styles nécessaires ici, similaires aux autres templates */
 .cahiers-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1.5rem;
-    margin-top: 1rem;
+    padding: 1.5rem;
 }
 
 .cahier-card {
@@ -123,40 +107,66 @@
     border-radius: 10px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
+    transition: var(--transition);
 }
 
-.cahier-header {
+.cahier-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.cahier-date {
     padding: 1rem;
     background: var(--primary-color);
     color: white;
     display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cahier-preview {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    color: var(--accent-color);
+}
+
+.cahier-actions {
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.upload-form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    width: 90%;
+    max-width: 500px;
+}
+
+.form-header {
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 1.5rem;
 }
 
-.type-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.cahier-content {
-    padding: 1rem;
-}
-
-.btn-view {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 1rem;
-}
-
-.notes {
-    font-size: 0.9rem;
-    color: #666;
-    display: flex;
-    gap: 0.5rem;
-    align-items: flex-start;
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-dark);
 }
 </style>
 {% endblock %}
