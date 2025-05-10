@@ -110,6 +110,17 @@
                                     <input type="number" id="nombre_place" name="nombre_place" 
                                            value="{{ vehicle.nombre_place }}" required>
                                 </div>
+                                <div class="form-group">
+                                    <label for="type_vehicule">
+                                        <i class="fas fa-tag"></i>
+                                        Type de véhicule
+                                    </label>
+                                    <select id="type_vehicule" name="type_vehicule" required>
+                                        <option value="OMH" {% if vehicle.type_vehicule == 'OMH' %}selected{% endif %}>OMH</option>
+                                        <option value="Grand Taxi Touristique" {% if vehicle.type_vehicule == 'Grand Taxi Touristique' %}selected{% endif %}>Grand Taxi Touristique</option>
+                                        <option value="Autres" {% if vehicle.type_vehicule == 'Autres' %}selected{% endif %}>Autres</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 

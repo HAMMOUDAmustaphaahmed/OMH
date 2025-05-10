@@ -55,6 +55,14 @@
                     <input type="text" id="searchInput" placeholder="Rechercher un véhicule..." class="search-input">
                 </div>
                 <div class="filter-box">
+                    <select id="type-filter" class="filter-select">
+                        <option value="">Tous les types</option>
+                        <option value="OMH">OMH</option>
+                        <option value="Grand Taxi Touristique">Grand Taxi Touristique</option>
+                        <option value="Autres">Autres</option>
+                    </select>
+                </div>
+                <div class="filter-box">
                     <select id="status-filter" class="filter-select">
                         <option value="">Tous les états</option>
                         <option value="En marche">En marche</option>
@@ -63,7 +71,155 @@
                         <option value="Non disponible">Non disponible</option>
                     </select>
                 </div>
+                <div class="export-dropdown">
+                    <button class="export-btn">
+                        <i class="fas fa-download"></i>
+                        Exporter
+                    </button>
+                    <div class="export-content">
+                        <a href="#" id="exportExcel">
+                            <i class="fas fa-file-excel"></i>
+                            Excel (.xlsx)
+                        </a>
+                        <a href="#" id="exportPDF">
+                            <i class="fas fa-file-pdf"></i>
+                            PDF
+                        </a>
+                        <a href="#" id="printTable">
+                            <i class="fas fa-print"></i>
+                            Imprimer
+                        </a>
+                    </div>
+                </div>
+                <style>
+                    /* Styles pour le bouton d'exportation et la liste déroulante */
+                    .export-dropdown {
+                        position: relative;
+                        display: inline-block;
+                    }
+                    
+                    .export-btn {
+                        background: var(--accent-color);
+                        color: white;
+                        padding: 0.75rem 1rem;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        font-size: 0.9rem;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .export-btn:hover {
+                        background: #2980b9;
+                    }
+                    
+                    .export-content {
+                        display: none;
+                        position: absolute;
+                        right: 0;
+                        background-color: white;
+                        min-width: 160px;
+                        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+                        border-radius: 8px;
+                        z-index: 1;
+                        margin-top: 5px;
+                    }
+                    
+                    .export-content a {
+                        color: var(--text-dark);
+                        padding: 12px 16px;
+                        text-decoration: none;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .export-content a:hover {
+                        background-color: #f5f6fa;
+                    }
+                    
+                    .export-dropdown:hover .export-content {
+                        display: block;
+                    }
+                    
+                    /* Ajustement du filter-section pour inclure le bouton d'exportation */
+                    .filter-section {
+                        display: flex;
+                        gap: 1rem;
+                        align-items: center;
+                        flex-wrap: wrap;
+                        padding: 1.5rem;
+                        border-bottom: 1px solid var(--border-color);
+                    }
+                    </style>
+                    
+                    <script>
+                    // Ajouter ces scripts après vos scripts existants
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Fonction pour exporter en Excel
+                        document.getElementById('exportExcel').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            // Inclure la bibliothèque SheetJS
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js';
+                            script.onload = function() {
+                                const table = document.querySelector('.data-table');
+                                const wb = XLSX.utils.table_to_book(table, {sheet: "Véhicules"});
+                                XLSX.writeFile(wb, 'vehicules.xlsx');
+                            };
+                            document.head.appendChild(script);
+                        });
+                    
+                        // Fonction pour exporter en PDF
+                        document.getElementById('exportPDF').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            // Inclure la bibliothèque html2pdf
+                            const script = document.createElement('script');
+                            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                            script.onload = function() {
+                                const element = document.querySelector('.table-responsive');
+                                const opt = {
+                                    margin: 1,
+                                    filename: 'vehicules.pdf',
+                                    image: { type: 'jpeg', quality: 0.98 },
+                                    html2canvas: { scale: 2 },
+                                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                                };
+                                html2pdf().set(opt).from(element).save();
+                            };
+                            document.head.appendChild(script);
+                        });
+                    
+                        // Fonction pour imprimer
+                        document.getElementById('printTable').addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const printContent = document.querySelector('.table-responsive').innerHTML;
+                            const originalContent = document.body.innerHTML;
+                            
+                            document.body.innerHTML = `
+                                <style>
+                                    table { border-collapse: collapse; width: 100%; }
+                                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                                    th { background-color: #f5f6fa; }
+                                    @media print {
+                                        .no-print { display: none; }
+                                    }
+                                </style>
+                                <div>${printContent}</div>
+                            `;
+                            
+                            window.print();
+                            document.body.innerHTML = originalContent;
+                            location.reload();
+                        });
+                    });
+                    </script>
             </div>
+            
 
             <!-- Table Section -->
             <div class="table-responsive">
@@ -76,6 +232,7 @@
                             <th>Kilométrage</th>
                             <th>Carburant</th>
                             <th>État</th>
+                            <th>Type</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -93,6 +250,7 @@
                                 </span>
                             </td>
                             <td><span class="status-badge {{ vehicle.etat|lower }}">{{ vehicle.etat }}</span></td>
+                            <td><span class="type-badge">{{ vehicle.type_vehicule }}</span></td>
                             <td class="actions-cell">
                                 <div class="action-buttons">
                                     <a href="{{ url_for('vehicles.details', vehicle_id=vehicle.id_vehicule) }}" 
@@ -122,6 +280,7 @@
 :root {
     --primary-color: #2c3e50;
     --secondary-color: #546677;
+    --other-color: #53b16d;
     --accent-color: #3498db;
     --success-color: #2ecc71;
     --warning-color: #f1c40f;
@@ -362,30 +521,43 @@
         flex-direction: column;
     }
 }
+.type-badge {
+    background: var(--other-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+}
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('status-filter');
-    const tableRows = document.querySelectorAll('.data-table tbody tr');
-
-    function filterTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusTerm = statusFilter.value.toLowerCase();
-
-        tableRows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            const status = row.querySelector('.status-badge').textContent.toLowerCase();
-            const matchesSearch = text.includes(searchTerm);
-            const matchesStatus = statusTerm === '' || status === statusTerm;
-            
-            row.style.display = matchesSearch && matchesStatus ? '' : 'none';
-        });
-    }
-
-    searchInput.addEventListener('input', filterTable);
-    statusFilter.addEventListener('change', filterTable);
-});
-</script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('status-filter');
+        const typeFilter = document.getElementById('type-filter');
+        const tableRows = document.querySelectorAll('.data-table tbody tr');
+    
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const statusTerm = statusFilter.value.toLowerCase();
+            const typeTerm = typeFilter.value.toLowerCase();
+    
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const status = row.querySelector('.status-badge').textContent.toLowerCase();
+                const type = row.querySelector('.type-badge').textContent.toLowerCase();
+                
+                const matchesSearch = text.includes(searchTerm);
+                const matchesStatus = statusTerm === '' || status === statusTerm;
+                const matchesType = typeTerm === '' || type === typeTerm;
+                
+                row.style.display = matchesSearch && matchesStatus && matchesType ? '' : 'none';
+            });
+        }
+    
+        searchInput.addEventListener('input', filterTable);
+        statusFilter.addEventListener('change', filterTable);
+        typeFilter.addEventListener('change', filterTable);
+    });
+    </script>
 {% endblock %}

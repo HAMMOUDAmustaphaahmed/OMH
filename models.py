@@ -78,6 +78,7 @@ class Vehicule(db.Model):
     
     id_vehicule = db.Column(db.Integer, primary_key=True, autoincrement=True)
     matricule = db.Column(db.String(20), unique=True, nullable=False)
+    type_vehicule = db.Column(db.Enum('OMH', 'Grand Taxi Touristique', 'Autres'), nullable=False, default='OMH')  # Nouveau champ
     usine = db.Column(db.String(100), nullable=False)
     modele = db.Column(db.String(100), nullable=False)
     nombre_place = db.Column(db.Integer, nullable=False)

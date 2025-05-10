@@ -44,6 +44,7 @@ def add():
         
         new_vehicle = Vehicule(
             matricule=matricule,
+            type_vehicule=request.form.get('type_vehicule'),
             usine=request.form.get('usine'),
             modele=request.form.get('modele'),
             nombre_place=request.form.get('nombre_place'),
@@ -97,6 +98,7 @@ def edit(vehicle_id):
     
     if request.method == 'POST':
         vehicle.matricule = request.form.get('matricule')
+        vehicle.type_vehicule = request.form.get('type_vehicule')
         vehicle.usine = request.form.get('usine')
         vehicle.modele = request.form.get('modele')
         vehicle.nombre_place = request.form.get('nombre_place')

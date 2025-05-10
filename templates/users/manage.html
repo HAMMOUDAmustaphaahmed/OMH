@@ -68,15 +68,12 @@
                         {{ user.username[:2].upper() }}
                     </div>
                     <div class="user-info">
-                        <h3 class="user-name">{{ user.username }}</h3>
-                        <span class="user-email">{{ user.email }}</span>
+                        <h3 class="user-name"> {{ user.nom }} {{ user.prenom }}</h3>
+                        <span class="user-email">Identifiant : {{ user.username }}</span><br>
+                        <span class="user-email">Mail : {{ user.email }}</span>
+
                     </div>
-                    <div class="user-status">
-                        <span class="status-badge {{ 'active' if user.is_active else 'inactive' }}">
-                            <i class="fas fa-circle"></i>
-                            {{ 'Actif' if user.is_active else 'Inactif' }}
-                        </span>
-                    </div>
+                    
                 </div>
                 
                 <div class="user-body">
@@ -86,12 +83,7 @@
                             {{ user.role|title }}
                         </span>
                     </div>
-                    <div class="user-meta">
-                        <span class="meta-item">
-                            <i class="fas fa-clock"></i>
-                            Dernière connexion: {{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Jamais' }}
-                        </span>
-                    </div>
+                    
                 </div>
 
                 <div class="user-actions">
