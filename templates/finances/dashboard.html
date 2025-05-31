@@ -1,428 +1,546 @@
 {% extends "base.html" %}
 
+{% block title %}Dashboard Financier{% endblock %}
+
 {% block content %}
-<div class="dashboard-container">
-    <div class="sidebar">
-        <h3>Gestion financière</h3>
-        <ul>
-            <li><a href="{{ url_for('finances.depenses') }}">Dépenses</a></li>
-            <li><a href="{{ url_for('finances.paiements') }}">Paiements</a></li>
-            <li><a href="{{ url_for('finances.rapports') }}">Rapports</a></li>
+<!-- Wrapper -->
+<div class="wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        
+
+        <ul class="sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('finances.index') }}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('finances.transactions') }}">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transactions</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('finances.budgets') }}">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Budgets</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('finances.rapports') }}">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Rapports</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Dépenses</span>
+                </a>
+            </li>
         </ul>
-    </div>
 
-    <div class="content">
-        <h2>Tableau de bord financier</h2>
-        <div class="card-row">
-            <div class="card">
-                <div class="card-icon blue">
-                    <i class="fas fa-euro-sign"></i>
-                </div>
-                <div class="card-info">
-                    <span class="card-title">Revenus totaux</span>
-                    <span class="card-value">{{ total_revenus }}</span>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-icon red">
-                    <i class="fas fa-minus-circle"></i>
-                </div>
-                <div class="card-info">
-                    <span class="card-title">Dépenses totales</span>
-                    <span class="card-value">{{ total_depenses }}</span>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-icon green">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="card-info">
-                    <span class="card-title">Bénéfice net</span>
-                    <span class="card-value">{{ (total_revenus - total_depenses) }}</span>
-                </div>
-            </div>
-        </div>
+        
+    </nav>
 
-        <div class="dashboard-widgets">
-            <div class="widget">
-                <h3>Revenus du mois</h3>
-                <div class="chart-container">
-                    <canvas id="monthlyRevenueChart"></canvas>
-                </div>
-            </div>
-            <div class="widget">
-                <h3>Dépenses du mois</h3>
-                <div class="chart-container">
-                    <canvas id="monthlyExpensesChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-widgets">
-            <div class="widget">
-                <h3>Derniers paiements</h3>
-                <div class="recent-payments">
-                    {% for payment in derniers_paiements %}
-                    <div class="payment-item">
-                        <div class="payment-details">
-                            <span class="payment-date">{{ payment.date_paiement }}</span>
-                            <span class="payment-amount">{{ payment.montant_paye }}</span>
-                        </div>
-                        <span class="payment-mode">{{ payment.mode_paiement }}</span>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4">
+            
+            <div class="navbar-nav ml-auto">
+                <div class="nav-item dropdown no-arrow">
+                    
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Profile
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Paramètres
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Déconnexion
+                        </a>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-            <div class="widget">
-                <h3>Dernières dépenses</h3>
-                <div class="recent-expenses">
-                    {% for expense in dernieres_depenses %}
-                    <div class="expense-item">
-                        <div class="expense-details">
-                            <span class="expense-date">{{ expense.date_depense }}</span>
-                            <span class="expense-category">{{ expense.categorie }}</span>
+        </nav>
+        <!-- Page Content -->
+        <div class="container-fluid px-4">
+            <!-- Page Heading -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 text-gray-800">Dashboard Financier</h1>
+                
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card border-start border-primary border-3 shadow h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Solde Total</div>
+                                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ "{:,.3f}".format(solde_total) }} DT</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-wallet fa-2x text-primary opacity-50"></i>
+                                </div>
+                            </div>
                         </div>
-                        <span class="expense-amount">{{ expense.montant }}</span>
                     </div>
-                    {% endfor %}
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card border-start border-success border-3 shadow h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Revenus</div>
+                                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ "{:,.3f}".format(total_revenus) }} DT</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-arrow-up fa-2x text-success opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card border-start border-danger border-3 shadow h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Dépenses</div>
+                                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ "{:,.3f}".format(total_depenses) }} DT</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-arrow-down fa-2x text-danger opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card border-start border-info border-3 shadow h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Balance</div>
+                                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ "{:,.3f}".format(total_revenus - total_depenses) }} DT</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-balance-scale fa-2x text-info opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <!-- Evolution Financière Chart -->
+                <div class="col-xl-8">
+                    <div class="card shadow">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-chart-line me-2"></i>Évolution Financière
+                            </h6>
+                            <div class="dropdown">
+                                <button class="btn btn-link btn-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <li><a class="dropdown-item" href="#">Cette année</a></li>
+                                    <li><a class="dropdown-item" href="#">6 derniers mois</a></li>
+                                    <li><a class="dropdown-item" href="#">3 derniers mois</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="evolutionFinanciere" width="100%" height="40"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Répartition des Dépenses Chart -->
+                <div class="col-xl-4">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-chart-pie me-2"></i>Répartition des Dépenses
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="repartitionDepenses" width="100%" height="50"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Recent Transactions and Budget Tracking -->
+            <div class="row">
+                <!-- Recent Transactions -->
+                <div class="col-xl-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-list me-2"></i>Transactions Récentes
+                            </h6>
+                            <a href="{{ url_for('finances.transactions') }}" class="btn btn-sm btn-primary">
+                                Voir tout
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Type</th>
+                                            <th>Montant</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for transaction in transactions_recentes %}
+                                        <tr>
+                                            <td>{{ transaction.date_transaction.strftime('%d/%m/%Y') }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if transaction.type == 'Revenu' %}
+                                                        <i class="fas fa-arrow-up text-success me-2"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-arrow-down text-danger me-2"></i>
+                                                    {% endif %}
+                                                    <span>{{ transaction.description }}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if transaction.type == 'Revenu' %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                    {{ transaction.type }}
+                                                </span>
+                                            </td>
+                                            <td class="{% if transaction.type == 'Revenu' %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                                {{ transaction.montant_formate }}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Tracking -->
+                <div class="col-xl-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-tasks me-2"></i>Suivi des Budgets
+                            </h6>
+                            <a href="{{ url_for('finances.budgets') }}" class="btn btn-sm btn-primary">
+                                Gérer les budgets
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% for budget in budgets %}
+                            <div class="budget-item mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-folder me-2 text-primary"></i>
+                                        <h6 class="mb-0">{{ budget.categorie }}</h6>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold">{{ "{:,.2f}".format(budget.montant_actuel) }}</span>
+                                        <span class="text-muted">/ {{ "{:,.2f}".format(budget.montant_prevu) }} DT</span>
+                                    </div>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated 
+                                        {% if budget.pourcentage_utilisation > 100 %}bg-danger
+                                        {% elif budget.pourcentage_utilisation > 80 %}bg-warning
+                                        {% else %}bg-success{% endif %}"
+                                        role="progressbar"
+                                        style="width: {{ min(budget.pourcentage_utilisation, 100) }}%"
+                                        aria-valuenow="{{ budget.pourcentage_utilisation }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">Progression</small>
+                                    <small class="fw-bold {% if budget.pourcentage_utilisation > 100 %}text-danger
+                                        {% elif budget.pourcentage_utilisation > 80 %}text-warning
+                                        {% else %}text-success{% endif %}">
+                                        {{ "%.1f"|format(budget.pourcentage_utilisation) }}%
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-
+{% endblock %}
 {% block styles %}
 <style>
-/* Variables pour les couleurs */
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #34495e;
-    --accent-blue: #3498db;
-    --accent-green: #2ecc71;
-    --accent-red: #e74c3c;
-    --background-light: #f5f6fa;
-    --text-dark: #2c3e50;
-    --text-light: #ffffff;
-    --shadow-regular: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-large: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Layout principal */
-.dashboard-container {
-    display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: 2rem;
-    padding: 2rem;
-    background-color: var(--background-light);
-    min-height: 100vh;
-}
-
-/* Sidebar */
-.sidebar {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    padding: 2rem;
-    border-radius: 15px;
-    box-shadow: var(--shadow-large);
-    position: sticky;
-    top: 2rem;
-    height: calc(100vh - 4rem);
-}
-
-.sidebar h3 {
-    color: var(--text-light);
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
-
-.sidebar li {
-    margin-bottom: 1rem;
-}
-
-.sidebar a {
-    color: var(--text-light);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.sidebar a:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
-}
-
-/* Content area */
-.content {
-    padding: 2rem;
-}
-
-.content h2 {
-    color: var(--text-dark);
-    margin-bottom: 2rem;
-    font-size: 2rem;
-}
-
-/* Cards */
-.card-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.card {
-    background: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    box-shadow: var(--shadow-regular);
-    transition: transform 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.card-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-}
-
-.card-icon i {
-    font-size: 1.5rem;
-    color: white;
-}
-
-.card-icon.blue { background: var(--accent-blue); }
-.card-icon.red { background: var(--accent-red); }
-.card-icon.green { background: var(--accent-green); }
-
-.card-info {
-    flex: 1;
-}
-
-.card-title {
-    display: block;
-    color: var(--text-dark);
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.card-value {
-    display: block;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--text-dark);
-}
-
-/* Widgets */
-.dashboard-widgets {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.widget {
-    background: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    box-shadow: var(--shadow-regular);
-}
-
-.widget h3 {
-    color: var(--text-dark);
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--background-light);
-}
-
-/* Charts */
-.chart-container {
-    height: 300px;
-    position: relative;
-}
-
-/* Recent transactions */
-.payment-item, .expense-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--background-light);
-    transition: background-color 0.3s ease;
-}
-
-.payment-item:hover, .expense-item:hover {
-    background-color: var(--background-light);
-}
-
-.payment-details, .expense-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.payment-date, .expense-date {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.payment-amount, .expense-amount {
-    font-weight: bold;
-    color: var(--text-dark);
-}
-
-.payment-mode, .expense-category {
-    padding: 0.25rem 0.75rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    background-color: var(--background-light);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .dashboard-container {
-        grid-template-columns: 1fr;
+    /* Layout */
+    .wrapper {
+        display: flex;
+        min-height: 100vh;
     }
-    
+
+    /* Sidebar */
     .sidebar {
-        position: relative;
-        height: auto;
-        margin-bottom: 2rem;
+        width: 250px;
+        background: linear-gradient(180deg, #2c3e50 0%, #3498db 100%);
+        color: #fff;
+        position: fixed;
+        height: 100vh;
+        transition: all 0.3s;
+        z-index: 1000;
     }
-}
 
-@media (max-width: 768px) {
-    .card-row {
-        grid-template-columns: 1fr;
+    .sidebar-header {
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.1);
     }
-    
-    .dashboard-widgets {
-        grid-template-columns: 1fr;
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-}
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
 
-.card, .widget {
-    animation: fadeIn 0.5s ease-out forwards;
-}
+    .sidebar-nav {
+        padding: 0;
+        list-style: none;
+        margin: 20px 0;
+    }
 
-/* Chart.js Customization */
-canvas {
-    max-width: 100% !important;
-}
+    .nav-item {
+        margin: 5px 10px;
+    }
+
+    .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 12px 20px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .nav-link i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        margin-left: 250px;
+        padding: 20px;
+        background: #f8f9fc;
+        min-height: 100vh;
+    }
+
+    /* Cards */
+    .stat-card {
+        transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        height: 60px;
+        width: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Tables */
+    .table {
+        font-size: 0.9rem;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    /* Budget Progress */
+    .budget-item {
+        padding: 15px;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 15px;
+    }
+
+    .progress {
+        border-radius: 10px;
+        background-color: #f0f0f0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            margin-left: -250px;
+        }
+        
+        .sidebar.active {
+            margin-left: 0;
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .main-content.active {
+            margin-left: 250px;
+        }
+    }
+
+    /* Animation Classes */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
 </style>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Configurations pour Chart.js
-Chart.defaults.color = '#2c3e50';
-Chart.defaults.font.family = "'Poppins', sans-serif";
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuration des graphiques avec des options améliorées
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: {
-                    padding: 20,
-                    font: {
-                        size: 12
+    // Toggle Sidebar
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', e => {
+            e.preventDefault();
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('active');
+        });
+    }
+
+    // Evolution Financière Chart
+    const ctx = document.getElementById('evolutionFinanciere');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                datasets: [{
+                    label: 'Revenus',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Dépenses',
+                    data: [8000, 15000, 12000, 18000, 17000, 25000],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(44, 62, 80, 0.9)',
-                titleFont: {
-                    size: 13
-                },
-                bodyFont: {
-                    size: 12
-                },
-                padding: 12,
-                cornerRadius: 8
             }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: {
-                    color: 'rgba(0, 0, 0, 0.05)'
-                }
+        });
+    }
+
+    // Répartition des Dépenses Chart
+    const ctxPie = document.getElementById('repartitionDepenses');
+    if (ctxPie) {
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Carburant', 'Entretien', 'Assurance', 'Salaires', 'Autres'],
+                datasets: [{
+                    data: [30, 20, 15, 25, 10],
+                    backgroundColor: [
+                        '#0d6efd',
+                        '#dc3545',
+                        '#ffc107',
+                        '#198754',
+                        '#6c757d'
+                    ],
+                    borderWidth: 0
+                }]
             },
-            x: {
-                grid: {
-                    display: false
-                }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '70%'
             }
-        }
-    };
-
-    // Graphique des revenus
-    const revenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
-    new Chart(revenueCtx, {
-        type: 'line',
-        data: {
-            labels: [{% for month in months %}'{{ month }}',{% endfor %}],
-            datasets: [{
-                label: 'Revenus (€)',
-                data: [{% for revenue in monthly_revenue %}{{ revenue }},{% endfor %}],
-                backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                borderColor: 'rgba(52, 152, 219, 1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: chartOptions
-    });
-
-    // Graphique des dépenses
-    const expensesCtx = document.getElementById('monthlyExpensesChart').getContext('2d');
-    new Chart(expensesCtx, {
-        type: 'bar',
-        data: {
-            labels: [{% for month in months %}'{{ month }}',{% endfor %}],
-            datasets: [{
-                label: 'Dépenses (€)',
-                data: [{% for expense in monthly_expenses %}{{ expense }},{% endfor %}],
-                backgroundColor: 'rgba(231, 76, 60, 0.6)',
-                borderColor: 'rgba(231, 76, 60, 1)',
-                borderWidth: 1,
-                borderRadius: 5
-            }]
-        },
-        options: chartOptions
-    });
+        });
+    }
 });
 </script>
-{% endblock %}
 {% endblock %}

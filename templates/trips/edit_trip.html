@@ -1,0 +1,709 @@
+<!-- trips/edit_trip.html -->
+{% extends 'base.html' %}
+
+
+<style>
+:root {
+    --primary: #2C3E50;
+    --secondary: #34495E;
+    --success: #27AE60;
+    --info: #3498DB;
+    --warning: #F39C12;
+    --danger: #E74C3C;
+    --light: #ECF0F1;
+    --dark: #2C3E50;
+    --white: #FFFFFF;
+    --gradient: linear-gradient(135deg, #2C3E50, #3498DB);
+}
+
+/* Edit Header Styling */
+.edit-header {
+    background: var(--gradient);
+    color: var(--white);
+    padding: 2rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    animation: slideIn 0.5s ease forwards;
+}
+
+.edit-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('/static/img/pattern.svg');
+    opacity: 0.1;
+    animation: fadeIn 1s ease forwards;
+}
+
+.edit-title {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideInLeft 0.5s ease forwards;
+}
+
+.edit-title h1 {
+    margin: 0;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.edit-metadata {
+    position: relative;
+    z-index: 1;
+    margin-top: 1rem;
+    display: flex;
+    gap: 2rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    animation: slideInRight 0.5s ease forwards;
+}
+
+.metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+/* Form Sections */
+.form-section {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    animation: slideIn 0.5s ease forwards;
+    border: 1px solid rgba(52, 152, 219, 0.1);
+}
+
+.form-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    border-color: var(--info);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light);
+    animation: slideInLeft 0.5s ease forwards;
+}
+
+.section-header i {
+    font-size: 1.5rem;
+    color: var(--info);
+    background: rgba(52, 152, 219, 0.1);
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--dark);
+    font-weight: 600;
+}
+/* Type Cards Styling */
+.type-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    animation: slideIn 0.5s ease forwards;
+}
+
+.type-card {
+    cursor: pointer;
+    border: 2px solid var(--light);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    margin: 0;
+    background: var(--white);
+    overflow: hidden;
+}
+
+.type-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--info);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+}
+
+.type-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.type-card:hover::before {
+    opacity: 0.05;
+}
+
+.type-card .card-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.type-card i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--info);
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.type-card:hover i {
+    transform: scale(1.1) rotate(5deg);
+    color: var(--primary);
+}
+
+.type-card h5 {
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.type-card small {
+    display: block;
+    color: var(--secondary);
+    transition: all 0.3s ease;
+}
+
+/* Form Controls Enhancement */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--light);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: var(--white);
+}
+
+.form-control:focus {
+    border-color: var(--info);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    outline: none;
+}
+
+.form-control:hover {
+    border-color: var(--secondary);
+}
+
+/* Passenger Counter Styling */
+.passagers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.passenger-counter {
+    background: var(--white);
+    border: 2px solid var(--light);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.passenger-counter:hover {
+    transform: translateY(-3px);
+    border-color: var(--info);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+}
+
+.counter-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.counter-btn {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 50%;
+    background: var(--light);
+    color: var(--dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.counter-btn:hover {
+    background: var(--info);
+    color: var(--white);
+    transform: scale(1.1);
+}
+
+.counter-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark);
+    min-width: 50px;
+    text-align: center;
+    background: none;
+    border: none;
+}
+
+/* Affectations Styling */
+.affectation-item {
+    background: var(--light);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    transition: all 0.3s ease;
+    animation: slideIn 0.3s ease forwards;
+}
+
+.affectation-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.remove-affectation {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 50%;
+    background: var(--danger);
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-affectation:hover {
+    transform: rotate(90deg);
+    background: var(--danger);
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.1;
+    }
+}
+</style>
+
+{% block content %}
+<div class="edit-container">
+    <!-- En-tête d'édition -->
+    <div class="edit-header">
+        <div class="edit-title">
+            <h1>
+                <i class="fas fa-edit"></i>
+                Modification du voyage
+                <span class="trip-id">#{{ trip.code_voyage }}</span>
+            </h1>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="editTripForm" class="edit-form">
+        <!-- Informations générales -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-info-circle"></i>
+                <h2>Informations générales</h2>
+            </div>
+            
+            <!-- Type de voyage -->
+            <div class="type-selector">
+                {% for type in ['Transfert', 'Excursion', 'Divers', 'Varié', 'Commission Vente'] %}
+                <label class="type-card">
+                    <input type="radio" name="type" value="{{ type }}" class="type-radio"
+                           {% if trip.type == type %}checked{% endif %}>
+                    <div class="card-content">
+                        <i class="fas fa-{% if type == 'Transfert' %}car
+                                    {% elif type == 'Excursion' %}mountain
+                                    {% elif type == 'Divers' %}random
+                                    {% elif type == 'Varié' %}dice
+                                    {% else %}percentage{% endif %}"></i>
+                        <h5>{{ type }}</h5>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nom">Nom du voyage</label>
+                    <input type="text" name="nom" id="nom" class="form-control" 
+                           value="{{ trip.nom }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="client_nom">Nom du client</label>
+                    <input type="text" name="client_nom" id="client_nom" class="form-control" 
+                           value="{{ trip.client_nom }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="client_telephone">Téléphone</label>
+                    <input type="tel" name="client_telephone" id="client_telephone" class="form-control" 
+                           value="{{ trip.client_telephone }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="client_email">Email</label>
+                    <input type="email" name="client_email" id="client_email" class="form-control" 
+                           value="{{ trip.client_email }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Passagers -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-users"></i>
+                <h2>Passagers</h2>
+            </div>
+            <div class="passagers-grid">
+                <div class="passenger-counter">
+                    <label>Adultes</label>
+                    <div class="counter-controls">
+                        <button type="button" class="counter-btn minus">-</button>
+                        <input type="number" name="nombre_adultes" value="{{ trip.nombre_adultes or 0 }}" 
+                               class="counter-value" min="0">
+                        <button type="button" class="counter-btn plus">+</button>
+                    </div>
+                </div>
+
+                <div class="passenger-counter">
+                    <label>Enfants</label>
+                    <div class="counter-controls">
+                        <button type="button" class="counter-btn minus">-</button>
+                        <input type="number" name="nombre_enfants" value="{{ trip.nombre_enfants or 0 }}" 
+                               class="counter-value" min="0">
+                        <button type="button" class="counter-btn plus">+</button>
+                    </div>
+                </div>
+
+                <div class="passenger-counter">
+                    <label>Bébés</label>
+                    <div class="counter-controls">
+                        <button type="button" class="counter-btn minus">-</button>
+                        <input type="number" name="nombre_bebes" value="{{ trip.nombre_bebes or 0 }}" 
+                               class="counter-value" min="0">
+                        <button type="button" class="counter-btn plus">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+                <!-- Itinéraire et Planning -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-route"></i>
+                <h2>Itinéraire et Planning</h2>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="point_depart">Point de départ</label>
+                    <input type="text" name="point_depart" id="point_depart" class="form-control" 
+                           value="{{ trip.point_depart }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="point_arrivee">Point d'arrivée</label>
+                    <input type="text" name="point_arrivee" id="point_arrivee" class="form-control" 
+                           value="{{ trip.point_arrivee }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="date_depart">Date de départ</label>
+                    <input type="text" name="date_depart" id="date_depart" class="form-control date-input" 
+                           value="{{ trip.date_depart|format_date if trip.date_depart }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="heure_depart">Heure de départ</label>
+                    <input type="text" name="heure_depart" id="heure_depart" class="form-control time-input" 
+                           value="{{ trip.date_depart|format_time if trip.date_depart }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Affectations -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-user-friends"></i>
+                <h2>Affectations</h2>
+            </div>
+            <div id="affectations-container">
+                {% for affectation in affectations %}
+                <div class="affectation-item">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Véhicule</label>
+                            <select name="vehicules[]" class="form-control vehicule-select" required>
+                                <option value="">Sélectionner un véhicule</option>
+                                {% for vehicule in vehicules %}
+                                <option value="{{ vehicule.id_vehicule }}" 
+                                        {% if vehicule.id_vehicule == affectation.id_vehicule %}selected{% endif %}>
+                                    {{ vehicule.modele }} - {{ vehicule.matricule }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Chauffeur</label>
+                            <select name="chauffeurs[]" class="form-control chauffeur-select" required>
+                                <option value="">Sélectionner un chauffeur</option>
+                                {% for chauffeur in chauffeurs %}
+                                <option value="{{ chauffeur.id_chauffeur }}"
+                                        {% if chauffeur.id_chauffeur == affectation.id_chauffeur %}selected{% endif %}>
+                                    {{ chauffeur.prenom }} {{ chauffeur.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="remove-affectation">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn btn-outline-primary add-affectation">
+                <i class="fas fa-plus"></i> Ajouter une affectation
+            </button>
+        </div>
+
+        <!-- Prix et Tarification -->
+        <div class="form-section">
+            <div class="section-header">
+                <i class="fas fa-money-bill-wave"></i>
+                <h2>Prix et Tarification</h2>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="tarif">Prix (DH)</label>
+                    <input type="number" name="tarif" id="tarif" class="form-control" 
+                           value="{{ trip.tarif }}" step="0.001" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="commission_achat" 
+                               name="commission_achat" {% if trip.commission_achat %}checked{% endif %}>
+                        <label class="custom-control-label" for="commission_achat">Commission d'achat</label>
+                    </div>
+                </div>
+
+                <div class="form-group commission-field" {% if not trip.commission_achat %}style="display: none;"{% endif %}>
+                    <label for="prix_commission">Prix commission (DH)</label>
+                    <input type="number" name="prix_commission" id="prix_commission" class="form-control" 
+                           value="{{ trip.montant_commission }}" step="0.001" min="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer les modifications
+            </button>
+            <a href="{{ url_for('trips.manage') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialisation des sélecteurs
+    $('.vehicule-select, .chauffeur-select').select2({
+        theme: 'bootstrap4',
+        placeholder: 'Sélectionner...',
+        allowClear: true
+    });
+
+    // Initialisation des datepickers
+    flatpickr('.date-input', {
+        dateFormat: 'd/m/Y',
+        locale: 'fr'
+    });
+
+    // Initialisation des timepickers
+    flatpickr('.time-input', {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: 'H:i',
+        time_24hr: true
+    });
+
+    // Gestion des compteurs de passagers
+    document.querySelectorAll('.counter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const value = parseInt(input.value);
+            if (this.classList.contains('plus')) {
+                input.value = value + 1;
+            } else if (value > 0) {
+                input.value = value - 1;
+            }
+        });
+    });
+
+    // Gestion des affectations
+    const affectationsContainer = document.getElementById('affectations-container');
+    const addAffectationBtn = document.querySelector('.add-affectation');
+
+    addAffectationBtn.addEventListener('click', function() {
+        const template = document.querySelector('#affectation-template');
+        const clone = template.content.cloneNode(true);
+        affectationsContainer.appendChild(clone);
+
+        // Réinitialiser Select2 pour les nouveaux selects
+        const newSelects = affectationsContainer.lastElementChild.querySelectorAll('select');
+        newSelects.forEach(select => {
+            $(select).select2({
+                theme: 'bootstrap4',
+                placeholder: 'Sélectionner...',
+                allowClear: true
+            });
+        });
+    });
+
+    // Suppression d'affectation
+    affectationsContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-affectation')) {
+            e.target.closest('.affectation-item').remove();
+        }
+    });
+
+    // Gestion de la commission
+    const commissionCheckbox = document.getElementById('commission_achat');
+    const commissionField = document.querySelector('.commission-field');
+
+    commissionCheckbox.addEventListener('change', function() {
+        commissionField.style.display = this.checked ? 'block' : 'none';
+    });
+});
+</script>
+
+<!-- Template pour nouvelle affectation -->
+<template id="affectation-template">
+    <div class="affectation-item">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Véhicule</label>
+                <select name="vehicules[]" class="form-control vehicule-select" required>
+                    <option value="">Sélectionner un véhicule</option>
+                    {% for vehicule in vehicules %}
+                    <option value="{{ vehicule.id_vehicule }}">
+                        {{ vehicule.modele }} - {{ vehicule.matricule }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Chauffeur</label>
+                <select name="chauffeurs[]" class="form-control chauffeur-select" required>
+                    <option value="">Sélectionner un chauffeur</option>
+                    {% for chauffeur in chauffeurs %}
+                    <option value="{{ chauffeur.id_chauffeur }}">
+                        {{ chauffeur.prenom }} {{ chauffeur.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <button type="button" class="remove-affectation">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</template>
+{% endblock %}

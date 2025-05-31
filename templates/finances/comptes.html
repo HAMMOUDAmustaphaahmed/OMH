@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Comptes Bancaires{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Gestion des Comptes Bancaires</h1>
+    
+    <!-- Bouton d'ajout -->
+    <div class="mb-4">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCompte">
+            <i class="fas fa-plus me-2"></i>Nouveau Compte
+        </button>
+    </div>
+
+    <!-- Liste des comptes -->
+    <div class="row g-4">
+        {% for compte in comptes %}
+        <div class="col-xl-4 col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ compte.nom_banque }}</h5>
+                    <span class="badge {% if compte.statut == 'Actif' %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ compte.statut }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Numéro de compte:</small>
+                        <div>{{ compte.numero_compte }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Type de compte:</small>
+                        <div>{{ compte.type_compte }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Solde actuel:</small>
+                        <div class="h4 mb-0 text-primary">{{ "{:,.2f}".format(compte.solde_actuel) }} {{ compte.devise }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">Date d'ouverture:</small>
+                        <div>{{ compte.date_ouverture.strftime('%d/%m/%Y') }}</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-info me-2" onclick="voirMouvements({{ compte.id_compte }})">
+                        <i class="fas fa-history me-1"></i>Mouvements
+                    </button>
+                    <button class="btn btn-sm btn-warning me-2" onclick="modifierCompte({{ compte.id_compte }})">
+                        <i class="fas fa-edit me-1"></i>Modifier
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="supprimerCompte({{ compte.id_compte }})">
+                        <i class="fas fa-trash me-1"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Modal Ajout/Modification Compte -->
+    <div class="modal fade" id="modalCompte" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouveau Compte Bancaire</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nom de la banque</label>
+                            <input type="text" name="nom_banque" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Numéro de compte</label>
+                            <input type="text" name="numero_compte" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Type de compte</label>
+                            <select name="type_compte" class="form-select" required>
+                                <option value="Courant">Courant</option>
+                                <option value="Épargne">Épargne</option>
+                                <option value="Professionnel">Professionnel</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Solde initial</label>
+                            <input type="number" name="solde_initial" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Devise</label>
+                            <select name="devise" class="form-select" required>
+                                <option value="TND">TND - Dinar Tunisien</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="USD">USD - Dollar US</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date d'ouverture</label>
+                            <input type="date" name="date_ouverture" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mouvements -->
+    <div class="modal fade" id="modalMouvements" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Mouvements du compte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="tableMouvements">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                    <th>Montant</th>
+                                    <th>Solde</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mouvementsBody">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function voirMouvements(idCompte) {
+    fetch(`/finances/api/mouvements/${idCompte}`)
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('mouvementsBody');
+            tbody.innerHTML = '';
+            
+            data.mouvements.forEach(mouvement => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(mouvement.date).toLocaleDateString()}</td>
+                    <td>${mouvement.description}</td>
+                    <td>
+                        <span class="badge ${mouvement.type === 'Revenu' ? 'bg-success' : 'bg-danger'}">
+                            ${mouvement.type}
+                        </span>
+                    </td>
+                    <td>${mouvement.montant.toFixed(2)}</td>
+                    <td>${mouvement.solde.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            $('#modalMouvements').modal('show');
+        });
+}
+
+function modifierCompte(id) {
+    // Implémentation à venir
+}
+
+function supprimerCompte(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce compte ?')) {
+        // Implémentation à venir
+    }
+}
+
+// Initialisation des tooltips
+$(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

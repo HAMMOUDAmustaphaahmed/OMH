@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Rapports Financiers{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Rapports Financiers</h1>
+
+    <!-- Section Génération de Rapport -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-file-alt me-1"></i>
+            Générer un Nouveau Rapport
+        </div>
+        <div class="card-body">
+            <form id="formGenererRapport" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Type de Rapport</label>
+                    <select name="type_rapport" class="form-select" required>
+                        <option value="flux_tresorerie">Flux de Trésorerie</option>
+                        <option value="bilan">Bilan Financier</option>
+                        <option value="resultats">Compte de Résultats</option>
+                        <option value="budget">Suivi Budgétaire</option>
+                        <option value="vehicules">Coûts par Véhicule</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Période Début</label>
+                    <input type="date" name="periode_debut" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Période Fin</label>
+                    <input type="date" name="periode_fin" class="form-control" required>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-file-download me-2"></i>Générer le Rapport
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des Rapports Générés -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-history me-1"></i>
+            Historique des Rapports
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="tableRapports">
+                    <thead>
+                        <tr>
+                            <th>Date de Création</th>
+                            <th>Type</th>
+                            <th>Période</th>
+                            <th>Créé par</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rapport in rapports %}
+                        <tr>
+                            <td>{{ rapport.date_creation.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                {% set badge_class = {
+                                    'flux_tresorerie': 'bg-primary',
+                                    'bilan': 'bg-success',
+                                    'resultats': 'bg-info',
+                                    'budget': 'bg-warning',
+                                    'vehicules': 'bg-secondary'
+                                } %}
+                                <span class="badge {{ badge_class[rapport.type_rapport] }}">
+                                    {{ rapport.type_rapport|replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                            <td>{{ rapport.periode_formatee }}</td>
+                            <td>{{ rapport.created_by }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary me-1" onclick="telechargerRapport({{ rapport.id_rapport }}, 'pdf')">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
+                                <button class="btn btn-sm btn-success me-1" onclick="telechargerRapport({{ rapport.id_rapport }}, 'excel')">
+                                    <i class="fas fa-file-excel"></i>
+                                </button>
+                                <button class="btn btn-sm btn-info me-1" onclick="visualiserRapport({{ rapport.id_rapport }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="supprimerRapport({{ rapport.id_rapport }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Visualisation Rapport -->
+    <div class="modal fade" id="modalRapport" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Visualisation du Rapport</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="rapportContent">
+                        <!-- Contenu dynamique du rapport -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="imprimerRapport()">
+                        <i class="fas fa-print me-2"></i>Imprimer
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialisation de la table avec DataTables
+    $('#tableRapports').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json'
+        },
+        order: [[0, 'desc']]
+    });
+
+    // Gestionnaire du formulaire de génération de rapport
+    $('#formGenererRapport').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        // Afficher un spinner pendant la génération
+        Swal.fire({
+            title: 'Génération en cours...',
+            html: 'Veuillez patienter pendant la génération du rapport',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Appel à l'API pour générer le rapport
+        fetch('/finances/generer-rapport', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Rapport généré avec succès!',
+                    text: 'Vous pouvez maintenant le télécharger.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Télécharger',
+                    cancelButtonText: 'Plus tard'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = data.pdf_url;
+                    }
+                    // Rafraîchir la liste des rapports
+                    location.reload();
+                });
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Une erreur est survenue lors de la génération du rapport.'
+            });
+        });
+    });
+});
+
+function telechargerRapport(idRapport, format) {
+    window.location.href = `/finances/rapports/${idRapport}/telecharger/${format}`;
+}
+
+function visualiserRapport(idRapport) {
+    fetch(`/finances/rapports/${idRapport}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('rapportContent').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('modalRapport')).show();
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Impossible de charger le rapport.'
+            });
+        });
+}
+
+function supprimerRapport(idRapport) {
+    Swal.fire({
+        title: 'Êtes-vous sûr?',
+        text: "Cette action est irréversible!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, supprimer!',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/finances/rapports/${idRapport}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Supprimé!',
+                        'Le rapport a été supprimé.',
+                        'success'
+                    ).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                Swal.fire(
+                    'Erreur!',
+                    'Une erreur est survenue lors de la suppression.',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+function imprimerRapport() {
+    const contenuRapport = document.getElementById('rapportContent').innerHTML;
+    const fenetreImpression = window.open('', '', 'height=600,width=800');
+    
+    fenetreImpression.document.write(`
+        <html>
+            <head>
+                <title>Rapport Financier</title>
+                <link href="/static/css/styles.css" rel="stylesheet">
+                <style>
+                    body { padding: 20px; }
+                    @media print {
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${contenuRapport}
+            </body>
+        </html>
+    `);
+    
+    fenetreImpression.document.close();
+    fenetreImpression.focus();
+    
+    // Attendre le chargement des styles
+    setTimeout(() => {
+        fenetreImpression.print();
+        fenetreImpression.close();
+    }, 1000);
+}
+</script>
+{% endblock %}

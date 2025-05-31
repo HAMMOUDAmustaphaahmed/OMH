@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Budgets{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Gestion des Budgets</h1>
+    
+    <!-- Bouton d'ajout -->
+    <div class="mb-4">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalBudget">
+            <i class="fas fa-plus me-2"></i>Nouveau Budget
+        </button>
+    </div>
+
+    <!-- Vue d'ensemble des budgets -->
+    <div class="row mb-4">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie me-1"></i>
+                    Répartition des Budgets
+                </div>
+                <div class="card-body">
+                    <canvas id="budgetsPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-1"></i>
+                    Utilisation des Budgets
+                </div>
+                <div class="card-body">
+                    <canvas id="budgetsBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des budgets -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-list me-1"></i>
+            Liste des Budgets
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="tableBudgets">
+                    <thead>
+                        <tr>
+                            <th>Catégorie</th>
+                            <th>Période</th>
+                            <th>Montant Prévu</th>
+                            <th>Montant Utilisé</th>
+                            <th>Progression</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for budget in budgets %}
+                        <tr>
+                            <td>{{ budget.categorie }}</td>
+                            <td>{{ budget.periode_debut.strftime('%d/%m/%Y') }} - {{ budget.periode_fin.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ "{:,.2f}".format(budget.montant_prevu) }} DT</td>
+                            <td>{{ "{:,.2f}".format(budget.montant_actuel) }} DT</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar {% if budget.pourcentage_utilisation > 100 %}bg-danger{% elif budget.pourcentage_utilisation > 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ min(budget.pourcentage_utilisation, 100) }}%" 
+                                         aria-valuenow="{{ budget.pourcentage_utilisation }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ "%.1f"|format(budget.pourcentage_utilisation) }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info me-1" onclick="voirDetails({{ budget.id_budget }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="modifierBudget({{ budget.id_budget }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="supprimerBudget({{ budget.id_budget }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ajout/Modification Budget -->
+    <div class="modal fade" id="modalBudget" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouveau Budget</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Catégorie</label>
+                            <select name="categorie" class="form-select" required>
+                                <option value="Carburant">Carburant</option>
+                                <option value="Entretien">Entretien</option>
+                                <option value="Assurance">Assurance</option>
+                                <option value="Salaires">Salaires</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Montant prévu</label>
+                            <input type="number" name="montant_prevu" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Période</label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="date" name="periode_debut" class="form-control" required>
+                                </div>
+                                <div class="col">
+                                    <input type="date" name="periode_fin" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea name="notes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Graphique en camembert pour la répartition des budgets
+    const ctxPie = document.getElementById('budgetsPieChart');
+    new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: {{ budgets|map(attribute='categorie')|list|tojson }},
+            datasets: [{
+                data: {{ budgets|map(attribute='montant_prevu')|list|tojson }},
+                backgroundColor: [
+                    '#0d6efd',
+                    '#dc3545',
+                    '#ffc107',
+                    '#198754',
+                    '#6c757d',
+                    '#fd7e14'
+                ]
+            }]
+        }
+    });
+
+    // Graphique en barres pour l'utilisation des budgets
+    const ctxBar = document.getElementById('budgetsBarChart');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: {{ budgets|map(attribute='categorie')|list|tojson }},
+            datasets: [{
+                label: 'Montant prévu',
+                data: {{ budgets|map(attribute='montant_prevu')|list|tojson }},
+                backgroundColor: 'rgba(13, 110, 253, 0.5)'
+            }, {
+                label: 'Montant utilisé',
+                data: {{ budgets|map(attribute='montant_actuel')|list|tojson }},
+                backgroundColor: 'rgba(25, 135, 84, 0.5)'
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+
+function voirDetails(id) {
+    // Implémentation à venir
+}
+
+function modifierBudget(id) {
+    // Implémentation à venir
+}
+
+function supprimerBudget(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce budget ?')) {
+        // Implémentation à venir
+    }
+}
+</script>
+{% endblock %}

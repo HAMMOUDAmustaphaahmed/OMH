@@ -1,294 +1,402 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Voyages - OMH</title>
 
-{% block styles %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.7.0/css/buttons.bootstrap4.min.css">
-<link rel="stylesheet" href="https://cdn.daterangepicker.com/daterangepicker.css">
-<style>
-/* Styles spécifiques pour la page de gestion */
-.header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.btn-group .dropdown-menu {
-    min-width: 200px;
-    padding: 1rem;
-}
-
-.filters-section {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.filter-group {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.table-container {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.dataTables_wrapper {
-    padding: 1rem 0;
-}
-
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 15px;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.trip-type {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.action-button {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.action-button:hover {
-    transform: translateY(-1px);
-}
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="container-fluid">
-    <div class="header-actions">
-        <h1>Gestion des Voyages</h1>
-        
-        <div class="btn-group">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                <i class="fas fa-plus"></i> Nouveau
-            </button>
-            <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="{{ url_for('trips.add') }}">
-                    <i class="fas fa-route"></i> Voyage normal
-                </a>
-                <a class="dropdown-item" href="{{ url_for('trips.add_vente') }}">
-                    <i class="fas fa-percent"></i> Commission de vente
-                </a>
-            </div>
-        </div>
-    </div>
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <!-- Ajouter après les autres liens CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     
-    <div class="filters-section">
-        <div class="filter-group">
-            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher...">
-            
-            <select id="typeFilter" class="form-control">
-                <option value="">Tous les types</option>
-                <option value="Excursion">Excursion</option>
-                <option value="Transfert">Transfert</option>
-                <option value="Divers">Divers</option>
-                <option value="Varié">Varié</option>
-            </select>
-            
-            <input type="text" id="dateRange" class="form-control" placeholder="Période">
-            
-            <button id="resetFilters" class="btn btn-secondary">
-                <i class="fas fa-undo"></i> Réinitialiser
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+        }
+
+        body {
+            background-color: #f5f6fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        .main-container {
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            padding: 1rem;
+        }
+
+        .btn-success {
+            background: var(--success);
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+        }
+
+        .table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            max-width: 250px;
+        }
+
+        .date-input {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">OMH</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
-        </div>
-    </div>
-    
-    <div class="table-container">
-        <table id="tripsTable" class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Nom</th>
-                    <th>Type</th>
-                    <th>Client</th>
-                    <th>Date départ</th>
-                    <th>Passagers</th>
-                    <th>Tarif</th>
-                    <th>Véhicules</th>
-                    <th>Chauffeurs</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
-
-<!-- Modal de confirmation de suppression -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmer la suppression</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer ce voyage ?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmDelete">Supprimer</button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('trips.index') }}">
+                            <i class="fas fa-route"></i> Voyages
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('vehicles.index') }}">
+                            <i class="fas fa-car"></i> Véhicules
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('drivers.index') }}">
+                            <i class="fas fa-id-card"></i> Chauffeurs
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
-</div>
-{% endblock %}
+    </nav>
 
-{% block scripts %}
-<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.bootstrap4.min.js"></script>
-<script src="https://cdn.daterangepicker.com/moment.min.js"></script>
-<script src="https://cdn.daterangepicker.com/daterangepicker.js"></script>
-
-<script>
-$(document).ready(function() {
-    // Initialisation de la table
-    const table = $('#tripsTable').DataTable({
-        serverSide: false,
-        ajax: {
-            url: "{{ url_for('trips.get_trips_data') }}",
-            data: function(d) {
-                d.search = $('#searchInput').val();
-                d.type = $('#typeFilter').val();
-                const dates = $('#dateRange').val().split(' - ');
-                d.date_start = dates[0];
-                d.date_end = dates[1];
-            }
-        },
-        columns: [
-            { data: 'code' },
-            { data: 'nom' },
-            { 
-                data: 'type',
-                render: function(data) {
-                    return `<span class="trip-type ${data.toLowerCase()}">${data}</span>`;
-                }
-            },
-            { data: 'client' },
-            { data: 'date_depart' },
-            { data: 'total_passagers' },
-            { 
-                data: 'tarif',
-                render: function(data) {
-                    return new Intl.NumberFormat('fr-FR', {
-                        style: 'currency',
-                        currency: 'EUR'
-                    }).format(data);
-                }
-            },
-            { 
-                data: 'vehicules',
-                render: function(data) {
-                    return data.join(', ');
-                }
-            },
-            { 
-                data: 'chauffeurs',
-                render: function(data) {
-                    return data.join(', ');
-                }
-            },
-            {
-                data: 'id',
-                render: function(data) {
-                    return `
-                        <div class="action-buttons">
-                            <a href="/trips/edit/${data}" class="action-button btn-info">
-                                <i class="fas fa-edit"></i>
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="container-fluid">
+            <!-- Header Section -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-route"></i> Gestion des Voyages</h2>
+                <!-- Bouton Nouveau avec Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus"></i> Nouveau
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('trips.add_normal_trip') }}">
+                                <i class="fas fa-bus"></i> Voyage normal
                             </a>
-                            <button onclick="confirmDelete(${data})" class="action-button btn-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            <button onclick="exportTrip(${data})" class="action-button btn-success">
-                                <i class="fas fa-file-excel"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        ],
-        order: [[0, 'desc']],
-        language: {
-            url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('trips.add_vente_trip') }}">
+                                <i class="fas fa-handshake"></i> Commission vente
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <input type="text" id="recherche" class="form-control search-input" placeholder="Rechercher...">
+                <input type="text" id="date_debut" class="form-control date-input datepicker" placeholder="Date début">
+                <input type="text" id="date_fin" class="form-control date-input datepicker" placeholder="Date fin">
+                <select id="typeFilter" class="form-control">
+                    <option value="">Tous types</option>
+                    <option value="Excursion">Excursion</option>
+                    <option value="Transfert">Transfert</option>
+                    <option value="Divers">Divers</option>
+                    <option value="Varié">Varié</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table" id="tripsTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('code_voyage')">Code <i class="fas fa-sort"></i></th>
+                            <th onclick="sortTable('nom')">Nom <i class="fas fa-sort"></i></th>
+                            <th onclick="sortTable('type')">Type <i class="fas fa-sort"></i></th>
+                            <th onclick="sortTable('client_nom')">Client <i class="fas fa-sort"></i></th>
+                            <th onclick="sortTable('date_depart')">Date <i class="fas fa-sort"></i></th>
+                            <th onclick="sortTable('heure_depart')">Heure</th>
+                            <th onclick="sortTable('nombre_passagers')">Passagers</th>
+                            <th onclick="sortTable('prix')">Prix <i class="fas fa-sort"></i></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tripsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.fr.min.js"></script>
+    
+   <script>
+    let currentSort = {field: 'date_depart', order: 'desc'};
+
+    $(document).ready(function() {
+        // Initialize datepickers
+        $('.datepicker').datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            language: 'fr',
+            todayHighlight: true
+        });
+
+        // Initial load
+        fetchTrips();
+
+        // Event listeners
+        $('#recherche, #typeFilter').on('change keyup', fetchTrips);
+        $('.datepicker').on('changeDate', fetchTrips);
+
+        // Initialize tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    function sortTable(field) {
+        if (currentSort.field === field) {
+            currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.field = field;
+            currentSort.order = 'asc';
         }
-    });
-    
-    // Initialisation du date range picker
-    $('#dateRange').daterangepicker({
-        opens: 'left',
-        locale: {
-            format: 'YYYY-MM-DD'
-        }
-    });
-    
-    // Événements de filtrage
-    $('#searchInput, #typeFilter, #dateRange').on('change', function() {
-        table.ajax.reload();
-    });
-    
-    $('#resetFilters').click(function() {
-        $('#searchInput').val('');
-        $('#typeFilter').val('');
-        $('#dateRange').val('');
-        table.ajax.reload();
-    });
-});
+        fetchTrips();
+    }
 
-let tripIdToDelete = null;
+    function fetchTrips() {
+        $.getJSON("{{ url_for('trips.trips_data') }}", {
+            search: $('#recherche').val(),
+            date_debut: $('#date_debut').val(),
+            date_fin: $('#date_fin').val(),
+            type: $('#typeFilter').val(),
+            sort_by: currentSort.field,
+            order: currentSort.order
+        }, function(response) {
+            let html = '';
+            response.data.forEach(function(trip) {
+                html += `
+                    <tr>
+                        <td>${trip.code_voyage}</td>
+                        <td>${trip.nom || ''}</td>
+                        <td><span class="badge bg-${getBadgeColor(trip.type)}">${trip.type}</span></td>
+                        <td>${trip.client_nom || ''}</td>
+                        <td>${trip.date_depart}</td>
+                        <td>${trip.heure_depart || ''}</td>
+                        <td class="text-center">${trip.total_passagers}</td>
+                        <td class="text-end">${formatPrice(trip.tarif)}</td>
+                        
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a href="/trips/edit/${trip.id_trip}" 
+                                   class="btn btn-sm btn-warning" 
+                                   data-toggle="tooltip" 
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button onclick="deleteTrip(${trip.id_trip})" 
+                                        class="btn btn-sm btn-danger"
+                                        data-toggle="tooltip" 
+                                        title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <a href="/trips/export/${trip.id_trip}" 
+                                   class="btn btn-sm btn-info"
+                                   data-toggle="tooltip" 
+                                   title="Exporter">
+                                    <i class="fas fa-file-export"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#tripsBody').html(html);
 
-function confirmDelete(id) {
-    tripIdToDelete = id;
-    $('#deleteModal').modal('show');
-}
+            // Réinitialiser les tooltips après mise à jour du contenu
+            $('[data-toggle="tooltip"]').tooltip();
 
-$('#confirmDelete').click(function() {
-    if (tripIdToDelete) {
-        $.ajax({
-            url: `/trips/delete/${tripIdToDelete}`,
-            method: 'POST',
-            success: function() {
-                $('#deleteModal').modal('hide');
-                $('#tripsTable').DataTable().ajax.reload();
-                showNotification('success', 'Voyage supprimé avec succès');
-            },
-            error: function() {
-                showNotification('error', 'Erreur lors de la suppression');
+            // Afficher message si aucun résultat
+            if (response.data.length === 0) {
+                $('#tripsBody').html(`
+                    <tr>
+                        <td colspan="10" class="text-center">
+                            <p class="text-muted my-5">
+                                <i class="fas fa-search fa-2x mb-3"></i><br>
+                                Aucun voyage trouvé
+                            </p>
+                        </td>
+                    </tr>
+                `);
             }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Erreur lors de la récupération des données:', errorThrown);
+            $('#tripsBody').html(`
+                <tr>
+                    <td colspan="10" class="text-center">
+                        <p class="text-danger my-5">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i><br>
+                            Erreur lors du chargement des données
+                        </p>
+                    </td>
+                </tr>
+            `);
         });
     }
-});
 
-function exportTrip(id) {
-    window.location.href = `/trips/export?id=${id}`;
-}
+    function getBadgeColor(type) {
+        const colors = {
+            'Excursion': 'primary',
+            'Transfert': 'success',
+            'Divers': 'warning',
+            'Varié': 'info',
+            'Commission Vente': 'secondary'
+        };
+        return colors[type] || 'secondary';
+    }
 
-function showNotification(type, message) {
-    // Implement your notification system here
+    function formatPrice(price) {
+        if (price === null || price === undefined || isNaN(price)) {
+            return '0,000 DT';
+        }
+        return new Intl.NumberFormat('fr-TN', { 
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        }).format(price) + ' DT';
+    }
+
+    function deleteTrip(tripId) {
+    Swal.fire({
+        title: 'Êtes-vous sûr ?',
+        text: "Cette action est irréversible !",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Oui, supprimer',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/trips/delete/${tripId}`,
+                method: 'DELETE',
+                success: function() {
+                    Swal.fire(
+                        'Supprimé !',
+                        'Le voyage a été supprimé avec succès.',
+                        'success'
+                    );
+                    fetchTrips();
+                },
+                error: function(err) {
+                    Swal.fire(
+                        'Erreur !',
+                        'Une erreur est survenue lors de la suppression.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
 }
+    // Fonction de rafraîchissement automatique (toutes les 5 minutes)
+    setInterval(fetchTrips, 10000);
 </script>
-{% endblock %}
+<!-- Ajouter après les autres liens CSS -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+</body>
+</html>

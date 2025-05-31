@@ -31,11 +31,12 @@ def create_app(config_class=Config):
     from routes.vehicles import vehicles_bp
     from routes.drivers import drivers_bp
     from routes.trips import trips_bp
-    from routes.finances import finances_bp
     from dashboard import dashboard_bp
     from routes.events import events_bp
     from routes.entretiens_vehicules import entretiens
     from routes.calendrier import calendrier_bp
+    from routes.finances import finances_bp
+
 
     app.register_blueprint(calendrier_bp, url_prefix='/calendrier')
     app.register_blueprint(auth_bp)
@@ -43,10 +44,11 @@ def create_app(config_class=Config):
     app.register_blueprint(vehicles_bp)
     app.register_blueprint(drivers_bp)
     app.register_blueprint(trips_bp)
-    app.register_blueprint(finances_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(events_bp)
     app.register_blueprint(entretiens, url_prefix='/entretiens')
+    app.register_blueprint(finances_bp, url_prefix='/finances')
+
     
     # Création des dossiers nécessaires
     if not os.path.exists(app.config['UPLOAD_FOLDER']):

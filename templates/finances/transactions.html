@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Transactions{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Gestion des Transactions</h1>
+    
+    <!-- Bouton d'ajout -->
+    <div class="mb-4">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTransaction">
+            <i class="fas fa-plus me-2"></i>Nouvelle Transaction
+        </button>
+    </div>
+
+    <!-- Tableau des transactions -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Liste des Transactions
+        </div>
+        <div class="card-body">
+            <table id="tableTransactions" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Catégorie</th>
+                        <th>Montant</th>
+                        <th>Compte</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.date_transaction.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <span class="badge {% if transaction.type == 'Revenu' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ transaction.type }}
+                            </span>
+                        </td>
+                        <td>{{ transaction.description }}</td>
+                        <td>{{ transaction.categorie }}</td>
+                        <td>{{ transaction.montant_formate }}</td>
+                        <td>{{ transaction.compte.nom_banque }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="voirDetails({{ transaction.id_transaction }})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="modifierTransaction({{ transaction.id_transaction }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="supprimerTransaction({{ transaction.id_transaction }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Ajout/Modification Transaction -->
+    <div class="modal fade" id="modalTransaction" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nouvelle Transaction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Type</label>
+                            <select name="type" class="form-select" required>
+                                <option value="Revenu">Revenu</option>
+                                <option value="Dépense">Dépense</option>
+                                <option value="Transfert">Transfert</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Montant</label>
+                            <input type="number" name="montant" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date_transaction" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Catégorie</label>
+                            <select name="categorie" class="form-select" required>
+                                <option value="Carburant">Carburant</option>
+                                <option value="Entretien">Entretien</option>
+                                <option value="Assurance">Assurance</option>
+                                <option value="Salaires">Salaires</option>
+                                <option value="Taxes">Taxes</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Compte</label>
+                            <select name="id_compte" class="form-select" required>
+                                {% for compte in comptes %}
+                                <option value="{{ compte.id_compte }}">{{ compte.nom_banque }} - {{ compte.numero_compte }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Pièce jointe</label>
+                            <input type="file" name="piece_jointe" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#tableTransactions').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json'
+        },
+        order: [[0, 'desc']]
+    });
+});
+
+function voirDetails(id) {
+    // Implémentation à venir
+}
+
+function modifierTransaction(id) {
+    // Implémentation à venir
+}
+
+function supprimerTransaction(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?')) {
+        // Implémentation à venir
+    }
+}
+</script>
+{% endblock %}

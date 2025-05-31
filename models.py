@@ -125,9 +125,9 @@ class Chauffeur(db.Model):
 class Trip(db.Model):
     __tablename__ = 'trips'
     id_trip = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.String(10), unique=True, nullable=False)
+    code_voyage = db.Column(db.String(100), unique=True, nullable=False)
     nom = db.Column(db.String(255), nullable=False)
-    type = db.Column(db.Enum('Excursion', 'Transfert', 'Divers', 'Varié'), nullable=False)
+    type = db.Column(db.Enum('Excursion', 'Transfert', 'Divers', 'Varié', 'Commission Vente'), nullable=False)
 
     # Client info
     client_nom = db.Column(db.String(100), nullable=False)
@@ -167,20 +167,26 @@ class Trip(db.Model):
 
     def __init__(self, **kwargs):
         super(Trip, self).__init__(**kwargs)
-        if not self.code:
+        if not self.code_voyage:  # Changez 'code' en 'code_voyage'
             self.generate_trip_code()
 
     def generate_trip_code(self):
-        current_year = datetime.utcnow().year % 100
-        last_trip = Trip.query.filter(
-            Trip.code.like(f'{current_year}-%')
-        ).order_by(Trip.code.desc()).first()
-        if last_trip:
-            last_number = int(last_trip.code.split('-')[1])
-            new_number = last_number + 1
-        else:
-            new_number = 1
-        self.code = f"{current_year}-{new_number}"
+        try:
+            current_year = datetime.utcnow().year % 100
+            last_trip = Trip.query.filter(
+                Trip.code_voyage.like(f'{current_year}-%')  # Changez 'code' en 'code_voyage'
+            ).order_by(Trip.code_voyage.desc()).first()  # Changez 'code' en 'code_voyage'
+            
+            if last_trip:
+                last_number = int(last_trip.code_voyage.split('-')[1])  # Changez 'code' en 'code_voyage'
+                new_number = last_number + 1
+            else:
+                new_number = 1
+                
+            self.code_voyage = f"{current_year}-{new_number}"  # Changez 'code' en 'code_voyage'
+        except Exception as e:
+            # En cas d'erreur, générer un code basé sur le timestamp
+            self.code_voyage = f"{datetime.now().strftime('%y-%m%d%H%M')}"
 
 # Table de liaison pour les véhicules
 class TripVehicule(db.Model):
@@ -196,11 +202,13 @@ class TripChauffeur(db.Model):
 
 class TripDepense(db.Model):
     __tablename__ = 'trip_depenses'
-    id = db.Column(db.Integer, primary_key=True)
-    trip_id = db.Column(db.Integer, db.ForeignKey('trips.id_trip'), nullable=False)
+    id_depense = db.Column(db.Integer, primary_key=True)
+    id_trip = db.Column(db.Integer, db.ForeignKey('trips.id_trip'), nullable=False)  # Changé de trip_id à id_trip
     nom = db.Column(db.String(100), nullable=False)
     montant = db.Column(db.Numeric(10, 2), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    
 
 class VenteTrip(db.Model):
     __tablename__ = 'ventes_trips'
@@ -299,3 +307,152 @@ class TripAffectation(db.Model):
     id_vehicule = db.Column(db.Integer, db.ForeignKey('vehicules.id_vehicule'), nullable=False)
     id_chauffeur = db.Column(db.Integer, db.ForeignKey('chauffeurs.id_chauffeur'), nullable=False)
     date_affectation = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# Ajout/Modification dans models.py
+
+class Transaction(db.Model):
+    __tablename__ = 'transactions'
+    
+    id_transaction = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type = db.Column(db.Enum('Revenu', 'Dépense', 'Transfert'), nullable=False)
+    montant = db.Column(db.Numeric(10, 2), nullable=False)
+    date_transaction = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    description = db.Column(db.Text)
+    categorie = db.Column(db.String(100), nullable=False)
+    sous_categorie = db.Column(db.String(100))
+    mode_paiement = db.Column(db.String(50))
+    reference = db.Column(db.String(100))
+    statut = db.Column(db.Enum('Complété', 'En attente', 'Annulé'), default='Complété')
+    
+    # Relations
+    id_compte = db.Column(db.Integer, db.ForeignKey('comptes_bancaires.id_compte'))
+    id_vehicule = db.Column(db.Integer, db.ForeignKey('vehicules.id_vehicule'))
+    id_trip = db.Column(db.Integer, db.ForeignKey('trips.id_trip'))
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'), nullable=False)
+    
+    pieces_jointes = db.relationship('PieceJointe', backref='transaction', lazy=True)
+    
+    @property
+    def montant_formate(self):
+        return "{:,.2f} DT".format(float(self.montant))
+
+class CompteBancaire(db.Model):
+    __tablename__ = 'comptes_bancaires'
+    
+    id_compte = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nom_banque = db.Column(db.String(100), nullable=False)
+    numero_compte = db.Column(db.String(50), nullable=False, unique=True)
+    type_compte = db.Column(db.String(50))
+    solde_actuel = db.Column(db.Numeric(10, 2), default=0)
+    devise = db.Column(db.String(3), default='TND')
+    date_ouverture = db.Column(db.Date)
+    statut = db.Column(db.Enum('Actif', 'Inactif'), default='Actif')
+    
+    transactions = db.relationship('Transaction', backref='compte', lazy=True)
+
+class Budget(db.Model):
+    __tablename__ = 'budgets'
+    
+    id_budget = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    categorie = db.Column(db.String(100), nullable=False)
+    montant_prevu = db.Column(db.Numeric(10, 2), nullable=False)
+    montant_actuel = db.Column(db.Numeric(10, 2), default=0)
+    periode_debut = db.Column(db.Date, nullable=False)
+    periode_fin = db.Column(db.Date, nullable=False)
+    notes = db.Column(db.Text)
+    
+    @property
+    def pourcentage_utilisation(self):
+        if float(self.montant_prevu) == 0:
+            return 0
+        return (float(self.montant_actuel) / float(self.montant_prevu)) * 100
+
+class PieceJointe(db.Model):
+    __tablename__ = 'pieces_jointes'
+    
+    id_piece = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_transaction = db.Column(db.Integer, db.ForeignKey('transactions.id_transaction'))
+    type_document = db.Column(db.String(50))
+    nom_fichier = db.Column(db.String(255))
+    url_fichier = db.Column(db.String(500))
+    date_upload = db.Column(db.DateTime, default=datetime.utcnow)
+
+class RapportFinancier(db.Model):
+    __tablename__ = 'rapports_financiers'
+    
+    id_rapport = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    type_rapport = db.Column(db.String(100), nullable=False)
+    periode_debut = db.Column(db.Date, nullable=False)
+    periode_fin = db.Column(db.Date, nullable=False)
+    contenu = db.Column(db.JSON)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'))
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @property
+    def periode_formatee(self):
+        return f"{self.periode_debut.strftime('%d/%m/%Y')} - {self.periode_fin.strftime('%d/%m/%Y')}"
+
+class DepenseFinance(db.Model):  # Changement du nom de la classe
+    __tablename__ = 'depenses_finance'  # Changement du nom de la table
+    
+    id_depense = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    categorie = db.Column(db.Enum(
+        'Carburant', 'Entretien', 'Assurance', 'Salaires', 
+        'Taxes', 'Fournitures', 'Marketing', 'Location',
+        'Utilities', 'Télécommunications', 'Formation',
+        'Autre'
+    ), nullable=False)
+    sous_categorie = db.Column(db.String(100))
+    montant = db.Column(db.Numeric(10, 2), nullable=False)
+    date_depense = db.Column(db.Date, nullable=False)
+    description = db.Column(db.Text)
+    justificatif_url = db.Column(db.String(500))
+    mode_paiement = db.Column(db.String(50))
+    reference_paiement = db.Column(db.String(100))
+    statut = db.Column(db.Enum('Payé', 'En attente', 'Annulé'), default='Payé')
+    recurrent = db.Column(db.Boolean, default=False)
+    frequence = db.Column(db.String(50))
+    
+    # Relations
+    id_vehicule = db.Column(db.Integer, db.ForeignKey('vehicules.id_vehicule'))
+    id_compte = db.Column(db.Integer, db.ForeignKey('comptes_bancaires.id_compte'))
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'), nullable=False)
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations avec d'autres tables
+    vehicule = db.relationship('Vehicule', backref='depenses_finance')
+    compte = db.relationship('CompteBancaire', backref='depenses_finance')
+    user = db.relationship('User', backref='depenses_finance')
+
+    @property
+    def montant_formate(self):
+        return "{:,.2f} DT".format(float(self.montant))
+    __tablename__ = 'depenses_finance'
+    
+    id_depense = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    categorie = db.Column(db.Enum(
+        'Carburant', 'Entretien', 'Assurance', 'Salaires', 
+        'Taxes', 'Fournitures', 'Marketing', 'Location',
+        'Utilities', 'Télécommunications', 'Formation',
+        'Autre'
+    ), nullable=False)
+    sous_categorie = db.Column(db.String(100))
+    montant = db.Column(db.Numeric(10, 2), nullable=False)
+    date_depense = db.Column(db.Date, nullable=False)
+    description = db.Column(db.Text)
+    justificatif_url = db.Column(db.String(500))
+    mode_paiement = db.Column(db.String(50))
+    reference_paiement = db.Column(db.String(100))
+    statut = db.Column(db.Enum('Payé', 'En attente', 'Annulé'), default='Payé')
+    recurrent = db.Column(db.Boolean, default=False)
+    frequence = db.Column(db.String(50))
+    
+    id_vehicule = db.Column(db.Integer, db.ForeignKey('vehicules.id_vehicule'))
+    id_compte = db.Column(db.Integer, db.ForeignKey('comptes_bancaires.id_compte'))
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id_user'), nullable=False)
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    @property
+    def montant_formate(self):
+        return "{:,.2f} DT".format(float(self.montant))
