@@ -1,0 +1,636 @@
+<!-- trips/details.html -->
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --primary-gradient: linear-gradient(135deg, #3498db, #2ecc71);
+    --secondary-gradient: linear-gradient(135deg, #34495e, #2c3e50);
+    --accent-gradient: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.trip-details-container {
+    min-height: 100vh;
+    padding: 2rem;
+    position: relative;
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(52, 152, 219, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 50%, rgba(46, 204, 113, 0.05) 0%, transparent 25%),
+        radial-gradient(circle at 50% 80%, rgba(231, 76, 60, 0.05) 0%, transparent 30%);
+}
+
+/* En-tête avec effet glassmorphism */
+.trip-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--glass-shadow);
+}
+
+.trip-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.trip-title h1 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.trip-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-weight: 500;
+    color: white;
+}
+
+.trip-status.planifie { background: var(--primary-gradient); }
+.trip-status.en-cours { background: var(--secondary-gradient); }
+.trip-status.termine { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+.trip-status.annule { background: var(--accent-gradient); }
+
+/* Grille des informations */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.detail-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--glass-border);
+}
+
+.card-header i {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--primary);
+}
+
+/* Contenu des cartes */
+.route-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.route-point {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+}
+
+.route-point i {
+    font-size: 1.5rem;
+}
+
+.route-point.depart i { color: #2ecc71; }
+.route-point.arrivee i { color: #e74c3c; }
+
+.time-info {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Affectations */
+.affectation-item {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.vehicle-info,
+.driver-info {
+    flex: 1;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-weight: 500;
+    color: var(--primary);
+}
+
+/* Passagers */
+.passengers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.passenger-type {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+}
+
+.passenger-count {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0.5rem 0;
+}
+
+/* Informations financières */
+.financial-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.amount-card {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.amount-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.amount-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.margin {
+    grid-column: 1 / -1;
+    background: var(--primary-gradient);
+    color: white;
+}
+
+/* Dépenses */
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.expense-table th,
+.expense-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.expense-table th {
+    font-weight: 500;
+    color: #666;
+}
+
+/* Paiements */
+.payment-history {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.payment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+}
+
+.payment-details {
+    display: flex;
+    gap: 2rem;
+}
+
+.payment-method {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Actions flottantes */
+.floating-actions {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    gap: 1rem;
+    z-index: 1000;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 30px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-edit { background: var(--primary-gradient); }
+.btn-delete { background: var(--accent-gradient); }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .trip-details-container {
+        padding: 1rem;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .passengers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .financial-info {
+        grid-template-columns: 1fr;
+    }
+
+    .floating-actions {
+        bottom: 1rem;
+        right: 1rem;
+        flex-direction: column;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.detail-card {
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+}
+
+.detail-card:nth-child(1) { animation-delay: 0.1s; }
+.detail-card:nth-child(2) { animation-delay: 0.2s; }
+.detail-card:nth-child(3) { animation-delay: 0.3s; }
+.detail-card:nth-child(4) { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="trip-details-container">
+    <!-- En-tête du voyage -->
+    <div class="trip-header">
+        <div class="trip-title">
+            <h1>
+                <i class="fas fa-{{ trip.type|lower }}"></i>
+                {{ trip.nom or trip.type }}
+            </h1>
+            <div class="trip-status {{ trip.etat_trip|lower }}">
+                <i class="fas fa-{% if trip.etat_trip == 'Planifié' %}clock
+                           {% elif trip.etat_trip == 'En cours' %}play-circle
+                           {% elif trip.etat_trip == 'Terminé' %}check-circle
+                           {% else %}times-circle{% endif %}"></i>
+                {{ trip.etat_trip }}
+            </div>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="quick-info-grid">
+            <div class="quick-info-item">
+                <i class="fas fa-calendar"></i>
+                <div class="info-content">
+                    <span class="info-label">Date de départ</span>
+                    <span class="info-value">{{ trip.date_depart|format_date }}</span>
+                </div>
+            </div>
+
+            <div class="quick-info-item">
+                <i class="fas fa-clock"></i>
+                <div class="info-content">
+                    <span class="info-label">Heure de départ</span>
+                    <span class="info-value">{{ trip.heure_depart|format_time }}</span>
+                </div>
+            </div>
+
+            <div class="quick-info-item">
+                <i class="fas fa-users"></i>
+                <div class="info-content">
+                    <span class="info-label">Total passagers</span>
+                    <span class="info-value">{{ trip.nombre_adultes + trip.nombre_enfants + trip.nombre_bebes }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille des détails -->
+    <div class="details-grid">
+        <!-- Itinéraire -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-route"></i>
+                <h2>Itinéraire</h2>
+            </div>
+            <div class="route-info">
+                <div class="route-point depart">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="point-details">
+                        <div class="point-name">{{ trip.point_depart }}</div>
+                        <div class="time-info">
+                            {{ trip.date_depart|format_date }} à {{ trip.heure_depart|format_time }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="route-separator">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+
+                <div class="route-point arrivee">
+                    <i class="fas fa-flag-checkered"></i>
+                    <div class="point-details">
+                        <div class="point-name">{{ trip.point_arrivee }}</div>
+                        {% if trip.date_arrivee %}
+                        <div class="time-info">
+                            {{ trip.date_arrivee|format_date }} à {{ trip.heure_arrivee|format_time }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Affectations -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-users"></i>
+                <h2>Affectations</h2>
+            </div>
+            {% for affectation in affectations %}
+            <div class="affectation-item">
+                <div class="vehicle-info">
+                    <div class="info-label">Véhicule</div>
+                    <div class="info-value">{{ affectation.Vehicule.modele }}</div>
+                    <div class="info-detail">{{ affectation.Vehicule.matricule }}</div>
+                </div>
+                <div class="driver-info">
+                    <div class="info-label">Chauffeur</div>
+                    <div class="info-value">{{ affectation.Chauffeur.prenom }} {{ affectation.Chauffeur.nom }}</div>
+                    <div class="info-detail">{{ affectation.Chauffeur.telephone }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Passagers -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-user-friends"></i>
+                <h2>Passagers</h2>
+            </div>
+            <div class="passengers-grid">
+                <div class="passenger-type">
+                    <i class="fas fa-user"></i>
+                    <div class="passenger-count">{{ trip.nombre_adultes }}</div>
+                    <div class="passenger-label">Adultes</div>
+                </div>
+                <div class="passenger-type">
+                    <i class="fas fa-child"></i>
+                    <div class="passenger-count">{{ trip.nombre_enfants }}</div>
+                    <div class="passenger-label">Enfants</div>
+                </div>
+                <div class="passenger-type">
+                    <i class="fas fa-baby"></i>
+                    <div class="passenger-count">{{ trip.nombre_bebes }}</div>
+                    <div class="passenger-label">Bébés</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations financières -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-money-bill-wave"></i>
+                <h2>Finances</h2>
+            </div>
+            <div class="financial-info">
+                {% if trip.is_commission %}
+                <div class="amount-card">
+                    <div class="amount-label">Commission</div>
+                    <div class="amount-value">{{ trip.commission }}%</div>
+                </div>
+                {% else %}
+                <div class="amount-card">
+                    <div class="amount-label">Prix d'achat</div>
+                    <div class="amount-value">{{ trip.prix_achat|format_currency }}</div>
+                </div>
+                <div class="amount-card">
+                    <div class="amount-label">Prix de vente</div>
+                    <div class="amount-value">{{ trip.prix_vente|format_currency }}</div>
+                </div>
+                <div class="amount-card margin">
+                    <div class="amount-label">Marge</div>
+                    <div class="amount-value">{{ (trip.prix_vente - trip.prix_achat)|format_currency }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dépenses -->
+        {% if depenses %}
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-receipt"></i>
+                <h2>Dépenses</h2>
+            </div>
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>Désignation</th>
+                        <th>Prix unitaire</th>
+                        <th>Nombre</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for depense in depenses %}
+                    <tr>
+                        <td>{{ depense.nom }}</td>
+                        <td>{{ depense.prix_unitaire|format_currency }}</td>
+                        <td>{{ depense.nombre_personnes }}</td>
+                        <td>{{ depense.total|format_currency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Paiements -->
+        <div class="detail-card">
+            <div class="card-header">
+                <i class="fas fa-credit-card"></i>
+                <h2>Paiements</h2>
+            </div>
+            <div class="payment-history">
+                {% for paiement in paiements %}
+                <div class="payment-item">
+                    <div class="payment-details">
+                        <div class="payment-method">
+                            <i class="fas fa-{% if paiement.mode_paiement == 'Chèque' %}money-check-alt
+                                        {% elif paiement.mode_paiement == 'Espèces' %}money-bill-wave
+                                        {% else %}credit-card{% endif %}"></i>
+                            {{ paiement.mode_paiement }}
+                        </div>
+                        <div class="payment-amount">
+                            {{ paiement.montant_paye|format_currency }}
+                        </div>
+                    </div>
+                    <div class="payment-date">
+                        {{ paiement.date_paiement|format_datetime }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions flottantes -->
+    <div class="floating-actions">
+        <a href="{{ url_for('trips.edit', trip_id=trip.id_trip) }}" class="action-btn btn-edit">
+            <i class="fas fa-edit"></i>
+            Modifier
+        </a>
+        <button class="action-btn btn-delete" onclick="confirmDelete('{{ trip.id_trip }}')">
+            <i class="fas fa-trash"></i>
+            Supprimer
+        </button>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirmation de suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer ce voyage ?</p>
+        <div class="modal-actions">
+            <button onclick="deleteTrip()" class="btn-delete">Confirmer</button>
+            <button onclick="closeModal()" class="btn-secondary">Annuler</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let tripIdToDelete = null;
+
+function confirmDelete(tripId) {
+    tripIdToDelete = tripId;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function deleteTrip() {
+    if (!tripIdToDelete) return;
+    
+    fetch(`/trips/${tripIdToDelete}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = "{{ url_for('trips.index') }}";
+        } else {
+            throw new Error('Erreur lors de la suppression');
+        }
+    })
+    .catch(error => {
+        showNotification('error', error.message);
+    });
+}
+
+// Notifications stylisées
+function showNotification(type, message) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
+</script>
+{% endblock %}

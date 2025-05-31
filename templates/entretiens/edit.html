@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="maintenance-form-container">
+    <div class="form-header">
+        <h2><i class="fas fa-edit"></i> Modifier l'Entretien</h2>
+        <a href="{{ url_for('entretiens.index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <form method="POST" class="maintenance-form" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="vehicule">Véhicule</label>
+                <select name="vehicule" id="vehicule" class="form-control" required>
+                    {% for vehicule in vehicules %}
+                    <option value="{{ vehicule.id_vehicule }}" 
+                            {% if vehicule.id_vehicule == entretien.id_vehicule %}selected{% endif %}>
+                        {{ vehicule.matricule }} - {{ vehicule.modele }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="type_entretien">Type d'entretien</label>
+                <input type="text" name="type_entretien" id="type_entretien" 
+                       value="{{ entretien.type_entretien }}"
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="pieces">Pièces concernées</label>
+                <div class="pieces-input-container">
+                    <div class="pieces-list" id="pieces_list">
+                        {% for piece in entretien.pieces %}
+                        <div class="piece-item">
+                            <span>{{ piece }}</span>
+                            <input type="hidden" name="pieces[]" value="{{ piece }}">
+                            <i class="fas fa-times remove-piece"></i>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="add-piece-container">
+                        <input type="text" id="new_piece" class="form-control" 
+                               placeholder="Ajouter une pièce...">
+                        <button type="button" id="add_piece" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="date_entretien">Date d'entretien</label>
+                <input type="date" name="date_entretien" id="date_entretien" 
+                       value="{{ entretien.date_entretien.strftime('%Y-%m-%d') }}"
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="kilometrage">Kilométrage actuel</label>
+                <input type="number" name="kilometrage" id="kilometrage" 
+                       value="{{ entretien.kilometrage }}"
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="kilometrage_suivant">Kilométrage suivant</label>
+                <input type="number" name="kilometrage_suivant" id="kilometrage_suivant" 
+                       value="{{ entretien.kilometrage_suivant }}"
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prix_entretien">Prix total</label>
+                <input type="number" name="prix_entretien" id="prix_entretien" 
+                       value="{{ entretien.prix_entretien }}"
+                       class="form-control" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="prestataire">Prestataire</label>
+                <input type="text" name="prestataire" id="prestataire" 
+                       value="{{ entretien.prestataire }}"
+                       class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="facture_reference">Référence facture</label>
+                <input type="text" name="facture_reference" id="facture_reference" 
+                       value="{{ entretien.facture_reference }}"
+                       class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="facture">Facture (PDF, PNG, JPG)</label>
+                <input type="file" name="facture" id="facture" 
+                       class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+                {% if entretien.facture_url %}
+                <div class="current-file">
+                    <p>Facture actuelle: <a href="{{ url_for('static', filename='uploads/' + entretien.facture_url) }}" target="_blank">Voir la facture</a></p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            <label for="description">Description des travaux</label>
+            <textarea name="description" id="description" 
+                      class="form-control" rows="4">{{ entretien.description }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer les modifications
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .maintenance-form-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .pieces-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        min-height: 50px;
+    }
+    
+    .piece-item {
+        background: #f8f9fa;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .next-maintenance-info {
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+        color: #495057;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    </style>
+    
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const piecesList = document.getElementById('pieces_list');
+    const newPieceInput = document.getElementById('new_piece');
+    const addPieceBtn = document.getElementById('add_piece');
+    const pieces = new Set(Array.from(piecesList.querySelectorAll('.piece-item span')).map(span => span.textContent));
+
+    function addPiece(pieceName) {
+        if (pieceName.trim() === '' || pieces.has(pieceName)) return;
+        
+        pieces.add(pieceName);
+        const pieceElement = document.createElement('div');
+        pieceElement.className = 'piece-item';
+        pieceElement.innerHTML = `
+            <span>${pieceName}</span>
+            <input type="hidden" name="pieces[]" value="${pieceName}">
+            <i class="fas fa-times remove-piece"></i>
+        `;
+        
+        pieceElement.querySelector('.remove-piece').addEventListener('click', () => {
+            pieces.delete(pieceName);
+            pieceElement.remove();
+        });
+        
+        piecesList.appendChild(pieceElement);
+        newPieceInput.value = '';
+    }
+
+    // Ajouter les gestionnaires d'événements pour les boutons de suppression existants
+    piecesList.querySelectorAll('.remove-piece').forEach(button => {
+        button.addEventListener('click', () => {
+            const pieceItem = button.closest('.piece-item');
+            const pieceName = pieceItem.querySelector('span').textContent;
+            pieces.delete(pieceName);
+            pieceItem.remove();
+        });
+    });
+
+    addPieceBtn.addEventListener('click', () => {
+        addPiece(newPieceInput.value);
+    });
+
+    newPieceInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addPiece(newPieceInput.value);
+        }
+    });
+});
+</script>
+{% endblock %}
+

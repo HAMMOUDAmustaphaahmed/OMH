@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+.form-section {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.section-title {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    color: #007bff;
+}
+
+.type-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.type-card {
+    border: 2px solid #eee;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.type-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.type-card.active {
+    border-color: #007bff;
+    background: #f8f9ff;
+}
+
+.type-card i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #007bff;
+}
+
+.points-list {
+    list-style: none;
+    padding: 0;
+}
+
+.point-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.point-item i {
+    font-size: 1.25rem;
+    color: #6c757d;
+}
+
+.point-handle {
+    cursor: move;
+}
+
+.depense-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.floating-actions {
+    position: sticky;
+    bottom: 2rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <form id="tripForm" method="POST">
+        <!-- Code et nom du voyage -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="fas fa-info-circle"></i>
+                <h3>Informations générales</h3>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Code voyage</label>
+                        <input type="text" class="form-control" readonly>
+                        <small class="text-muted">Le code sera généré automatiquement</small>
+                    </div>
+                </div>
+                <div

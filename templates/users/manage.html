@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-users-cog"></i>
+            <h3>Gestion Utilisateurs</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{{ url_for('dashboard.index') }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('trips.index') }}">
+                    <i class="fas fa-route"></i>
+                    <span>Voyages</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Header -->
+        <div class="content-header">
+            <div class="header-title">
+                <h2>
+                    <i class="fas fa-users"></i>
+                    Gestion des utilisateurs
+                </h2>
+                <p class="header-subtitle">Administration des comptes utilisateurs</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('users.add') }}" class="btn btn-primary with-icon">
+                    <i class="fas fa-plus"></i>
+                    <span>Nouvel utilisateur</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} slide-in">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Users Grid -->
+        <div class="users-grid">
+            {% for user in users %}
+            <div class="user-card hover-scale">
+                <div class="user-header">
+                    <div class="user-avatar color-{{ loop.index % 6 }}">
+                        {{ user.username[:2].upper() }}
+                    </div>
+                    <div class="user-info">
+                        <h3 class="user-name">{{ user.username }}</h3>
+                        <span class="user-email">{{ user.email }}</span>
+                    </div>
+                    <div class="user-status">
+                        <span class="status-badge {{ 'active' if user.is_active else 'inactive' }}">
+                            <i class="fas fa-circle"></i>
+                            {{ 'Actif' if user.is_active else 'Inactif' }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="user-body">
+                    <div class="user-role">
+                        <span class="role-badge {{ user.role }}">
+                            <i class="fas fa-{{ 'shield-alt' if user.role == 'admin' else 'user' }}"></i>
+                            {{ user.role|title }}
+                        </span>
+                    </div>
+                    <div class="user-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            Dernière connexion: {{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Jamais' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="user-actions">
+                    <a href="{{ url_for('users.edit', user_id=user.id_user) }}" class="btn btn-secondary with-icon">
+                        <i class="fas fa-edit"></i>
+                        <span>Modifier</span>
+                    </a>
+                    {% if user.id != current_user.id %}
+                    <button type="button" 
+                            class="btn btn-danger with-icon"
+                            onclick="confirmDelete({{ user.id_user }}, '{{ user.username }}')">
+                        <i class="fas fa-trash"></i>
+                        <span>Supprimer</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content scale-in">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                Confirmer la suppression
+            </h3>
+        </div>
+        <div class="modal-body">
+            <p>Êtes-vous sûr de vouloir supprimer l'utilisateur "<span id="deleteUserName"></span>" ?</p>
+            <p class="warning-text">Cette action est irréversible.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+                Annuler
+            </button>
+            <form id="deleteForm" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #c0392b;
+        --background-light: #f8f9fa;
+        --text-dark: #2c3e50;
+        --text-light: #ecf0f1;
+        --border-color: #dfe6e9;
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+        --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .dashboard-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+    background: var(--background-light);
+}
+
+/* Sidebar */
+.sidebar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem 0;
+    color: var(--text-light);
+}
+
+.sidebar-header {
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+/* Content */
+.content {
+    padding: 2rem;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-title h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+    /* Enhanced Content Area */
+    .content {
+        padding: 2.5rem;
+        background: var(--background-light);
+    }
+
+    .content-header {
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .header-title h2 {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .header-subtitle {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    /* Modern User Cards */
+    .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .user-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        overflow: hidden;
+    }
+
+    .hover-scale:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .user-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, var(--accent-color), #2980b9);
+        color: white;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .color-0 { background: #3498db; }
+    .color-1 { background: #2ecc71; }
+    .color-2 { background: #e74c3c; }
+    .color-3 { background: #f1c40f; }
+    .color-4 { background: #9b59b6; }
+    .color-5 { background: #1abc9c; }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Animated Alerts */
+    .slide-in {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Enhanced Modal */
+    .modal-content {
+        border-radius: 15px;
+        transform-origin: center;
+    }
+
+    .scale-in {
+        animation: scaleIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .content {
+            padding: 1.5rem;
+        }
+
+        .users-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .header-actions {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+
+
+<script>
+function confirmDelete(userId, username) {
+    document.getElementById('deleteModal').style.display = 'flex';
+    document.getElementById('deleteUserName').textContent = username;
+    document.getElementById('deleteForm').action = `/users/delete/${userId}`;
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+// Auto-close alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

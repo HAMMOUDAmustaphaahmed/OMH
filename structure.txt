@@ -1,0 +1,40 @@
+omh_travel_service/
+├── app.py
+├── config.py
+├── models.py
+├── routes/
+│   ├── __init__.py
+│   ├── auth.py
+│   ├── users.py
+│   ├── vehicles.py
+│   ├── drivers.py
+│   ├── trips.py
+│   └── finances.py
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── main.js
+└── templates/
+    ├── base.html
+    ├── sidebar.html
+    ├── login.html
+    ├── dashboard.html
+    ├── users/
+    │   ├── add.html
+    │   └── manage.html
+    │   └── details.html
+    ├── vehicles/
+    │   ├── add.html
+    │   └── manage.html
+    │   └── details.html
+    ├── drivers/
+    │   ├── add.html
+    │   └── manage.html
+    │   └── details.html
+    ├── trips/
+    │   ├── add.html
+    │   └── manage.html
+    │   └── details.html
+    └── finances/
+        └── dashboard.html
